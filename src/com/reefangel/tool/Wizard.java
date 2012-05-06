@@ -2860,20 +2860,21 @@ import java.util.GregorianCalendar;
 	        Timed[a] = new JPanel();
 	        SpringLayout Timedlayout=new SpringLayout();
 	        Timed[a].setLayout(Timedlayout);
-	        
+
 //	        JLabel description = new JLabel("<html><p>" + DescButtons[0] + "</p></html>");   
 	        JEditorPane description = new JEditorPane("text/html","<html><p>" + DescButtons[0] + "</p></html>");   
 	        description.setEditable(false);   
 	        description.setOpaque(false);
 	        description.setBorder(null);
-		      ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(bodyRule);
-	        Timed[a].add(description);
-	        
+		    ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(bodyRule);
+		    Timed[a].add(description);
+
 	        Calendar calendar = new GregorianCalendar();
 	        calendar.set(Calendar.HOUR_OF_DAY, 9);
 	        calendar.set(Calendar.MINUTE, 0);
 	        JLabel TimerOnLabel=new JLabel ("Turn on at: ",JLabel.TRAILING);
 	        Timed[a].add(TimerOnLabel);
+	        
 	        JSpinner TimerOn = new JSpinner( new SpinnerDateModel() ); 
 	        JSpinner.DateEditor TimerOnEditor = new JSpinner.DateEditor(TimerOn, "HH:mm"); 
 	        TimerOn.setEditor(TimerOnEditor); 
@@ -2883,12 +2884,13 @@ import java.util.GregorianCalendar;
 	        calendar.set(Calendar.HOUR_OF_DAY, 19);
 	        JLabel TimerOffLabel=new JLabel ("Turn off at: ",JLabel.TRAILING);
 	        Timed[a].add(TimerOffLabel);
+	        
 	        JSpinner TimerOff = new JSpinner( new SpinnerDateModel() ); 
 	        JSpinner.DateEditor TimerOffEditor = new JSpinner.DateEditor(TimerOff, "HH:mm"); 
 	        TimerOff.setEditor(TimerOffEditor); 
 	        TimerOff.setValue(calendar.getTime()); // will only show the current time
 	        Timed[a].add(TimerOff);	
-
+	        
 	        ApplyLayout(Timed[a],Timedlayout);
 	        
 	        // Heater
@@ -2900,8 +2902,8 @@ import java.util.GregorianCalendar;
 			hdescription.setEditable(false);   
 			hdescription.setOpaque(false);   
 			hdescription.setBorder(null);
-		      ((HTMLDocument)hdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-			Heater[a].add(hdescription);
+		    ((HTMLDocument)hdescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    Heater[a].add(hdescription);
 
 			JLabel HeaterOnLabel=null;
 			JSpinner HeaterOn;
@@ -2915,22 +2917,21 @@ import java.util.GregorianCalendar;
 			HeaterOff = new JSpinner( new SpinnerNumberModel(76,60,1000,0.1) );
 			HeaterOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
 			Heater[a].add(HeaterOffLabel);
-			Heater[a].add(HeaterOff);			
-
+			Heater[a].add(HeaterOff);	
+			
 			ApplyLayout(Heater[a],Heaterlayout);
 
-			
 			// Chiller
 			Chiller[a] = new JPanel();
 			SpringLayout Chillerlayout=new SpringLayout();
 			Chiller[a].setLayout(Chillerlayout);
 
-			JEditorPane cdescription = new JEditorPane("text/html","<html><p>" + DescButtons[2] + "</p></html>");   
+		    JEditorPane cdescription = new JEditorPane("text/html","<html><p>" + DescButtons[2] + "</p></html>");   
 			cdescription.setEditable(false);   
 			cdescription.setOpaque(false);   
 			cdescription.setBorder(null);
-		      ((HTMLDocument)cdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-			Chiller[a].add(cdescription);
+		    ((HTMLDocument)cdescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    Chiller[a].add(cdescription);
 
 			JSpinner ChillerOn;
 			JLabel ChillerOnLabel=null;
@@ -2944,9 +2945,9 @@ import java.util.GregorianCalendar;
 			ChillerOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
 			ChillerOff = new JSpinner( new SpinnerNumberModel(77,60,1000,0.1) );
 			Chiller[a].add(ChillerOffLabel);
-			Chiller[a].add(ChillerOff);			
-
-			ApplyLayout(Chiller[a],Chillerlayout);		        
+			Chiller[a].add(ChillerOff);		
+			
+			ApplyLayout(Chiller[a],Chillerlayout);
 
 	        // Auto Top Off
 	        
@@ -3139,8 +3140,11 @@ import java.util.GregorianCalendar;
 	    	ports[a].setLayout(new BoxLayout( ports[a], BoxLayout.PAGE_AXIS));
 	    	ports[a].setBorder(BorderFactory.createTitledBorder("Port Mode"));
 	        ports[a].add(feeding[a]);
+	        if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 	        ports[a].add(waterchange[a]);
+	        if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 	        ports[a].add(lightson[a]);
+	        if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 	        ports[a].add(overheat[a]);
 		}
         expansionmods=new JPanel();
