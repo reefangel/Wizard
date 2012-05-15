@@ -23,7 +23,7 @@
  * @version		##version##
  */
 
- package com.reefangel.tool;
+package com.reefangel.tool;
  
 import processing.app.Base;
 import processing.app.Editor;
@@ -73,7 +73,7 @@ import java.util.GregorianCalendar;
  
  public class Wizard implements Tool {
 	 Editor editor;
-	 private static final String WizVersion = "1.0"; 
+	 private static final String WizVersion = "1.01"; 
 	 Object[] options = { "Next","Cancel" };
 	 private int relay=1;
 	 private int window=1;
@@ -1499,7 +1499,7 @@ import java.util.GregorianCalendar;
 			{
 				b=b.substring(0, b.length()-3);
 				d+="    " + b + ";\n";
-				d+="    if ( buzzer > 1 ) buzzer = 100;\n";
+				d+="    if ( buzzer >= 1 ) buzzer = 100;\n";
 				JRadioButton jpwmb = (JRadioButton) daylightpwm.getComponent(3);
 				if (jpwmb.isSelected()) d+="    ReefAngel.PWM.SetDaylight( buzzer );\n";
 				jpwmb = (JRadioButton) actinicpwm.getComponent(3);
