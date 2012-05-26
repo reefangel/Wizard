@@ -41,8 +41,8 @@ paragraph =
 # compare different versions of the same tool, and check if an update is 
 # available. You should think of it as a counter, counting the total number of 
 # releases you've had.
-version = 1  # This must be parsable as an int
+version = 1.03  # This must be parsable as an int
 
 # The version as the user will see it. If blank, the version attribute will be 
 # used here.
-prettyVersion = 1.03  # This is treated as a String
+prettyVersion = ${tool.prettyVersion}  # This is treated as a String

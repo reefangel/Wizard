@@ -43,12 +43,16 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.LookAndFeel;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
@@ -56,6 +60,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -73,7 +78,6 @@ import java.util.GregorianCalendar;
  
  public class Wizard implements Tool {
 	 Editor editor;
-	 private static final String WizVersion = "1.01"; 
 	 Object[] options = { "Next","Cancel" };
 	 private int relay=1;
 	 private int window=1;
@@ -93,6 +97,7 @@ import java.util.GregorianCalendar;
 	 private boolean buzzer=false;
 	 private boolean upload=false;
 	 public static JPanel disptemp;
+	 public static JPanel memsettings;
 	 public static JPanel expansionmods;
 	 public static JPanel attachmentmods;
 	 public static JPanel RFmods;
@@ -114,12 +119,18 @@ import java.util.GregorianCalendar;
 	 public static JPanel functions[] = new JPanel[17];
 	 public static JPanel ports[] = new JPanel[17];
 	 public static JPanel Timed[] = new JPanel[17];
+	 public static JPanel TimedMemory[] = new JPanel[17];
 	 public static JPanel Heater[]  = new JPanel[17];
 	 public static JPanel Chiller[]  = new JPanel[17];
 	 public static JPanel ATO[]  = new JPanel[17];
 	 public static JPanel WM[]  = new JPanel[17];
+	 public static JPanel CO2Control[]  = new JPanel[17];
+	 public static JPanel pHControl[]  = new JPanel[17];
 	 public static JPanel Dosing[]  = new JPanel[17];
 	 public static JPanel Delayed[]  = new JPanel[17];
+	 public static JPanel Opposite[]  = new JPanel[17];
+	 public static JPanel AlwaysOn[]  = new JPanel[17];
+	 public static JPanel NotUsed[]  = new JPanel[17];
 	 public static JCheckBox feeding[] = new JCheckBox[17];
 	 public static JCheckBox waterchange[] = new JCheckBox[17];
 	 public static JCheckBox overheat[] = new JCheckBox[17];
@@ -128,18 +139,26 @@ import java.util.GregorianCalendar;
 	 
 	 Font font = UIManager.getFont("Label.font");
      String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + font.getSize() + "pt; }";
+     LookAndFeel lf = UIManager.getLookAndFeel();
 	 
-	public static String RegButtons[] = {"Time Schedule","Heater","Chiller/Fan","Auto Top Off","Wavemaker","Dosing Pump","Delayed Start","Always On","Not Used"};
+	public static String RegButtons[] = {"Time Schedule","Heater","Chiller/Fan","Auto Top Off","Wavemaker","CO2 Control","PH Control","Dosing Pump","Delayed Start","Opposite","Always On","Not Used"};
 	 
 	public static JRadioButton DisplayTemp = new JRadioButton();
+	public static JPanel OverheatSettings =  new JPanel();
+
 	public static String DescButtons[] = {
-				"This function turns on/off at specific times of the day. Example of devices that may use this function are light fixtures, refugium light, moonlight, powerheads and fans.",
+				"This function turns on/off at specific times of the day. Example of devices that may use this function are light fixtures, refugium light, moonlight, powerheads and fans. Delayed Start is useful for MH ballasts.",
 				"This function turns on/off at specific temperatures. Example of device that may use this function is an electric heater.",
 				"This function turns on/off at specific temperatures. Example of devices that may use this function are fans, blowers, chillers and coolers.",
 				"This function turns on/off according to the state of one or more float switches. For more information on each ATO type, please visit ",
 				"This function turns on/off on a cycle at every specific or random number of seconds. Example of devices that may use this function are powerheads and circulation pumps.",
-				"This function turns on every specific minutes for a specific number of seconds. Use the offset when dosing different chemicals on same schedule, but with offset minutes apart. Example of device that may use this function is a dosing pump.", //, kalk stirrers and feeders
-				"This function turns on with a specific delay. The delayed start is triggered by controller reboot, Feeding and Water Change mode. Example of device that may use this function is a skimmer."
+				"This function turns on/off at specific pH readings. The device that uses this function must lower pH. Example of device that may use this function is a calcium reactor.",
+				"This function turns on/off at specific pH readings. The device that uses this function must increase pH. Example of device that may use this function is a Kalk based Doser.",
+				"This function turns on every specific minutes for a specific number of seconds. Use the offset when dosing different chemicals on same schedule, but with offset minutes apart. Example of device that may use this function is a dosing pump, kalk stirrers and feeders",
+				"This function turns on with a specific delay. The delayed start is triggered by controller reboot, Feeding and Water Change mode. Example of device that may use this function is a skimmer.",
+				"This function turns on/off in the opposite status of a specific Port. Example of device that may use this function are moonlights, powerheads and circulation pumps.",
+				"This function turns on at start-up. It does not turn off unless selected to turn off during Feeding or Water Change modes. Example of device that may use this function are return pumps, skimmers, powerheads and circulation pumps.",
+				"This Port is not being used."
 		};
 	 
 	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","pH/ORP"};
@@ -158,6 +177,22 @@ import java.util.GregorianCalendar;
  
 	public void run() {
 
+		UIManager.put("control", new Color(219,227,249));
+		if (!Base.isMacOS())
+		{
+	        try {
+			    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+			        if ("Nimbus".equals(info.getName())) {
+			            UIManager.setLookAndFeel(info.getClassName());
+
+			            break;
+			        }
+			    }
+			} catch (Exception e) {
+			    // If Nimbus is not available, you can set the GUI to another look and feel.
+			}
+		}
+		
     	if (editor.getSketch().getCode(0).isModified())
     	{
     		JOptionPane.showMessageDialog(editor,
@@ -183,14 +218,47 @@ import java.util.GregorianCalendar;
 				window += ShowWelcome();
 				break;
 			case 2:
+				window += ShowMemorySettings();
+				break;
+			case 3:
 				window += ShowTemperature();
 				ResetTempRange();
 				break;
-			case 3:
+			case 4:
 				window += ShowExpansion();
 				JCheckBox jc=null;
 				jc=(JCheckBox) expansionmods.getComponent(0);
-				if (jc.isSelected()) relayexpansion=1; else relayexpansion=0;
+				if (jc.isSelected())
+				{
+					relayexpansion=1;
+					for (int a=1;a<=16;a++)
+					{
+						JComboBox c=(JComboBox) Opposite[a].getComponent(2);
+						c.removeAllItems();
+						for (int b=1;b<=8;b++)
+						{
+							c.addItem("Main Box Port "+b);
+						}
+						for (int b=1;b<=8;b++)
+						{
+							c.addItem("Exp. Box Port "+b);
+						}
+					}
+				}	
+				else
+				{
+					relayexpansion=0;
+					for (int a=1;a<=8;a++)
+					{
+						JComboBox c=(JComboBox) Opposite[a].getComponent(2);
+						c.removeAllItems();
+						for (int b=1;b<=8;b++)
+						{
+							c.addItem("Main Box Port "+b);
+						}
+					}
+				}
+				
 				jc=(JCheckBox) expansionmods.getComponent(1);
 				if (jc.isSelected()) dimmingexpansion=1; else dimmingexpansion=0;
 				jc=(JCheckBox) expansionmods.getComponent(2);
@@ -225,7 +293,7 @@ import java.util.GregorianCalendar;
 		        }
 				
 				break;
-			case 4:
+			case 5:
 				window += ShowAttachment();
 				jc=null;
 				jc=(JCheckBox) attachmentmods.getComponent(0);
@@ -234,10 +302,10 @@ import java.util.GregorianCalendar;
 				if (jc.isSelected()) ailed=1; else ailed=0;
 				
 				break;
-			case 5:
+			case 6:
 				window += ShowRelays();
 				break;
-			case 6:
+			case 7:
 			{
 				int r=0;
 				int relaystatus=ShowRelaySetup();
@@ -322,7 +390,7 @@ import java.util.GregorianCalendar;
 				break;
 			}
 
-			case 7:
+			case 8:
 				atolow=false;
 				atohigh=false;
 				for (int a=1;a<=16;a++)
@@ -356,46 +424,62 @@ import java.util.GregorianCalendar;
 				}
 				Buzzermods.getComponent(2).setEnabled(!atohigh);
 				window += ShowPWM("Daylight",daylightpwm);
-				if (window==8)
+				if (window==9)
 				{
 					JRadioButton jpwm = (JRadioButton) daylightpwm.getComponent(0);
 					
 					if (jpwm.isSelected())
 					{
-						int i=ShowPWMSettings("Daylight",daylightpwmsettings,daylightpwm);
-						if (i!=1) window+=i;
+				    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+				    	if (jb.isSelected())
+				    	{
+							int i=ShowPWMSettings("Daylight",daylightpwmsettings,daylightpwm);
+							if (i!=1) window+=i;
+				    	}
 					}
 	
 					jpwm = (JRadioButton) daylightpwm.getComponent(1);
 					if (jpwm.isSelected())
 					{
-						int i=ShowPWMSettings("Daylight",daylightpwmsettings,daylightpwm);
-						if (i!=1) window+=i;
+				    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+				    	if (jb.isSelected())
+				    	{
+							int i=ShowPWMSettings("Daylight",daylightpwmsettings,daylightpwm);
+							if (i!=1) window+=i;
+				    	}
 					}
 				}
-				if (window==6)
+				if (window==7)
 				{
 					if (relayexpansion==0) relay=8;
 					if (relayexpansion==1) relay=16;
 				}
 				break;
-			case 8:
+			case 9:
 				window += ShowPWM("Actinic",actinicpwm);
-				if (window==9)
+				if (window==10)
 				{
 					JRadioButton jpwm = (JRadioButton) actinicpwm.getComponent(0);
 					
 					if (jpwm.isSelected())
 					{
-						int i=ShowPWMSettings("Actinic",actinicpwmsettings,actinicpwm);
-						if (i!=1) window+=i;
+				    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+				    	if (jb.isSelected())
+				    	{
+							int i=ShowPWMSettings("Actinic",actinicpwmsettings,actinicpwm);
+							if (i!=1) window+=i;
+				    	}
 					}
 	
 					jpwm = (JRadioButton) actinicpwm.getComponent(1);
 					if (jpwm.isSelected())
 					{
-						int i=ShowPWMSettings("Actinic",actinicpwmsettings,actinicpwm);
-						if (i!=1) window+=i;
+				    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+				    	if (jb.isSelected())
+				    	{
+							int i=ShowPWMSettings("Actinic",actinicpwmsettings,actinicpwm);
+							if (i!=1) window+=i;
+				    	}
 					}
 					
 					JRadioButton jpwmbd = (JRadioButton) daylightpwm.getComponent(3);
@@ -419,13 +503,13 @@ import java.util.GregorianCalendar;
 						}
 					}
 				}
-				if (window==7)
+				if (window==8)
 				{
 					if (relayexpansion==0) relay=8;
 					if (relayexpansion==1) relay=16;
 				}
 				break;
-			case 9:
+			case 10:
 				while (w<100)
 				{
 					int wr = ShowExpPWM("Channel "+w,exppwm[w]);
@@ -440,12 +524,20 @@ import java.util.GregorianCalendar;
 						
 						if (jpwm0.isSelected())
 						{
-							ws=ShowExpPWMSettings("Channel "+w,exppwmsettings[w],exppwm[w]);
-						}
+					    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+					    	if (jb.isSelected())
+								ws=ShowExpPWMSettings("Channel "+w,exppwmsettings[w],exppwm[w]);
+					    	else
+					    		w++;
+					    }
 		
 						if (jpwm1.isSelected())
 						{
-							ws=ShowExpPWMSettings("Channel "+w,exppwmsettings[w],exppwm[w]);
+					    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+					    	if (jb.isSelected())
+								ws=ShowExpPWMSettings("Channel "+w,exppwmsettings[w],exppwm[w]);
+					    	else
+					    		w++;
 						}
 						if (jpwm2.isSelected()) w++;
 						if (jpwm3.isSelected()) w++;
@@ -466,7 +558,7 @@ import java.util.GregorianCalendar;
 					}
 					if (w<0)
 					{
-						w=100;
+						w=0;
 						window--;
 						break;
 
@@ -506,9 +598,9 @@ import java.util.GregorianCalendar;
 					}
 				}
 				break;
-			case 10:
+			case 11:
 				window+=ShowAIPort();
-				if (window==9)
+				if (window==10)
 					if (dimmingexpansion==0)
 					{
 						window--;
@@ -517,12 +609,12 @@ import java.util.GregorianCalendar;
 					{
 						w=5;
 					}
-				if (window==11) wa=0;
+				if (window==12) wa=0;
 				JRadioButton jah =(JRadioButton) aiport.getComponent(1);
 				if (jah.isSelected()) atohigh=true;
 				Buzzermods.getComponent(2).setEnabled(!atohigh);
 				break;
-			case 11:
+			case 12:
 				while (wa<100)
 				{
 					int wr = ShowAIPWM(AIChannels[wa],aipwm[wa]);
@@ -536,12 +628,20 @@ import java.util.GregorianCalendar;
 						
 						if (jpwm0.isSelected())
 						{
-							ws=ShowAIPWMSettings(AIChannels[wa],aipwmsettings[wa],aipwm[wa]);
+					    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+					    	if (jb.isSelected())
+					    		ws=ShowAIPWMSettings(AIChannels[wa],aipwmsettings[wa],aipwm[wa]);
+					    	else
+					    		wa++;
 						}
 		
 						if (jpwm1.isSelected())
 						{
-							ws=ShowAIPWMSettings(AIChannels[wa],aipwmsettings[wa],aipwm[wa]);
+					    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+					    	if (jb.isSelected())
+								ws=ShowAIPWMSettings(AIChannels[wa],aipwmsettings[wa],aipwm[wa]);
+					    	else
+					    		wa++;
 						}
 						if (jpwm2.isSelected()) wa++;
 						if (jpwm3.isSelected()) wa++;
@@ -561,7 +661,7 @@ import java.util.GregorianCalendar;
 					}
 					if (wa<0)
 					{
-						wa=100;
+						wa=0;
 						window--;
 						break;
 
@@ -589,9 +689,13 @@ import java.util.GregorianCalendar;
 					}
 				}
 				break;
-			case 12:
-				window+=ShowVortech();
-				if (window==11)
+			case 13:
+		    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+		    	if (jb.isSelected())
+		    		window+=ShowVortech();
+		    	else
+		    		window++;
+				if (window==12)
 				{
 					if (ailed==0)
 					{
@@ -611,9 +715,9 @@ import java.util.GregorianCalendar;
 						wa=2;
 					}
 				}
-				if (window==13) wra=0;
+				if (window==14) wra=0;
 				break;
-			case 13:
+			case 14:
 				while (wra<100)
 				{
 					int wr = ShowRFPWM(RadionChannels[wra],rfpwm[wra]);
@@ -627,12 +731,20 @@ import java.util.GregorianCalendar;
 						
 						if (jpwm0.isSelected())
 						{
-							ws=ShowRFPWMSettings(RadionChannels[wra],rfpwmsettings[wra],rfpwm[wra]);
+					    	JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
+					    	if (jb1.isSelected())
+								ws=ShowRFPWMSettings(RadionChannels[wra],rfpwmsettings[wra],rfpwm[wra]);
+					    	else
+					    		wra++;
 						}
 		
 						if (jpwm1.isSelected())
 						{
-							ws=ShowRFPWMSettings(RadionChannels[wra],rfpwmsettings[wra],rfpwm[wra]);
+					    	JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
+					    	if (jb1.isSelected())
+								ws=ShowRFPWMSettings(RadionChannels[wra],rfpwmsettings[wra],rfpwm[wra]);
+					    	else
+					    		wra++;
 						}
 						if (jpwm2.isSelected()) wra++;
 						if (jpwm3.isSelected()) wra++;
@@ -652,10 +764,34 @@ import java.util.GregorianCalendar;
 					}
 					if (wra<0)
 					{
-						wra=100;
-						window--;
+						wra=0;
+				    	JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
+				    	if (jb1.isSelected())
+				    	{
+							window--;
+				    	}
+				    	else
+				    	{
+							if (ailed==0)
+							{
+								window-=4;
+								if (dimmingexpansion==0)
+								{
+									window--;
+								}
+								else
+								{
+									w=5;
+								}
+								
+							}
+							else
+							{
+								window-=2;
+								wa=2;
+							}
+				    	}
 						break;
-
 					}
 					if (wra>=100)
 					{
@@ -675,9 +811,9 @@ import java.util.GregorianCalendar;
 					}
 				}
 				break;
-			case 14:
+			case 15:
 				window += ShowWifi();	
-				if (window==13)
+				if (window==14)
 				{
 					if (rfexpansion==0)
 					{
@@ -705,11 +841,11 @@ import java.util.GregorianCalendar;
 						wra=5;
 					}
 				}
-				if (window==15 && buzzer==false) window++;
+				if (window==16 && buzzer==false) window++;
 				break;
-			case 15:
+			case 16:
 				window+=ShowBuzzer();
-				if (window==14)
+				if (window==15)
 				{
 					if (wifi==0)
 					{
@@ -742,9 +878,9 @@ import java.util.GregorianCalendar;
 					}
 				}				
 				break;
-			case 16:
+			case 17:
 				window+=ShowGenerate();
-				if (window==15)
+				if (window==16)
 				{
 					if (buzzer==false)
 					{
@@ -781,7 +917,7 @@ import java.util.GregorianCalendar;
 					}
 				}
 				break;
-			case 17:
+			case 18:
 				//TODO: Finish Code
 				window += 200;
 				break;
@@ -789,13 +925,24 @@ import java.util.GregorianCalendar;
 			break;
 			}
 		}
-		if (window<200) return;
+		if (window<200)
+		{
+			try {
+				UIManager.setLookAndFeel(lf);
+			} catch (UnsupportedLookAndFeelException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        return;
+		}
 		ConstructCode();
     }
 	
 	private void ConstructCode()
 	{
 		String d="";
+    	JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
+    	int NumDosing=1;
 		
 		d+="#include <ReefAngel_Features.h>\n" + 
 				"#include <Globals.h>\n" + 
@@ -937,8 +1084,9 @@ import java.util.GregorianCalendar;
 		d+="    // Use T1 probe as temperature and overheat functions\n" + 
 				"    ReefAngel.TempProbe = T1_PROBE;\n" + 
 				"    ReefAngel.OverheatProbe = T1_PROBE;\n";
-		d+="    // Set the Overheat temperature setting\n" + 
-				"    InternalMemory.OverheatTemp_write( " + (int)((Double)Overheat.getValue() *10) + " );\n";
+		if (jb1.isSelected())
+			d+="    // Set the Overheat temperature setting\n" + 
+					"    InternalMemory.OverheatTemp_write( " + (int)((Double)Overheat.getValue() *10) + " );\n";
 
 		if (ailed==1)
 		{
@@ -1002,39 +1150,67 @@ import java.util.GregorianCalendar;
 					switch (b)
 					{
 					case 0:
-						d+= "    ReefAngel.StandardLights( " + sp + (a-poffset) + ",";
-						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
-						j = (JSpinner) Timed[a].getComponent(2);
-						dt = (java.util.Date)j.getValue();
-						toh.setTime(dt);
-						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-						d+=toh.get(Calendar.MINUTE) + ",";
-						j = (JSpinner) Timed[a].getComponent(4);
-						dt = (java.util.Date)j.getValue();
-						toh.setTime(dt);
-						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-						d+=toh.get(Calendar.MINUTE) + " );";
-						d+="\n";
+						if (jb1.isSelected())
+						{
+							d+= "    ReefAngel.StandardLights( " + sp + (a-poffset);
+							d+= ",";
+							Calendar toh= Calendar.getInstance();
+							JSpinner j = null; 
+							java.util.Date dt=null; 
+							j = (JSpinner) Timed[a].getComponent(2);
+							dt = (java.util.Date)j.getValue();
+							toh.setTime(dt);
+							d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+							d+=toh.get(Calendar.MINUTE) + ",";
+							j = (JSpinner) Timed[a].getComponent(4);
+							dt = (java.util.Date)j.getValue();
+							toh.setTime(dt);
+							d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+							d+=toh.get(Calendar.MINUTE);
+							d+= " );\n";
+						}
+						else
+						{
+							JRadioButton jt1 = (JRadioButton) TimedMemory[a].getComponent(1);
+							if (jt1.isSelected())
+								d+= "    ReefAngel.StandardLights( " + sp + (a-poffset) + " );\n";	
+							jt1 = (JRadioButton) TimedMemory[a].getComponent(2);
+							if (jt1.isSelected())
+								d+= "    ReefAngel.DelayedStartLights( " + sp + (a-poffset) + " );\n";	
+							jt1 = (JRadioButton) TimedMemory[a].getComponent(3);
+							if (jt1.isSelected())
+								d+= "    ReefAngel.ActinicLights( " + sp + (a-poffset) + " );\n";	
+							jt1 = (JRadioButton) TimedMemory[a].getComponent(4);
+							if (jt1.isSelected())
+								d+= "    ReefAngel.MoonLights( " + sp + (a-poffset) + " );\n";	
+							
+						}
 						break;
 					case 1:
-						d+= "    ReefAngel.StandardHeater( " + sp + (a-poffset) + ",";
-						JSpinner jh = null; 
-						jh = (JSpinner) Heater[a].getComponent(2);
-						d+= (int)((Double)jh.getValue() *10) + ",";
-						jh = (JSpinner) Heater[a].getComponent(4);
-						d+= (int)((Double)jh.getValue() *10) + " );";
-						d+="\n";
+						d+= "    ReefAngel.StandardHeater( " + sp + (a-poffset);
+						if (jb1.isSelected())
+						{
+							d+= ",";
+							JSpinner jh = null; 
+							jh = (JSpinner) Heater[a].getComponent(2);
+							d+= (int)((Double)jh.getValue() *10) + ",";
+							jh = (JSpinner) Heater[a].getComponent(4);
+							d+= (int)((Double)jh.getValue() *10);
+						}
+						d+= " );\n";
 						break;
 					case 2:
-						d+= "    ReefAngel.StandardFan( " + sp + (a-poffset) + ",";
-						JSpinner jc = null; 
-						jc = (JSpinner) Chiller[a].getComponent(4);
-						d+= (int)((Double)jc.getValue() *10) + ",";
-						jc = (JSpinner) Chiller[a].getComponent(2);
-						d+= (int)((Double)jc.getValue() *10) + " );";
-						d+="\n";
+						d+= "    ReefAngel.StandardFan( " + sp + (a-poffset);
+						if (jb1.isSelected())
+						{
+							d+= ",";
+							JSpinner jc = null; 
+							jc = (JSpinner) Chiller[a].getComponent(4);
+							d+= (int)((Double)jc.getValue() *10) + ",";
+							jc = (JSpinner) Chiller[a].getComponent(2);
+							d+= (int)((Double)jc.getValue() *10);
+						}
+						d+= " );\n";
 						break;
 					case 3:
 						JRadioButton jat = null;
@@ -1043,68 +1219,149 @@ import java.util.GregorianCalendar;
 						jat=(JRadioButton) ATO[a].getComponent(1);
 						if (jat.isSelected())
 						{
-							d+= "    ReefAngel.StandardATO( " + sp + (a-poffset) + ",";
-							jats = (JSpinner) ATO[a].getComponent(5);
-							d+= jats.getValue() + " );";
-							d+="\n";
+							d+= "    ReefAngel.StandardATO( " + sp + (a-poffset);
+							if (jb1.isSelected())
+							{
+								d+= ",";
+								jats = (JSpinner) ATO[a].getComponent(5);
+								d+= jats.getValue();
+							}
+							d+= " );\n";
 						}
 						jat=(JRadioButton) ATO[a].getComponent(2);
 						if (jat.isSelected())
 						{
-							d+= "    ReefAngel.SingleATO( true," + sp + (a-poffset) + ",";
-							jats = (JSpinner) ATO[a].getComponent(5);
-							d+= jats.getValue() + ",0 );";
-							d+="\n";
+							if (jb1.isSelected())
+							{
+								d+= "    ReefAngel.SingleATO( true," + sp + (a-poffset);
+								d+= ",";
+								jats = (JSpinner) ATO[a].getComponent(5);
+								d+= jats.getValue() + ",0";
+							}
+							else
+							{
+								d+= "    ReefAngel.SingleATOLow( " + sp + (a-poffset);
+							}
+							d+= " );\n";
 						}
 						jat=(JRadioButton) ATO[a].getComponent(3);
 						if (jat.isSelected())
 						{
-							d+= "    ReefAngel.SingleATO( false," + sp + (a-poffset) + ",";
-							jats = (JSpinner) ATO[a].getComponent(5);
-							d+= jats.getValue() + ",0 );";
-							d+="\n";
+							if (jb1.isSelected())
+							{
+								d+= "    ReefAngel.SingleATO( false," + sp + (a-poffset);
+								d+= ",";
+								jats = (JSpinner) ATO[a].getComponent(5);
+								d+= jats.getValue() + ",0";
+							}
+							else
+							{
+								d+= "    ReefAngel.SingleATOHigh( " + sp + (a-poffset);
+							}
+							d+=" );\n";
 						}
 						break;
 					case 4:
 						JRadioButton jwt = null;
 						JSpinner jwts = null; 
 						
-						jwt=(JRadioButton) WM[a].getComponent(1);
-						if (jwt.isSelected())
+						if (jb1.isSelected())
 						{
-							d+= "    ReefAngel.Wavemaker( " + sp + (a-poffset) + ",";
-							jwts = (JSpinner) WM[a].getComponent(4);
-							d+= jwts.getValue() + " );";
-							d+="\n";
+							jwt=(JRadioButton) WM[a].getComponent(1);
+							if (jwt.isSelected())
+							{
+								d+= "    ReefAngel.Wavemaker( " + sp + (a-poffset) + ",";
+								jwts = (JSpinner) WM[a].getComponent(4);
+								d+= jwts.getValue() + " );";
+								d+="\n";
+							}
+							jwt=(JRadioButton) WM[a].getComponent(2);
+							if (jwt.isSelected())
+							{
+								d+= "    ReefAngel.WavemakerRandom( " + sp + (a-poffset) + ",";
+								jwts = (JSpinner) WM[a].getComponent(4);
+								d+= jwts.getValue() + ",";
+								jwts = (JSpinner) WM[a].getComponent(6);
+								d+= jwts.getValue() + " );";
+								d+="\n";
+							}
 						}
-						jwt=(JRadioButton) WM[a].getComponent(2);
-						if (jwt.isSelected())
+						else
 						{
-							d+= "    ReefAngel.WavemakerRandom( " + sp + (a-poffset) + ",";
-							jwts = (JSpinner) WM[a].getComponent(4);
-							d+= jwts.getValue() + ",";
-							jwts = (JSpinner) WM[a].getComponent(6);
-							d+= jwts.getValue() + " );";
-							d+="\n";
+							if ((a-poffset)==5)
+								d+= "    ReefAngel.Wavemaker1( " + sp + (a-poffset) + " );\n";
+							else
+								d+= "    ReefAngel.Wavemaker2( " + sp + (a-poffset) + " );\n";
 						}
 						break;
 					case 5:
-						JSpinner jdps = null; 
-						d+= "    ReefAngel.DosingPumpRepeat( " + sp + (a-poffset) + ",";
-						jdps = (JSpinner) Dosing[a].getComponent(6);
-						d+= jdps.getValue() + ",";
-						jdps = (JSpinner) Dosing[a].getComponent(2);
-						d+= jdps.getValue() + ",";
-						jdps = (JSpinner) Dosing[a].getComponent(4);
-						d+= jdps.getValue() + " );";
-						d+="\n";
+						d+= "    ReefAngel.CO2Control( " + sp + (a-poffset);
+						if (jb1.isSelected())
+						{
+							d+= ",";
+							JSpinner jh = null; 
+							jh = (JSpinner) CO2Control[a].getComponent(2);
+							d+= (int)((Double)jh.getValue() *100) + ",";
+							jh = (JSpinner) CO2Control[a].getComponent(4);
+							d+= (int)((Double)jh.getValue() *100);
+						}
+						d+= " );\n";
 						break;
 					case 6:
-						JSpinner jdss = null; 
-						d+= "    ReefAngel.Relay.DelayedOn( " + sp + (a-poffset) + ",";
-						jdss = (JSpinner) Delayed[a].getComponent(2);
-						d+= jdss.getValue() + " );";
-						d+="\n";
+						d+= "    ReefAngel.PHControl( " + sp + (a-poffset);
+						if (jb1.isSelected())
+						{
+							d+= ",";
+							JSpinner jc = null; 
+							jc = (JSpinner) pHControl[a].getComponent(4);
+							d+= (int)((Double)jc.getValue() *100) + ",";
+							jc = (JSpinner) pHControl[a].getComponent(2);
+							d+= (int)((Double)jc.getValue() *100);
+						}
+						d+= " );\n";
+						break;
+					case 7:
+						if (jb1.isSelected())
+						{
+							JSpinner jdps = null; 
+							d+= "    ReefAngel.DosingPumpRepeat( " + sp + (a-poffset) + ",";
+							jdps = (JSpinner) Dosing[a].getComponent(6);
+							d+= jdps.getValue() + ",";
+							jdps = (JSpinner) Dosing[a].getComponent(2);
+							d+= jdps.getValue() + ",";
+							jdps = (JSpinner) Dosing[a].getComponent(4);
+							d+= jdps.getValue() + " );";
+							d+="\n";
+						}
+						else
+						{
+							if (NumDosing==1)
+							{
+								NumDosing++;
+								d+= "    ReefAngel.DosingPumpRepeat1( " + sp + (a-poffset) + " );\n";
+							}
+							else
+							{
+								d+= "    ReefAngel.DosingPumpRepeat2( " + sp + (a-poffset) + " );\n";
+							}
+						}
+						break;
+					case 8:
+						d+= "    ReefAngel.Relay.DelayedOn( " + sp + (a-poffset);
+						if (jb1.isSelected())
+						{
+							JSpinner jdss = null; 
+							d+= ",";
+							jdss = (JSpinner) Delayed[a].getComponent(2);
+							d+= jdss.getValue();
+						}
+						d+= " );\n";
+						break;
+					case 9:
+						d+= "    ReefAngel.Relay.Set( " + sp + (a-poffset) + ", !ReefAngel.Relay.Status( ";
+						JComboBox jco = (JComboBox) Opposite[a].getComponent(2);
+						d+= jco.getSelectedItem().toString().replace("Main Box ", "").replace("Exp. Box ", "Box1_").replace(" ", "");
+						d+= " ) );\n";
 						break;
 					}
 				}
@@ -1117,55 +1374,69 @@ import java.util.GregorianCalendar;
 		if (jpd.isSelected())
 		{
 			displayPWM=1;
-			d+= "    ReefAngel.PWM.SetDaylight( PWMSlope(";
-			Calendar toh= Calendar.getInstance();
-			JSpinner j = null; 
-			java.util.Date dt=null; 
-			j = (JSpinner) daylightpwmsettings.getComponent(2);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(4);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(8);
-			d+= j.getValue() + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(10);
-			d+= j.getValue() + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(14);
-			d+= j.getValue() + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(8);
-			d+= j.getValue() + ") );";
-			d+="\n";
+			if (jb1.isSelected())
+			{			
+				d+= "    ReefAngel.PWM.SetDaylight( PWMSlope(";
+				Calendar toh= Calendar.getInstance();
+				JSpinner j = null; 
+				java.util.Date dt=null; 
+				j = (JSpinner) daylightpwmsettings.getComponent(2);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(4);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(8);
+				d+= j.getValue() + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(10);
+				d+= j.getValue() + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(14);
+				d+= j.getValue() + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(8);
+				d+= j.getValue() + ") );";
+				d+="\n";
+			}
+			else
+			{
+				d+= "    ReefAngel.PWM.DaylightPWMSlope();\n";
+			}
 		}
 		jpd= (JRadioButton) daylightpwm.getComponent(1);
 		if (jpd.isSelected())
 		{
 			displayPWM=1;
-			d+= "    ReefAngel.PWM.SetDaylight( PWMParabola(";
-			Calendar toh= Calendar.getInstance();
-			JSpinner j = null; 
-			java.util.Date dt=null; 
-			j = (JSpinner) daylightpwmsettings.getComponent(2);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(4);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(8);
-			d+= j.getValue() + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(10);
-			d+= j.getValue() + ",";
-			j = (JSpinner) daylightpwmsettings.getComponent(8);
-			d+= j.getValue() + ") );";
-			d+="\n";
+			if (jb1.isSelected())
+			{			
+				d+= "    ReefAngel.PWM.SetDaylight( PWMParabola(";
+				Calendar toh= Calendar.getInstance();
+				JSpinner j = null; 
+				java.util.Date dt=null; 
+				j = (JSpinner) daylightpwmsettings.getComponent(2);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(4);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(8);
+				d+= j.getValue() + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(10);
+				d+= j.getValue() + ",";
+				j = (JSpinner) daylightpwmsettings.getComponent(8);
+				d+= j.getValue() + ") );";
+				d+="\n";
+			}
+			else
+			{
+				d+= "    ReefAngel.PWM.DaylightPWMParabola();\n";
+			}
 		}
 		jpd= (JRadioButton) daylightpwm.getComponent(2);
 		if (jpd.isSelected())
@@ -1185,55 +1456,69 @@ import java.util.GregorianCalendar;
 		if (jpd.isSelected())
 		{
 			displayPWM=1;
-			d+= "    ReefAngel.PWM.SetActinic( PWMSlope(";
-			Calendar toh= Calendar.getInstance();
-			JSpinner j = null; 
-			java.util.Date dt=null; 
-			j = (JSpinner) actinicpwmsettings.getComponent(2);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(4);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(8);
-			d+= j.getValue() + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(10);
-			d+= j.getValue() + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(14);
-			d+= j.getValue() + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(8);
-			d+= j.getValue() + ") );";
-			d+="\n";
+			if (jb1.isSelected())
+			{			
+				d+= "    ReefAngel.PWM.SetActinic( PWMSlope(";
+				Calendar toh= Calendar.getInstance();
+				JSpinner j = null; 
+				java.util.Date dt=null; 
+				j = (JSpinner) actinicpwmsettings.getComponent(2);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(4);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(8);
+				d+= j.getValue() + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(10);
+				d+= j.getValue() + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(14);
+				d+= j.getValue() + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(8);
+				d+= j.getValue() + ") );";
+				d+="\n";
+			}
+			else
+			{
+				d+= "    ReefAngel.PWM.ActinicPWMSlope();\n";
+			}
 		}
 		jpd= (JRadioButton) actinicpwm.getComponent(1);
 		if (jpd.isSelected())
 		{
 			displayPWM=1;
-			d+= "    ReefAngel.PWM.SetActinic( PWMParabola(";
-			Calendar toh= Calendar.getInstance();
-			JSpinner j = null; 
-			java.util.Date dt=null; 
-			j = (JSpinner) actinicpwmsettings.getComponent(2);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(4);
-			dt = (java.util.Date)j.getValue();
-			toh.setTime(dt);
-			d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-			d+=toh.get(Calendar.MINUTE) + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(8);
-			d+= j.getValue() + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(10);
-			d+= j.getValue() + ",";
-			j = (JSpinner) actinicpwmsettings.getComponent(8);
-			d+= j.getValue() + ") );";
-			d+="\n";
+			if (jb1.isSelected())
+			{			
+				d+= "    ReefAngel.PWM.SetActinic( PWMParabola(";
+				Calendar toh= Calendar.getInstance();
+				JSpinner j = null; 
+				java.util.Date dt=null; 
+				j = (JSpinner) actinicpwmsettings.getComponent(2);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(4);
+				dt = (java.util.Date)j.getValue();
+				toh.setTime(dt);
+				d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+				d+=toh.get(Calendar.MINUTE) + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(8);
+				d+= j.getValue() + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(10);
+				d+= j.getValue() + ",";
+				j = (JSpinner) actinicpwmsettings.getComponent(8);
+				d+= j.getValue() + ") );";
+				d+="\n";
+			}
+			else
+			{
+				d+= "    ReefAngel.PWM.ActinicPWMParabola();\n";
+			}
 		}
 		jpd= (JRadioButton) actinicpwm.getComponent(2);
 		if (jpd.isSelected())
@@ -1256,55 +1541,69 @@ import java.util.GregorianCalendar;
 				if (jpd.isSelected())
 				{
 					displayPWM=1;
-					d+= "    ReefAngel.PWM.SetChannel( " + i + ", PWMSlope(";
-					Calendar toh= Calendar.getInstance();
-					JSpinner j = null; 
-					java.util.Date dt=null; 
-					j = (JSpinner) exppwmsettings[i].getComponent(2);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(4);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(8);
-					d+= j.getValue() + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(10);
-					d+= j.getValue() + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(14);
-					d+= j.getValue() + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(8);
-					d+= j.getValue() + ") );";
-					d+="\n";
+					if (jb1.isSelected())
+					{			
+						d+= "    ReefAngel.PWM.SetChannel( " + i + ", PWMSlope(";
+						Calendar toh= Calendar.getInstance();
+						JSpinner j = null; 
+						java.util.Date dt=null; 
+						j = (JSpinner) exppwmsettings[i].getComponent(2);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(4);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(8);
+						d+= j.getValue() + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(10);
+						d+= j.getValue() + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(14);
+						d+= j.getValue() + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(8);
+						d+= j.getValue() + ") );";
+						d+="\n";
+					}
+					else
+					{
+						d+= "    ReefAngel.PWM.Channel" + i + "PWMSlope();\n";
+					}
 				}
 				jpd= (JRadioButton) exppwm[i].getComponent(1);
 				if (jpd.isSelected())
 				{
 					displayPWM=1;
-					d+= "    ReefAngel.PWM.SetChannel( " + i + ", PWMParabola(";
-					Calendar toh= Calendar.getInstance();
-					JSpinner j = null; 
-					java.util.Date dt=null; 
-					j = (JSpinner) exppwmsettings[i].getComponent(2);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(4);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(8);
-					d+= j.getValue() + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(10);
-					d+= j.getValue() + ",";
-					j = (JSpinner) exppwmsettings[i].getComponent(8);
-					d+= j.getValue() + ") );";
-					d+="\n";
+					if (jb1.isSelected())
+					{			
+						d+= "    ReefAngel.PWM.SetChannel( " + i + ", PWMParabola(";
+						Calendar toh= Calendar.getInstance();
+						JSpinner j = null; 
+						java.util.Date dt=null; 
+						j = (JSpinner) exppwmsettings[i].getComponent(2);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(4);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(8);
+						d+= j.getValue() + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(10);
+						d+= j.getValue() + ",";
+						j = (JSpinner) exppwmsettings[i].getComponent(8);
+						d+= j.getValue() + ") );";
+						d+="\n";
+					}
+					else
+					{
+						d+= "    ReefAngel.PWM.Channel" + i + "PWMParabola();\n";
+					}
 				}
 				jpd= (JRadioButton) exppwm[i].getComponent(2);
 				if (jpd.isSelected())
@@ -1328,54 +1627,68 @@ import java.util.GregorianCalendar;
 				jpd= (JRadioButton) aipwm[i].getComponent(0);
 				if (jpd.isSelected())
 				{
-					d+= "    ReefAngel.AI.SetChannel( " + AIChannels[i].replace(" ","") + ", PWMSlope(";
-					Calendar toh= Calendar.getInstance();
-					JSpinner j = null; 
-					java.util.Date dt=null; 
-					j = (JSpinner) aipwmsettings[i].getComponent(2);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(4);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(8);
-					d+= j.getValue() + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(10);
-					d+= j.getValue() + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(14);
-					d+= j.getValue() + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(8);
-					d+= j.getValue() + ") );";
-					d+="\n";
+					if (jb1.isSelected())
+					{			
+						d+= "    ReefAngel.AI.SetChannel( " + AIChannels[i].replace(" ","") + ", PWMSlope(";
+						Calendar toh= Calendar.getInstance();
+						JSpinner j = null; 
+						java.util.Date dt=null; 
+						j = (JSpinner) aipwmsettings[i].getComponent(2);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(4);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(8);
+						d+= j.getValue() + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(10);
+						d+= j.getValue() + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(14);
+						d+= j.getValue() + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(8);
+						d+= j.getValue() + ") );";
+						d+="\n";
+					}
+					else
+					{
+						d+= "    ReefAngel.AI.Channel" + AIChannels[i].replace(" ","") + "Slope();\n";
+					}
 				}
 				jpd= (JRadioButton) aipwm[i].getComponent(1);
 				if (jpd.isSelected())
 				{
-					d+= "    ReefAngel.AI.SetChannel( " + AIChannels[i].replace(" ","") + ", PWMParabola(";
-					Calendar toh= Calendar.getInstance();
-					JSpinner j = null; 
-					java.util.Date dt=null; 
-					j = (JSpinner) aipwmsettings[i].getComponent(2);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(4);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(8);
-					d+= j.getValue() + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(10);
-					d+= j.getValue() + ",";
-					j = (JSpinner) aipwmsettings[i].getComponent(8);
-					d+= j.getValue() + ") );";
-					d+="\n";
+					if (jb1.isSelected())
+					{			
+						d+= "    ReefAngel.AI.SetChannel( " + AIChannels[i].replace(" ","") + ", PWMParabola(";
+						Calendar toh= Calendar.getInstance();
+						JSpinner j = null; 
+						java.util.Date dt=null; 
+						j = (JSpinner) aipwmsettings[i].getComponent(2);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(4);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(8);
+						d+= j.getValue() + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(10);
+						d+= j.getValue() + ",";
+						j = (JSpinner) aipwmsettings[i].getComponent(8);
+						d+= j.getValue() + ") );";
+						d+="\n";
+					}
+					else
+					{
+						d+= "    ReefAngel.AI.Channel" + AIChannels[i].replace(" ","") + "Parabola();\n";
+					}
 				}
 				jpd= (JRadioButton) aipwm[i].getComponent(2);
 				if (jpd.isSelected())
@@ -1390,11 +1703,14 @@ import java.util.GregorianCalendar;
 		
 		if (rfexpansion==1)
 		{
-			JComboBox jc = (JComboBox) RFmods.getComponent(1);
-			JSpinner js = (JSpinner) RFmods.getComponent(3);
-			JSpinner jd = (JSpinner) RFmods.getComponent(5);
-			d+="    ReefAngel.RF.UseMemory = false;\n" + 
-					"    ReefAngel.RF.SetMode( " + jc.getSelectedItem().toString().replace(" ","") + "," + js.getValue() + "," + jd.getValue() + " );\n";
+			if (jb1.isSelected())
+			{			
+				JComboBox jc = (JComboBox) RFmods.getComponent(1);
+				JSpinner js = (JSpinner) RFmods.getComponent(3);
+				JSpinner jd = (JSpinner) RFmods.getComponent(5);
+				d+="    ReefAngel.RF.UseMemory = false;\n" + 
+						"    ReefAngel.RF.SetMode( " + jc.getSelectedItem().toString().replace(" ","") + "," + js.getValue() + "," + jd.getValue() + " );\n";
+			}
 			boolean radionset=false;
 			for (int i=0;i<RadionChannels.length;i++)
 			{
@@ -1402,55 +1718,69 @@ import java.util.GregorianCalendar;
 				if (jpd.isSelected())
 				{
 					radionset=true;
-					d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", PWMSlope(";
-					Calendar toh= Calendar.getInstance();
-					JSpinner j = null; 
-					java.util.Date dt=null; 
-					j = (JSpinner) rfpwmsettings[i].getComponent(2);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(4);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(8);
-					d+= j.getValue() + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(10);
-					d+= j.getValue() + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(14);
-					d+= j.getValue() + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(8);
-					d+= j.getValue() + ") );";
-					d+="\n";
+					if (jb1.isSelected())
+					{			
+						d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", PWMSlope(";
+						Calendar toh= Calendar.getInstance();
+						JSpinner j = null; 
+						java.util.Date dt=null; 
+						j = (JSpinner) rfpwmsettings[i].getComponent(2);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(4);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(8);
+						d+= j.getValue() + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(10);
+						d+= j.getValue() + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(14);
+						d+= j.getValue() + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(8);
+						d+= j.getValue() + ") );";
+						d+="\n";
+					}
+					else
+					{
+						d+= "    ReefAngel.RF.Channel" + RadionChannels[i].replace(" ","") + "Slope();\n";
+					}
 				}
 				jpd= (JRadioButton) rfpwm[i].getComponent(1);
 				if (jpd.isSelected())
 				{
 					radionset=true;
-					d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", PWMParabola(";
-					Calendar toh= Calendar.getInstance();
-					JSpinner j = null; 
-					java.util.Date dt=null; 
-					j = (JSpinner) rfpwmsettings[i].getComponent(2);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(4);
-					dt = (java.util.Date)j.getValue();
-					toh.setTime(dt);
-					d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
-					d+=toh.get(Calendar.MINUTE) + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(8);
-					d+= j.getValue() + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(10);
-					d+= j.getValue() + ",";
-					j = (JSpinner) rfpwmsettings[i].getComponent(8);
-					d+= j.getValue() + ") );";
-					d+="\n";
+					if (jb1.isSelected())
+					{			
+						d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", PWMParabola(";
+						Calendar toh= Calendar.getInstance();
+						JSpinner j = null; 
+						java.util.Date dt=null; 
+						j = (JSpinner) rfpwmsettings[i].getComponent(2);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(4);
+						dt = (java.util.Date)j.getValue();
+						toh.setTime(dt);
+						d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
+						d+=toh.get(Calendar.MINUTE) + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(8);
+						d+= j.getValue() + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(10);
+						d+= j.getValue() + ",";
+						j = (JSpinner) rfpwmsettings[i].getComponent(8);
+						d+= j.getValue() + ") );";
+						d+="\n";
+					}
+					else
+					{
+						d+= "    ReefAngel.RF.Channel" + RadionChannels[i].replace(" ","") + "Parabola();\n";
+					}
 				}
 				jpd= (JRadioButton) rfpwm[i].getComponent(2);
 				if (jpd.isSelected())
@@ -1686,58 +2016,58 @@ import java.util.GregorianCalendar;
 			ShowUploading();
 		}
 		// TODO: Finish Code
-		String featurefile="// AutoGenerated file by Reef Angel Wizard\n" + 
-				"\n" + 
-				"/*\n" + 
-				" * Copyright 2012 Reef Angel\n" + 
-				" *\n" + 
-				" * Licensed under the Apache License, Version 2.0 (the \"License\")\n" + 
-				" * you may not use this file except in compliance with the License.\n" + 
-				" * You may obtain a copy of the License at\n" + 
-				" *\n" + 
-				" * http://www.apache.org/licenses/LICENSE-2.0\n" + 
-				" *\n" + 
-				" * Unless required by applicable law or agreed to in writing, software\n" + 
-				" * distributed under the License is distributed on an \"AS IS\" BASIS,\n" + 
-				" * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" + 
-				" * See the License for the specific language governing permissions and\n" + 
-				" * limitations under the License.\n" + 
-				" */\n" + 
-				"\n" + 
-				"\n" + 
-				"#ifndef __REEFANGEL_FEATURES_H__\n" + 
-				"#define __REEFANGEL_FEATURES_H__\n" + 
-				"\n" + 
-				"\n" + 
-				"#define VersionMenu\n" + 
-				"#define WDT\n" + 
-				"#define SIMPLE_MENU\n";
-		if (relayexpansion==1) featurefile+="#define RelayExp\n" + 
-				"#define InstalledRelayExpansionModules 1\n";
-		if (displayPWM==1) featurefile+="#define DisplayLEDPWM\n";
-		if (wifi==1) featurefile+="#define wifi\n";
-		if (salinityexpansion==1) featurefile+="#define SALINITYEXPANSION\n";
-		if (orpexpansion==1) featurefile+="#define ORPEXPANSION\n";
-		if (ioexpansion==1) featurefile+="#define IOEXPANSION\n";
-		if (rfexpansion==1) featurefile+="#define RFEXPANSION\n";
-		if (dimmingexpansion==1) featurefile+="#define PWMEXPANSION\n";
-		if (ailed==1) featurefile+="#define AI_LED\n";
-		if (buzzer)
-		{
-			JCheckBox jo = (JCheckBox)Buzzermods.getComponent(0);
-			JCheckBox ja = (JCheckBox)Buzzermods.getComponent(1);
-			if (jo.isSelected() || ja.isSelected()) featurefile+="#define ENABLE_EXCEED_FLAGS\n";
-		}		
-		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1) featurefile+="#define CUSTOM_MAIN\n";
-		
-		featurefile+="\n" + 
-				"\n" + 
-				"#endif  // __REEFANGEL_FEATURES_H__";
-		try {
-			Base.saveFile(featurefile, new File(Base.getSketchbookLibrariesPath()+"/ReefAngel_Features/ReefAngel_Features.h"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		String featurefile="// AutoGenerated file by Reef Angel Wizard\n" + 
+//				"\n" + 
+//				"/*\n" + 
+//				" * Copyright 2012 Reef Angel\n" + 
+//				" *\n" + 
+//				" * Licensed under the Apache License, Version 2.0 (the \"License\")\n" + 
+//				" * you may not use this file except in compliance with the License.\n" + 
+//				" * You may obtain a copy of the License at\n" + 
+//				" *\n" + 
+//				" * http://www.apache.org/licenses/LICENSE-2.0\n" + 
+//				" *\n" + 
+//				" * Unless required by applicable law or agreed to in writing, software\n" + 
+//				" * distributed under the License is distributed on an \"AS IS\" BASIS,\n" + 
+//				" * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" + 
+//				" * See the License for the specific language governing permissions and\n" + 
+//				" * limitations under the License.\n" + 
+//				" */\n" + 
+//				"\n" + 
+//				"\n" + 
+//				"#ifndef __REEFANGEL_FEATURES_H__\n" + 
+//				"#define __REEFANGEL_FEATURES_H__\n" + 
+//				"\n" + 
+//				"\n" + 
+//				"#define VersionMenu\n" + 
+//				"#define WDT\n" + 
+//				"#define SIMPLE_MENU\n";
+//		if (relayexpansion==1) featurefile+="#define RelayExp\n" + 
+//				"#define InstalledRelayExpansionModules 1\n";
+//		if (displayPWM==1) featurefile+="#define DisplayLEDPWM\n";
+//		if (wifi==1) featurefile+="#define wifi\n";
+//		if (salinityexpansion==1) featurefile+="#define SALINITYEXPANSION\n";
+//		if (orpexpansion==1) featurefile+="#define ORPEXPANSION\n";
+//		if (ioexpansion==1) featurefile+="#define IOEXPANSION\n";
+//		if (rfexpansion==1) featurefile+="#define RFEXPANSION\n";
+//		if (dimmingexpansion==1) featurefile+="#define PWMEXPANSION\n";
+//		if (ailed==1) featurefile+="#define AI_LED\n";
+//		if (buzzer)
+//		{
+//			JCheckBox jo = (JCheckBox)Buzzermods.getComponent(0);
+//			JCheckBox ja = (JCheckBox)Buzzermods.getComponent(1);
+//			if (jo.isSelected() || ja.isSelected()) featurefile+="#define ENABLE_EXCEED_FLAGS\n";
+//		}		
+//		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1) featurefile+="#define CUSTOM_MAIN\n";
+//		
+//		featurefile+="\n" + 
+//				"\n" + 
+//				"#endif  // __REEFANGEL_FEATURES_H__";
+//		try {
+//			Base.saveFile(featurefile, new File(Base.getSketchbookLibrariesPath()+"/ReefAngel_Features/ReefAngel_Features.h"));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		
 	}
 
@@ -2298,17 +2628,42 @@ import java.util.GregorianCalendar;
     	steps.setForeground(new Color(58,95,205));
     	steps.setFont(new Font("Arial", Font.BOLD, 24));
     	panel2.add(steps);
-    	JLabel text = new JLabel("<HTML><br>Welcome to the Reef Angel Wizard<br><br>I'm going to walk you through the whole process of generating a code for<br>your Reef Angel Controller<br><br>Version: " + WizVersion + "<br><br></HTML>");
+    	JLabel text = new JLabel("<HTML><br>Welcome to the Reef Angel Wizard<br><br>I'm going to walk you through the whole process of generating a code for<br>your Reef Angel Controller<br><br>Version: ##tool.version##<br><br></HTML>");
     	panel2.add(text);
     	panel.add(panel2);
 
     	return NextCancelButton(panel, "Welcome");
     	
 	}
+	
+	private int ShowMemorySettings()
+	{
+    	JPanel panel = new JPanel();
+    	
+    	AddPanel(panel);
+	    
+    	JPanel panel2 = new JPanel();
+    	panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
+		JLabel steps = new JLabel("Reef Angel Wizard");
+    	steps.setForeground(new Color(58,95,205));
+    	steps.setFont(new Font("Arial", Font.BOLD, 24));
+    	steps.setAlignmentX(Component.LEFT_ALIGNMENT);
+    	panel2.add(steps);
+    	JLabel text = new JLabel("<HTML><br>User settings can be stored within the code itself or inside the intenal memory of the controller.<br>Example of these settings are light schedule, heater/chiller temperature and many other settings.<br><br>Settings stored within the code itself is the easiest way to program your controller because it will not<br>require you to use any other application. This is the recommended method for new users.<br>The code generated by the Reef Angel Wizard will contain all the information needed and the<br>controller will be ready to be used.<br><br>Settings that are stored inside the intenal memory will require you to use another application after<br>you upload the code generated by the Reef Angel Wizard.<br>The benefit of using another application is that you will be able to change it at any time without<br>having to generate a new code.<br>One good example is changing your light schedule using one of the smart phone apps.<br><br>Where would you like to store your settings?<br><br></HTML>");
+    	panel2.add(text);
+    	text.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    	panel2.add(memsettings);
+    	memsettings.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+    	panel.add(panel2);
+
+    	return NextPrevButton(panel, "User Settings");	
+	
+	}
 
 	private int ShowTemperature()
 	{
-		final JPanel OverheatSettings =  new JPanel();
 		
     	JPanel panel = new JPanel();
     	
@@ -2325,65 +2680,18 @@ import java.util.GregorianCalendar;
     	panel2.add(text);
     	text.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        ActionListener DisplayTempListener = new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-              AbstractButton aButton = (AbstractButton) actionEvent.getSource();
-              if (aButton.getText()=="Celsius")
-              {
-            	  tempunit=1;
-            	  JLabel j=(JLabel)OverheatSettings.getComponent(0);
-            	  j.setText("Overheat Temperature (\u00b0C): ");
-            	  JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
-            	  js.setModel(new SpinnerNumberModel(30,10,1000,0.1));
-            	  OverheatSettings.revalidate();
-              }
-              if (aButton.getText()=="Fahrenheit")
-              {
-            	  tempunit=0;
-            	  JLabel j=(JLabel)OverheatSettings.getComponent(0);
-            	  j.setText("Overheat Temperature (\u00b0F): ");
-            	  JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
-            	  js.setModel(new SpinnerNumberModel(86,60,1000,0.1));
-            	  OverheatSettings.revalidate();
-              }
-            }
-        };		  
-        
-		// Temperature unit  
-		disptemp = new JPanel(new GridLayout(1,2));
-		ButtonGroup group = new ButtonGroup();
-		disptemp.setBorder(BorderFactory.createTitledBorder("Temperature Unit"));
-		DisplayTemp = new JRadioButton("Celsius");
-		DisplayTemp.addActionListener(DisplayTempListener);
-		group.add(DisplayTemp);
-		disptemp.add(DisplayTemp);
-		DisplayTemp = new JRadioButton("Fahrenheit");
-		DisplayTemp.addActionListener(DisplayTempListener);
-		DisplayTemp.setSelected(true);
-		disptemp.add(DisplayTemp);
-		group.add(DisplayTemp);
-		
     	panel2.add(disptemp);
     	disptemp.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-    	JLabel text1 = new JLabel("<HTML><br>Which temperature would you like to set the controller to flag for Overheat?<br><br></HTML>");
-    	panel2.add(text1);
-    	text1.setAlignmentX(Component.LEFT_ALIGNMENT);
-    	
-//    	SpringLayout layout=new SpringLayout(); 
-//    	OverheatSettings.setLayout(layout);
-    	OverheatSettings.setLayout(new FlowLayout());
-    	JLabel OverheatLabel = new JLabel("Overheat Temperature (\u00b0F): ");
-    	OverheatSettings.add(OverheatLabel);
-    	OverheatLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-    	Overheat = new JSpinner( new SpinnerNumberModel(86,60,1000,0.1));
-    	OverheatSettings.add(Overheat);
-    	Overheat.setAlignmentX(Component.LEFT_ALIGNMENT);
-    	OverheatSettings.setAlignmentX(Component.LEFT_ALIGNMENT);
-    	//ApplyOverheatLayout(OverheatSettings,layout);
-    	
-    	panel2.add(OverheatSettings);
-    	
+    	JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
+    	if (jb.isSelected())
+    	{
+	    	JLabel text1 = new JLabel("<HTML><br>Which temperature would you like to set the controller to flag for Overheat?<br><br></HTML>");
+	    	panel2.add(text1);
+	    	text1.setAlignmentX(Component.LEFT_ALIGNMENT);
+	    	
+	    	panel2.add(OverheatSettings);
+    	}    	
     	
     	panel.add(panel2);
 
@@ -2610,7 +2918,8 @@ import java.util.GregorianCalendar;
 	    JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");   
 		RA_link.setEditable(false);   
 		RA_link.setOpaque(false);   
-		RA_link.setBorder(null);
+		RA_link.setBorder(BorderFactory.createEmptyBorder()); 
+		RA_link.setBackground(new Color(0,0,0,0)); 
 	    ((HTMLDocument)RA_link.getDocument()).getStyleSheet().addRule(bodyRule);
 	    panel1.add(RA_link);
 	    RA_link.addHyperlinkListener(new HyperlinkListener() {   
@@ -2647,10 +2956,12 @@ import java.util.GregorianCalendar;
 		JLabel logo=new JLabel(icon);
 		panel1.add(logo);
 		logo.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
 	    JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");   
 		RA_link.setEditable(false);   
 		RA_link.setOpaque(false);   
-		RA_link.setBorder(null);
+		RA_link.setBorder(BorderFactory.createEmptyBorder()); 
+		RA_link.setBackground(new Color(0,0,0,0)); 
 	    ((HTMLDocument)RA_link.getDocument()).getStyleSheet().addRule(bodyRule);
 	    panel1.add(RA_link);
 	    RA_link.addHyperlinkListener(new HyperlinkListener() {   
@@ -2658,7 +2969,6 @@ import java.util.GregorianCalendar;
 		{   
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
 			{   
-				//System.out.println(hle.getURL());
 				if (isBrowsingSupported()) { 
 				      try { 
 				          Desktop desktop = java.awt.Desktop.getDesktop(); 
@@ -2817,19 +3127,117 @@ import java.util.GregorianCalendar;
 		  ActionListener sliceActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
               AbstractButton aButton = (AbstractButton) actionEvent.getSource();
-              functionsettings[relay].setBorder(BorderFactory.createTitledBorder(aButton.getText()));
+              functionsettings[relay].setBorder(BorderFactory.createTitledBorder(null, aButton.getText(),TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
               CardLayout cl = (CardLayout)(functionsettings[relay].getLayout());
               cl.show(functionsettings[relay], aButton.getText());
+              JRadioButton j = (JRadioButton) memsettings.getComponent(1);
               
+              if (aButton.getText()=="Time Schedule" && j.isSelected())
+              {
+            	  cl.show(functionsettings[relay], "Light Schedule");
+              }
               RevalidateSettings();
               }
         };
 
+        ActionListener DisplayTempListener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+              AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+              if (aButton.getText()=="Celsius")
+              {
+            	  tempunit=1;
+            	  JLabel j=(JLabel)OverheatSettings.getComponent(0);
+            	  j.setText("Overheat Temperature (\u00b0C): ");
+            	  JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
+            	  js.setModel(new SpinnerNumberModel(30.9,10.0,50.0,0.1));
+              	  JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
+            	  jo.getTextField().setColumns(5);
+            	  jo.getFormat().applyPattern("###0.0");  
+            	  OverheatSettings.revalidate();
+              }
+              if (aButton.getText()=="Fahrenheit")
+              {
+            	  tempunit=0;
+            	  JLabel j=(JLabel)OverheatSettings.getComponent(0);
+            	  j.setText("Overheat Temperature (\u00b0F): ");
+            	  JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
+            	  js.setModel(new SpinnerNumberModel(86.9,60.0,150.0,0.1));
+            	  OverheatSettings.revalidate();
+              	  JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
+            	  jo.getTextField().setColumns(5);
+            	  jo.getFormat().applyPattern("###0.0");  
+              }
+            
+            }
+        };		  
+        
+		// Temperature unit  
+		disptemp = new JPanel(new GridLayout(1,2));
+		ButtonGroup group = new ButtonGroup();
+		disptemp.setBorder(BorderFactory.createTitledBorder(null, "Temperature Unit",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
+		
+		DisplayTemp = new JRadioButton("Celsius");
+		DisplayTemp.addActionListener(DisplayTempListener);
+		group.add(DisplayTemp);
+		disptemp.add(DisplayTemp);
+		DisplayTemp = new JRadioButton("Fahrenheit");
+		DisplayTemp.addActionListener(DisplayTempListener);
+		DisplayTemp.setSelected(true);
+		group.add(DisplayTemp);        
+		disptemp.add(DisplayTemp);
+
+		FlowLayout OverheatSettingsFlowLayout=new FlowLayout();
+    	OverheatSettings = new JPanel(OverheatSettingsFlowLayout);
+    	JLabel OverheatLabel = new JLabel("Overheat Temperature (\u00b0F): ");
+    	OverheatSettings.add(OverheatLabel);
+    	OverheatLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    	Overheat = new JSpinner( new SpinnerNumberModel(86.9,60.0,150.0,0.1));
+    	JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )Overheat.getEditor();
+    	jo.getTextField().setColumns(5);
+    	jo.getFormat().applyPattern("###0.0");
+    	Overheat.setAlignmentX(Component.LEFT_ALIGNMENT);
+    	
+    	OverheatSettings.add(Overheat);
+    	Overheat.setAlignmentX(Component.LEFT_ALIGNMENT);
+    	OverheatSettings.setAlignmentX(Component.LEFT_ALIGNMENT);
+    	OverheatSettings.setBorder(BorderFactory.createTitledBorder(null, "Overheat Temperature",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
+        
+    	//TODO: Fix code
+        ActionListener MemListener = new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+              AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+              if (aButton.getText()=="In the code (Recommended for new users)")
+              {
+            	  ShowHardCodeSettings(true);
+              }
+              if (aButton.getText()=="In the internal memory")
+              {
+            	  ShowHardCodeSettings(false);            	  
+              }
+            }
+        };		  
+        
+		// Settings Storage  
+        memsettings = new JPanel(new GridLayout(1,2));
+		ButtonGroup group1 = new ButtonGroup();
+		memsettings.setBorder(BorderFactory.createTitledBorder(null, "Settings Storage",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));		
+		JRadioButton DisplayMem = new JRadioButton();
+		DisplayMem = new JRadioButton("In the code (Recommended for new users)");
+		DisplayMem.setSelected(true);
+		DisplayMem.addActionListener(MemListener);
+		group1.add(DisplayMem);
+		memsettings.add(DisplayMem);
+		DisplayMem = new JRadioButton("In the internal memory");
+		DisplayMem.addActionListener(MemListener);
+		memsettings.add(DisplayMem);
+		group1.add(DisplayMem);
+		    	
+    	
         // functions
 		for (int a=1;a<=16;a++)
 		{
 			functions[a]=new JPanel();
-	    	functions[a].setLayout(new GridLayout(5,2));
+	    	functions[a].setLayout(new GridLayout(6,2));
 	        ButtonGroup funcgroup = new ButtonGroup();
 	        JRadioButton option=null;
 	        for (int c=0;c<RegButtons.length;c++)
@@ -2853,7 +3261,7 @@ import java.util.GregorianCalendar;
 	            functions[a].add(option);
 	        }
 	        option.setSelected(true);
-	        functions[a].setBorder(BorderFactory.createTitledBorder("Functions"));
+	        functions[a].setBorder(BorderFactory.createTitledBorder(null, "Functions",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
 	        functions[a].setAlignmentX(Component.LEFT_ALIGNMENT);
 	        
 	        // Time Schedule
@@ -2861,11 +3269,11 @@ import java.util.GregorianCalendar;
 	        SpringLayout Timedlayout=new SpringLayout();
 	        Timed[a].setLayout(Timedlayout);
 
-//	        JLabel description = new JLabel("<html><p>" + DescButtons[0] + "</p></html>");   
 	        JEditorPane description = new JEditorPane("text/html","<html><p>" + DescButtons[0] + "</p></html>");   
 	        description.setEditable(false);   
 	        description.setOpaque(false);
-	        description.setBorder(null);
+	        description.setBorder(BorderFactory.createEmptyBorder()); 
+	        description.setBackground(new Color(0,0,0,0)); 
 		    ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(bodyRule);
 		    Timed[a].add(description);
 
@@ -2891,7 +3299,45 @@ import java.util.GregorianCalendar;
 	        TimerOff.setValue(calendar.getTime()); // will only show the current time
 	        Timed[a].add(TimerOff);	
 	        
+			JLabel DelayedTimerLabel=null;
+			JSpinner DelayedTimer;
+			DelayedTimer = new JSpinner( new SpinnerNumberModel(0,0,30,1) );
+			DelayedTimerLabel=new JLabel ("Delayed Start (m): ",JLabel.TRAILING);
+			Timed[a].add(DelayedTimerLabel);
+			Timed[a].add(DelayedTimer);	
+	        
 	        ApplyLayout(Timed[a],Timedlayout);
+	        
+	        // TimedMemory
+	        
+	        TimedMemory[a] = new JPanel();
+	        SpringLayout TimedMemorylayout=new SpringLayout();
+	        TimedMemory[a].setLayout(TimedMemorylayout);
+	        JEditorPane tmdescription = new JEditorPane("text/html","<html><p>" + DescButtons[0] + "</p></html>");   
+	        tmdescription.setEditable(false);   
+	        tmdescription.setOpaque(false);
+	        tmdescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        tmdescription.setBackground(new Color(0,0,0,0)); 
+		    ((HTMLDocument)tmdescription.getDocument()).getStyleSheet().addRule(bodyRule);
+	        TimedMemory[a].add(tmdescription);
+	        
+		    ButtonGroup TMgroup = new ButtonGroup();
+		    JRadioButton TMOption;
+		    TMOption = new JRadioButton("Daylight");		
+		    TMgroup.add(TMOption);
+		    TMOption.setSelected(true);
+		    TimedMemory[a].add(TMOption);
+		    TMOption = new JRadioButton("Delayed Start Daylight (For MH ballasts)");		
+		    TMgroup.add(TMOption);
+		    TimedMemory[a].add(TMOption);
+		    TMOption = new JRadioButton("Actinic (Turn on/off x minutes before and after Daylights)");		
+		    TMgroup.add(TMOption);
+		    TimedMemory[a].add(TMOption);
+		    TMOption = new JRadioButton("Moonlights/Refugium (Opposite cycle of Daylights)");		
+		    TMgroup.add(TMOption);
+		    TimedMemory[a].add(TMOption);
+	        
+		    ApplyTimedMemoryLayout(TimedMemory[a],TimedMemorylayout);
 	        
 	        // Heater
 			Heater[a] = new JPanel();
@@ -2901,24 +3347,32 @@ import java.util.GregorianCalendar;
 			JEditorPane hdescription = new JEditorPane("text/html","<html><p>" + DescButtons[1] + "</p></html>");   
 			hdescription.setEditable(false);   
 			hdescription.setOpaque(false);   
-			hdescription.setBorder(null);
+			hdescription.setBorder(BorderFactory.createEmptyBorder()); 
+			hdescription.setBackground(new Color(0,0,0,0)); 
 		    ((HTMLDocument)hdescription.getDocument()).getStyleSheet().addRule(bodyRule);
 		    Heater[a].add(hdescription);
 
 			JLabel HeaterOnLabel=null;
 			JSpinner HeaterOn;
-			HeaterOn = new JSpinner( new SpinnerNumberModel(75,60,1000,0.1) );
+			HeaterOn = new JSpinner( new SpinnerNumberModel(75.1,60.0,150.0,0.1) );
 			HeaterOnLabel=new JLabel ("Turn on at (\u00b0F): ",JLabel.TRAILING);
 			Heater[a].add(HeaterOnLabel);
 			Heater[a].add(HeaterOn);
-			
+			Heaterlayout.getConstraints(HeaterOn).setWidth(Spring.constant(70));
+	    	JSpinner.NumberEditor  jh = (JSpinner.NumberEditor )HeaterOn.getEditor();
+	    	jh.getTextField().setColumns(5);
+	    	jh.getFormat().applyPattern("###0.0");
+	    	
 			JLabel HeaterOffLabel=null;
 			JSpinner HeaterOff;
-			HeaterOff = new JSpinner( new SpinnerNumberModel(76,60,1000,0.1) );
+			HeaterOff = new JSpinner( new SpinnerNumberModel(76.1,60.0,150.0,0.1) );
 			HeaterOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
 			Heater[a].add(HeaterOffLabel);
 			Heater[a].add(HeaterOff);	
-			
+			Heaterlayout.getConstraints(HeaterOff).setWidth(Spring.constant(70));
+	    	jh = (JSpinner.NumberEditor )HeaterOff.getEditor();
+	    	jh.getTextField().setColumns(5);
+	    	jh.getFormat().applyPattern("###0.0");			
 			ApplyLayout(Heater[a],Heaterlayout);
 
 			// Chiller
@@ -2929,23 +3383,32 @@ import java.util.GregorianCalendar;
 		    JEditorPane cdescription = new JEditorPane("text/html","<html><p>" + DescButtons[2] + "</p></html>");   
 			cdescription.setEditable(false);   
 			cdescription.setOpaque(false);   
-			cdescription.setBorder(null);
+			cdescription.setBorder(BorderFactory.createEmptyBorder()); 
+			cdescription.setBackground(new Color(0,0,0,0)); 
 		    ((HTMLDocument)cdescription.getDocument()).getStyleSheet().addRule(bodyRule);
 		    Chiller[a].add(cdescription);
 
 			JSpinner ChillerOn;
 			JLabel ChillerOnLabel=null;
 			ChillerOnLabel=new JLabel ("Turn on at (\u00b0F): ",JLabel.TRAILING);
-			ChillerOn = new JSpinner( new SpinnerNumberModel(78,60,1000,0.1) );
+			ChillerOn = new JSpinner( new SpinnerNumberModel(78.1,60.0,150.0,0.1) );
 			Chiller[a].add(ChillerOnLabel);
 			Chiller[a].add(ChillerOn);
+			Chillerlayout.getConstraints(ChillerOn).setWidth(Spring.constant(70));
+	    	JSpinner.NumberEditor  jc = (JSpinner.NumberEditor )ChillerOn.getEditor();
+	    	jc.getTextField().setColumns(5);
+	    	jc.getFormat().applyPattern("###0.0");
 			
 			JLabel ChillerOffLabel=null;
 			JSpinner ChillerOff;
 			ChillerOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
-			ChillerOff = new JSpinner( new SpinnerNumberModel(77,60,1000,0.1) );
+			ChillerOff = new JSpinner( new SpinnerNumberModel(77.1,60.0,150.0,0.1) );
 			Chiller[a].add(ChillerOffLabel);
 			Chiller[a].add(ChillerOff);		
+			Chillerlayout.getConstraints(ChillerOff).setWidth(Spring.constant(70));
+			jc = (JSpinner.NumberEditor )ChillerOff.getEditor();
+			jc.getTextField().setColumns(5);
+			jc.getFormat().applyPattern("###0.0");
 			
 			ApplyLayout(Chiller[a],Chillerlayout);
 
@@ -2958,7 +3421,8 @@ import java.util.GregorianCalendar;
 	        JEditorPane ATOdescription = new JEditorPane("text/html","<html><p>" + DescButtons[3] + "<a href='http://forum.reefangel.com/viewtopic.php?f=7&t=240'> ATO Float Switch Guide</a>.</p></html>");   
 	        ATOdescription.setEditable(false);   
 	        ATOdescription.setOpaque(false);   
-	        ATOdescription.setBorder(null);
+	        ATOdescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        ATOdescription.setBackground(new Color(0,0,0,0)); 
 	        ((HTMLDocument)ATOdescription.getDocument()).getStyleSheet().addRule(bodyRule);
 	        ATO[a].add(ATOdescription);
 
@@ -3035,7 +3499,8 @@ import java.util.GregorianCalendar;
 	        JEditorPane wdescription = new JEditorPane("text/html","<html><p>" + DescButtons[4] + "</p></html>");   
 	        wdescription.setEditable(false);   
 	        wdescription.setOpaque(false);   
-	        wdescription.setBorder(null);
+	        wdescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        wdescription.setBackground(new Color(0,0,0,0)); 
 		    ((HTMLDocument)wdescription.getDocument()).getStyleSheet().addRule(bodyRule);
 		    WM[a].add(wdescription);
 
@@ -3066,16 +3531,92 @@ import java.util.GregorianCalendar;
 	        WM[a].add(WMOn1);
 	        
 	        ApplyWMLayout(WM[a],WMlayout);
+
+	        // CO2 Control
+	        
+	        CO2Control[a]= new JPanel();
+	        SpringLayout CO2Controllayout=new SpringLayout();
+	        CO2Control[a].setLayout(CO2Controllayout);
+
+			JEditorPane codescription = new JEditorPane("text/html","<html><p>" + DescButtons[5] + "</p></html>");   
+			codescription.setEditable(false);   
+			codescription.setOpaque(false);   
+			codescription.setBorder(BorderFactory.createEmptyBorder()); 
+			codescription.setBackground(new Color(0,0,0,0)); 
+		    ((HTMLDocument)codescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    CO2Control[a].add(codescription);
+
+			JLabel CO2ControlOnLabel=null;
+			JSpinner CO2ControlOn;
+			CO2ControlOn = new JSpinner( new SpinnerNumberModel(7.52,1.00,14.00,0.01) );
+			CO2ControlOnLabel=new JLabel ("Turn on at pH: ",JLabel.TRAILING);
+			CO2Control[a].add(CO2ControlOnLabel);
+			CO2Control[a].add(CO2ControlOn);
+			CO2Controllayout.getConstraints(CO2ControlOn).setWidth(Spring.constant(70));
+	    	JSpinner.NumberEditor jco = (JSpinner.NumberEditor )CO2ControlOn.getEditor();
+	    	jco.getTextField().setColumns(5);
+	    	jco.getFormat().applyPattern("###0.00");
+			
+			JLabel CO2ControlOffLabel=null;
+			JSpinner CO2ControlOff;
+			CO2ControlOff = new JSpinner( new SpinnerNumberModel(7.48,1.00,14.00,0.01) );
+			CO2ControlOffLabel=new JLabel ("Turn off at pH: ",JLabel.TRAILING);
+			CO2Control[a].add(CO2ControlOffLabel);
+			CO2Control[a].add(CO2ControlOff);	
+			CO2Controllayout.getConstraints(CO2ControlOff).setWidth(Spring.constant(70));
+	    	jco = (JSpinner.NumberEditor )CO2ControlOff.getEditor();
+	    	jco.getTextField().setColumns(5);
+	    	jco.getFormat().applyPattern("###0.00");			
+			ApplyLayout(CO2Control[a],CO2Controllayout);	        
+	        
+	        // pH Control
+	        
+	        pHControl[a]= new JPanel();
+	        SpringLayout pHControllayout=new SpringLayout();
+	        pHControl[a].setLayout(pHControllayout);
+
+			JEditorPane pdescription = new JEditorPane("text/html","<html><p>" + DescButtons[6] + "</p></html>");   
+			pdescription.setEditable(false);   
+			pdescription.setOpaque(false);   
+			pdescription.setBorder(BorderFactory.createEmptyBorder()); 
+			pdescription.setBackground(new Color(0,0,0,0)); 
+		    ((HTMLDocument)pdescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    pHControl[a].add(pdescription);
+
+			JLabel pHControlOnLabel=null;
+			JSpinner pHControlOn;
+			pHControlOn = new JSpinner( new SpinnerNumberModel(8.18,1.00,14.00,0.01) );
+			pHControlOnLabel=new JLabel ("Turn on at pH: ",JLabel.TRAILING);
+			pHControl[a].add(pHControlOnLabel);
+			pHControl[a].add(pHControlOn);
+			pHControllayout.getConstraints(pHControlOn).setWidth(Spring.constant(70));
+	    	JSpinner.NumberEditor jcp = (JSpinner.NumberEditor )pHControlOn.getEditor();
+	    	jcp.getTextField().setColumns(5);
+	    	jcp.getFormat().applyPattern("###0.00");
+	    	
+			JLabel pHControlOffLabel=null;
+			JSpinner pHControlOff;
+			pHControlOff = new JSpinner( new SpinnerNumberModel(8.22,1.00,14.00,0.01) );
+			pHControlOffLabel=new JLabel ("Turn off at pH: ",JLabel.TRAILING);
+			pHControl[a].add(pHControlOffLabel);
+			pHControl[a].add(pHControlOff);	
+			pHControllayout.getConstraints(pHControlOff).setWidth(Spring.constant(70));
+	    	jcp = (JSpinner.NumberEditor )pHControlOff.getEditor();
+	    	jcp.getTextField().setColumns(5);
+	    	jcp.getFormat().applyPattern("###0.00");
+	    	
+			ApplyLayout(pHControl[a],pHControllayout);
 	        
 	        // Dosing
 	        Dosing[a] = new JPanel();
 	        SpringLayout Dosinglayout=new SpringLayout();
 	        Dosing[a].setLayout(Dosinglayout);
 
-	        JEditorPane ddescription = new JEditorPane("text/html","<html><p>" + DescButtons[5] + "</p></html>");   
+	        JEditorPane ddescription = new JEditorPane("text/html","<html><p>" + DescButtons[7] + "</p></html>");   
 	        ddescription.setEditable(false);   
 	        ddescription.setOpaque(false);   
-	        ddescription.setBorder(null);
+	        ddescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        ddescription.setBackground(new Color(0,0,0,0)); 
 		    ((HTMLDocument)ddescription.getDocument()).getStyleSheet().addRule(bodyRule);
 		    Dosing[a].add(ddescription);
 
@@ -3105,10 +3646,11 @@ import java.util.GregorianCalendar;
 	        SpringLayout Delayedlayout=new SpringLayout();
 	        Delayed[a].setLayout(Delayedlayout);
 
-	        JEditorPane dsdescription = new JEditorPane("text/html","<html><p>" + DescButtons[6] + "</p></html>");   
+	        JEditorPane dsdescription = new JEditorPane("text/html","<html><p>" + DescButtons[8] + "</p></html>");   
 	        dsdescription.setEditable(false);   
 	        dsdescription.setOpaque(false);   
-	        dsdescription.setBorder(null);
+	        dsdescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        dsdescription.setBackground(new Color(0,0,0,0)); 
 		    ((HTMLDocument)dsdescription.getDocument()).getStyleSheet().addRule(bodyRule);
 		    Delayed[a].add(dsdescription);
 
@@ -3120,17 +3662,85 @@ import java.util.GregorianCalendar;
 	        
 	        ApplyLayout(Delayed[a],Delayedlayout);
 
-		    functionsettings[a]=new JPanel(new CardLayout());
-		    functionsettings[a].setBorder(BorderFactory.createTitledBorder(RegButtons[8]));
-		    functionsettings[a].add(new JPanel(),RegButtons[8]);
+	        // Opposite
+	        
+	        Opposite[a] = new JPanel();
+	        SpringLayout Oppositelayout=new SpringLayout();
+	        Opposite[a].setLayout(Oppositelayout);
+
+	        JEditorPane odescription = new JEditorPane("text/html","<html><p>" + DescButtons[9] + "</p></html>");   
+	        odescription.setEditable(false);   
+	        odescription.setOpaque(false);   
+	        odescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        odescription.setBackground(new Color(0,0,0,0)); 
+		    ((HTMLDocument)odescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    Opposite[a].add(odescription);
+
+	        JLabel OppositeLabelOn=new JLabel ("Opposite of Port: ",JLabel.TRAILING);
+	        Opposite[a].add(OppositeLabelOn);
+	        JComboBox OppositeOn;
+	        OppositeOn = new JComboBox();
+	        Opposite[a].add(OppositeOn);
+	        
+	        ApplyLayout(Opposite[a],Oppositelayout);	        
+
+	        // Always On
+	        
+	        AlwaysOn[a] = new JPanel();
+	        SpringLayout AlwaysOnlayout=new SpringLayout();
+	        AlwaysOn[a].setLayout(AlwaysOnlayout);
+
+	        JEditorPane adescription = new JEditorPane("text/html","<html><p>" + DescButtons[10] + "</p></html>");   
+	        adescription.setEditable(false);   
+	        adescription.setOpaque(false);   
+	        adescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        adescription.setBackground(new Color(0,0,0,0)); 
+		    ((HTMLDocument)adescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    AlwaysOn[a].add(adescription);
+
+		    AlwaysOn[a].add(new JLabel(""));
+		    AlwaysOn[a].add(new JLabel(""));
+	        
+	        ApplyLayout(AlwaysOn[a],AlwaysOnlayout);	
+
+	        // Not Used
+	        
+	        NotUsed[a] = new JPanel();
+	        SpringLayout NotUsedlayout=new SpringLayout();
+	        NotUsed[a].setLayout(NotUsedlayout);
+
+	        JEditorPane ndescription = new JEditorPane("text/html","<html><p>" + DescButtons[11] + "</p></html>");   
+	        ndescription.setEditable(false);   
+	        ndescription.setOpaque(false);   
+	        ndescription.setBorder(BorderFactory.createEmptyBorder()); 
+	        ndescription.setBackground(new Color(0,0,0,0)); 
+		    ((HTMLDocument)ndescription.getDocument()).getStyleSheet().addRule(bodyRule);
+		    NotUsed[a].add(ndescription);
+
+		    NotUsed[a].add(new JLabel(""));
+		    NotUsed[a].add(new JLabel(""));
+	        
+	        ApplyLayout(NotUsed[a],NotUsedlayout);	
+	        
+	        CardLayout cl = new CardLayout();
+		    functionsettings[a]=new JPanel(cl);
+		    functionsettings[a].setBorder(BorderFactory.createTitledBorder(null, RegButtons[11],TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
+		    functionsettings[a].add(new JPanel(),RegButtons[11]);
 	        functionsettings[a].add(Timed[a],RegButtons[0]);
 	        functionsettings[a].add(Heater[a],RegButtons[1]);
 	        functionsettings[a].add(Chiller[a],RegButtons[2]);
 	        functionsettings[a].add(ATO[a],RegButtons[3]);
 	        functionsettings[a].add(WM[a],RegButtons[4]);
-	        functionsettings[a].add(Dosing[a],RegButtons[5]);
-	        functionsettings[a].add(Delayed[a],RegButtons[6]);
-		    functionsettings[a].add(new JPanel(),RegButtons[7]);
+	        functionsettings[a].add(CO2Control[a],RegButtons[5]);
+	        functionsettings[a].add(pHControl[a],RegButtons[6]);
+	        functionsettings[a].add(Dosing[a],RegButtons[7]);
+	        functionsettings[a].add(Delayed[a],RegButtons[8]);
+	        functionsettings[a].add(Opposite[a],RegButtons[9]);
+		    functionsettings[a].add(AlwaysOn[a],RegButtons[10]);
+		    functionsettings[a].add(NotUsed[a],RegButtons[11]);
+		    functionsettings[a].add(TimedMemory[a] ,"Light Schedule");
+
+         	cl.show(functionsettings[a], "Not Used");
 		    
 	        feeding[a] = new JCheckBox ("Turn off this port on \"Feeding\" Mode");
 	        waterchange[a] = new JCheckBox ("Turn off this port on \"Water Change\" Mode");
@@ -3138,7 +3748,7 @@ import java.util.GregorianCalendar;
 	        overheat[a] = new JCheckBox ("Turn off this port on \"Overheat\"");
 	    	ports[a] = new JPanel(); 
 	    	ports[a].setLayout(new BoxLayout( ports[a], BoxLayout.PAGE_AXIS));
-	    	ports[a].setBorder(BorderFactory.createTitledBorder("Port Mode"));
+	    	ports[a].setBorder(BorderFactory.createTitledBorder(null, "Port Mode",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
 	        ports[a].add(feeding[a]);
 	        if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 	        ports[a].add(waterchange[a]);
@@ -3146,6 +3756,7 @@ import java.util.GregorianCalendar;
 	        ports[a].add(lightson[a]);
 	        if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 	        ports[a].add(overheat[a]);
+	        if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 		}
         expansionmods=new JPanel();
         expansionmods.setLayout(new BoxLayout( expansionmods, BoxLayout.PAGE_AXIS));
@@ -3650,10 +4261,10 @@ import java.util.GregorianCalendar;
 		Spring y = Spring.constant(5);
 		Spring x = Spring.constant(5);
 		Spring width = Spring.constant(0);
-		
+		layout.getConstraints(panel).setHeight(Spring.constant(130));
+		layout.getConstraints(panel).setWidth(Spring.constant(400));
 		layout.getConstraints(panel.getComponent(0)).setX(Spring.constant(5));
 		layout.getConstraints(panel.getComponent(0)).setY(Spring.constant(-15));
-		
 		y=Spring.sum(y, layout.getConstraints(panel.getComponent(0)).getHeight());
 		y=Spring.sum(y, Spring.constant(-10));
 		for (int c=1;c<panel.getComponentCount();c+=2)
@@ -3666,12 +4277,41 @@ import java.util.GregorianCalendar;
 			layout.getConstraints(panel.getComponent(c)).setY(y);
 			layout.getConstraints(panel.getComponent(c)).setWidth(width);
 			layout.getConstraints(panel.getComponent(c+1)).setX(x);
-			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-2)));
+			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-5)));
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
-			y=Spring.sum(y, Spring.constant(5));
+//			y=Spring.sum(y, Spring.constant(5));
 		}		
 	}	
 
+	private void ApplyTimedMemoryLayout(JPanel panel, SpringLayout layout)
+	{
+		Spring y = Spring.constant(0);
+		
+		layout.getConstraints(panel.getComponent(0)).setX(Spring.constant(5));
+		layout.getConstraints(panel.getComponent(0)).setY(Spring.constant(-15));
+		
+		y=Spring.sum(y, layout.getConstraints(panel.getComponent(0)).getHeight());
+		y=Spring.sum(y, Spring.constant(-10));
+
+		for (int c=1;c<panel.getComponentCount();c++)
+		{
+			layout.getConstraints(panel.getComponent(c)).setX(Spring.constant(5));
+			layout.getConstraints(panel.getComponent(c)).setY(y);
+//			layout.getConstraints(panel.getComponent(c+1)).setX(Spring.constant(150));
+//			layout.getConstraints(panel.getComponent(c+1)).setY(y);
+			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c)).getHeight());
+		}	
+		
+//		for (int c=1;c<panel.getComponentCount();c+=2)
+//		{
+//			layout.getConstraints(panel.getComponent(c)).setX(Spring.constant(0));
+//			layout.getConstraints(panel.getComponent(c)).setY(y);
+//			layout.getConstraints(panel.getComponent(c+1)).setX(Spring.constant(150));
+//			layout.getConstraints(panel.getComponent(c+1)).setY(y);
+//			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
+//		}		
+	}	
+	
 	private void ApplyDosingLayout(JPanel panel, SpringLayout layout)
 	{
 		Spring y = Spring.constant(5);
@@ -3691,7 +4331,7 @@ import java.util.GregorianCalendar;
 		x=Spring.sum(x, width);
 		x=Spring.sum(x, Spring.constant(5));
 		layout.getConstraints(panel.getComponent(2)).setX(x);
-		layout.getConstraints(panel.getComponent(2)).setY(Spring.sum(y, Spring.constant(-2)));
+		layout.getConstraints(panel.getComponent(2)).setY(Spring.sum(y, Spring.constant(-5)));
 
 //		y=Spring.sum(y, layout.getConstraints(panel.getComponent(1)).getHeight());
 //		y=Spring.sum(y, Spring.constant(5));
@@ -3706,10 +4346,10 @@ import java.util.GregorianCalendar;
 		x=Spring.sum(x, width);
 		x=Spring.sum(x, Spring.constant(5));
 		layout.getConstraints(panel.getComponent(4)).setX(x);
-		layout.getConstraints(panel.getComponent(4)).setY(Spring.sum(y, Spring.constant(-2)));
+		layout.getConstraints(panel.getComponent(4)).setY(Spring.sum(y, Spring.constant(-5)));
 		
-		y=Spring.sum(y, layout.getConstraints(panel.getComponent(1)).getHeight());
-		y=Spring.sum(y, Spring.constant(10));
+		y=Spring.sum(y, layout.getConstraints(panel.getComponent(2)).getHeight());
+//		y=Spring.sum(y, Spring.constant(15));
 
 		x=Spring.constant(5);
 		layout.getConstraints(panel.getComponent(5)).setX(x);
@@ -3718,7 +4358,7 @@ import java.util.GregorianCalendar;
 		x=Spring.sum(x, width);
 		x=Spring.sum(x, Spring.constant(5));
 		layout.getConstraints(panel.getComponent(6)).setX(x);
-		layout.getConstraints(panel.getComponent(6)).setY(Spring.sum(y, Spring.constant(-2)));
+		layout.getConstraints(panel.getComponent(6)).setY(Spring.sum(y, Spring.constant(-5)));
 	}
 	
 	private void ApplyWMLayout(JPanel panel, SpringLayout layout)
@@ -3749,7 +4389,7 @@ import java.util.GregorianCalendar;
 		layout.getConstraints(panel.getComponent(3)).setX(Spring.constant(5));
 		layout.getConstraints(panel.getComponent(3)).setY(y);
 		layout.getConstraints(panel.getComponent(4)).setX(x);
-		layout.getConstraints(panel.getComponent(4)).setY(Spring.sum(y, Spring.constant(-2)));
+		layout.getConstraints(panel.getComponent(4)).setY(Spring.sum(y, Spring.constant(-5)));
 		
 		width=layout.getConstraints(panel.getComponent(4)).getWidth();
 		x=Spring.sum(x, width);
@@ -3760,7 +4400,7 @@ import java.util.GregorianCalendar;
 		x=Spring.sum(x, width);
 		x=Spring.sum(x, Spring.constant(5));
 		layout.getConstraints(panel.getComponent(6)).setX(x);
-		layout.getConstraints(panel.getComponent(6)).setY(Spring.sum(y, Spring.constant(-2)));
+		layout.getConstraints(panel.getComponent(6)).setY(Spring.sum(y, Spring.constant(-5)));
 	}
 
 	private void ApplyATOLayout(JPanel panel, SpringLayout layout)
@@ -3775,21 +4415,22 @@ import java.util.GregorianCalendar;
 		y=Spring.sum(y, layout.getConstraints(panel.getComponent(0)).getHeight());
 		y=Spring.sum(y, Spring.constant(-15));
 		
+		for (int c=1;c<4;c++)
+			width=Spring.max(width, layout.getConstraints(panel.getComponent(c)).getWidth());
 		
-		layout.getConstraints(panel.getComponent(1)).setX(Spring.constant(0));
-		width=layout.getConstraints(panel.getComponent(1)).getWidth();
-		width=Spring.sum(Spring.constant(5),width);
-		layout.getConstraints(panel.getComponent(2)).setX(width);
-		width=Spring.sum(layout.getConstraints(panel.getComponent(2)).getWidth(),width);
-		width=Spring.sum(Spring.constant(5),width);
-		layout.getConstraints(panel.getComponent(3)).setX(width);
+		layout.getConstraints(panel.getComponent(1)).setX(Spring.constant(5));
 		layout.getConstraints(panel.getComponent(1)).setY(y);
-		layout.getConstraints(panel.getComponent(2)).setY(y);
-		layout.getConstraints(panel.getComponent(3)).setY(y);
-		
 		y=Spring.sum(y, layout.getConstraints(panel.getComponent(1)).getHeight());
 		y=Spring.sum(y, Spring.constant(5));
-
+		layout.getConstraints(panel.getComponent(2)).setX(Spring.constant(5));
+		layout.getConstraints(panel.getComponent(2)).setY(y);
+		y=Spring.sum(y, layout.getConstraints(panel.getComponent(2)).getHeight());
+		y=Spring.sum(y, Spring.constant(5));
+		layout.getConstraints(panel.getComponent(3)).setX(Spring.constant(5));
+		layout.getConstraints(panel.getComponent(3)).setY(y);
+		y=Spring.sum(y, layout.getConstraints(panel.getComponent(3)).getHeight());
+		y=Spring.sum(y, Spring.constant(5));
+		
 		width = Spring.constant(0);
 		for (int c=4;c<panel.getComponentCount();c+=2)
 			width=Spring.max(width, layout.getConstraints(panel.getComponent(c)).getWidth());
@@ -3801,10 +4442,50 @@ import java.util.GregorianCalendar;
 			layout.getConstraints(panel.getComponent(c)).setY(y);
 			layout.getConstraints(panel.getComponent(c)).setWidth(width);
 			layout.getConstraints(panel.getComponent(c+1)).setX(x);
-			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-2)));
+			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-5)));
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
 			y=Spring.sum(y, Spring.constant(5));
-		}		
+		}			
+//		Spring y = Spring.constant(5);
+//		Spring x = Spring.constant(5);
+//		Spring width = Spring.constant(0);
+//		
+//		layout.getConstraints(panel.getComponent(0)).setX(Spring.constant(5));
+//		layout.getConstraints(panel.getComponent(0)).setY(Spring.constant(-15));
+//		
+//		y=Spring.sum(y, layout.getConstraints(panel.getComponent(0)).getHeight());
+//		y=Spring.sum(y, Spring.constant(-15));
+//		
+//		
+//		layout.getConstraints(panel.getComponent(1)).setX(Spring.constant(0));
+//		width=layout.getConstraints(panel.getComponent(1)).getWidth();
+//		width=Spring.sum(Spring.constant(5),width);
+//		layout.getConstraints(panel.getComponent(2)).setX(width);
+//		width=Spring.sum(layout.getConstraints(panel.getComponent(2)).getWidth(),width);
+//		width=Spring.sum(Spring.constant(5),width);
+//		layout.getConstraints(panel.getComponent(3)).setX(width);
+//		layout.getConstraints(panel.getComponent(1)).setY(y);
+//		layout.getConstraints(panel.getComponent(2)).setY(y);
+//		layout.getConstraints(panel.getComponent(3)).setY(y);
+//		
+//		y=Spring.sum(y, layout.getConstraints(panel.getComponent(1)).getHeight());
+//		y=Spring.sum(y, Spring.constant(5));
+//
+//		width = Spring.constant(0);
+//		for (int c=4;c<panel.getComponentCount();c+=2)
+//			width=Spring.max(width, layout.getConstraints(panel.getComponent(c)).getWidth());
+//		x=Spring.sum(x, width);
+//		x=Spring.sum(x, Spring.constant(5));
+//		for (int c=4;c<panel.getComponentCount();c+=2)
+//		{
+//			layout.getConstraints(panel.getComponent(c)).setX(Spring.constant(5));
+//			layout.getConstraints(panel.getComponent(c)).setY(y);
+//			layout.getConstraints(panel.getComponent(c)).setWidth(width);
+//			layout.getConstraints(panel.getComponent(c+1)).setX(x);
+//			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-2)));
+//			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
+//			y=Spring.sum(y, Spring.constant(5));
+//		}		
 	}
 	
 	private void RevalidateSettings()
@@ -3812,51 +4493,81 @@ import java.util.GregorianCalendar;
 		if (settingswidth==0)
 		{
 			settingswidth = functionsettings[relay].getWidth();
-	  	SpringLayout layout;
-	  	
-	  	for (int a=1; a<=8;a++)
-	  	{
-	      	layout=(SpringLayout) Timed[a].getLayout();
-	      	layout.getConstraints(Timed[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(Timed[a]);
-	      	Timed[a].revalidate();
-
-	      	layout=(SpringLayout) Heater[a].getLayout();
-	      	layout.getConstraints(Heater[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(Heater[a]);
-	      	Heater[a].revalidate();
-
-	      	layout=(SpringLayout) Chiller[a].getLayout();
-	      	layout.getConstraints(Chiller[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(Chiller[a]);
-	      	Chiller[a].revalidate();
-
-	      	layout=(SpringLayout) ATO[a].getLayout();
-	      	layout.getConstraints(ATO[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(ATO[a]);
-	      	ATO[a].revalidate();
-
-	      	layout=(SpringLayout) WM[a].getLayout();
-	      	layout.getConstraints(WM[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(WM[a]);
-	      	WM[a].revalidate();
-
-	      	layout=(SpringLayout) Dosing[a].getLayout();
-	      	layout.getConstraints(Dosing[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(Dosing[a]);
-	      	Dosing[a].revalidate();
-
-	      	layout=(SpringLayout) Delayed[a].getLayout();
-	      	layout.getConstraints(Delayed[a].getComponent(0)).setWidth(Spring.constant(settingswidth-15));
-	      	SwingUtilities.updateComponentTreeUI(Delayed[a]);
-	      	Delayed[a].revalidate();
-	        }
+		  	SpringLayout layout;
+		  	
+		  	for (int a=1; a<=16;a++)
+		  	{
+		      	layout=(SpringLayout) Timed[a].getLayout();
+		      	layout.getConstraints(Timed[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(Timed[a]);
+		      	Timed[a].revalidate();
+	
+		      	layout=(SpringLayout) TimedMemory[a].getLayout();
+		      	layout.getConstraints(TimedMemory[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(TimedMemory[a]);
+		      	TimedMemory[a].revalidate();
+		      	
+		      	layout=(SpringLayout) Heater[a].getLayout();
+		      	layout.getConstraints(Heater[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(Heater[a]);
+		      	Heater[a].revalidate();
+	
+		      	layout=(SpringLayout) Chiller[a].getLayout();
+		      	layout.getConstraints(Chiller[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(Chiller[a]);
+		      	Chiller[a].revalidate();
+	
+		      	layout=(SpringLayout) ATO[a].getLayout();
+		      	layout.getConstraints(ATO[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(ATO[a]);
+		      	ATO[a].revalidate();
+	
+		      	layout=(SpringLayout) WM[a].getLayout();
+		      	layout.getConstraints(WM[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(WM[a]);
+		      	WM[a].revalidate();
+	
+		      	layout=(SpringLayout) CO2Control[a].getLayout();
+		      	layout.getConstraints(CO2Control[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(CO2Control[a]);
+		      	CO2Control[a].revalidate();
+		      	
+		      	layout=(SpringLayout) pHControl[a].getLayout();
+		      	layout.getConstraints(pHControl[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(pHControl[a]);
+		      	pHControl[a].revalidate();
+		      	
+		      	layout=(SpringLayout) Dosing[a].getLayout();
+		      	layout.getConstraints(Dosing[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(Dosing[a]);
+		      	Dosing[a].revalidate();
+	
+		      	layout=(SpringLayout) Delayed[a].getLayout();
+		      	layout.getConstraints(Delayed[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(Delayed[a]);
+		      	Delayed[a].revalidate();
+	
+		      	layout=(SpringLayout) Opposite[a].getLayout();
+		      	layout.getConstraints(Opposite[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(Opposite[a]);
+		      	Opposite[a].revalidate();
+	
+		      	layout=(SpringLayout) AlwaysOn[a].getLayout();
+		      	layout.getConstraints(AlwaysOn[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(AlwaysOn[a]);
+		      	AlwaysOn[a].revalidate();
+	
+		      	layout=(SpringLayout) NotUsed[a].getLayout();
+		      	layout.getConstraints(NotUsed[a].getComponent(0)).setWidth(Spring.constant(settingswidth-35));
+		      	SwingUtilities.updateComponentTreeUI(NotUsed[a]);
+		      	NotUsed[a].revalidate();
+	  		}
 		}
 	}
 	
 	private void ResetTempRange()
 	{
-		for (int a=1;a<=8;a++)
+		for (int a=1;a<=16;a++)
 		{
 			JPanel j = null;
 			JLabel jL = null;
@@ -3869,9 +4580,15 @@ import java.util.GregorianCalendar;
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0F): ");
 				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(75,60,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(75.1,60.0,150.0,0.1));
+            	JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(76,60,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(76.1,60.0,150.0,0.1));
+            	jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 			}
 			else
 			{
@@ -3880,9 +4597,15 @@ import java.util.GregorianCalendar;
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0C): ");
 				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(25,10,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(25.1,10.0,50.0,0.1));
+            	JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(26,10,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(26.1,10.0,50.0,0.1));
+            	jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 			}
 			j=(JPanel)functionsettings[a].getComponent(3);
 			if (tempunit==0)
@@ -3892,9 +4615,15 @@ import java.util.GregorianCalendar;
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0F): ");
 				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(79,60,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(79.1,60.0,150.0,0.1));
+            	JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(78,60,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(78.1,60.0,150.0,0.1));
+            	jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 			}
 			else
 			{
@@ -3903,13 +4632,61 @@ import java.util.GregorianCalendar;
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0C): ");
 				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(28,10,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(28.1,10.0,50.0,0.1));
+            	JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(27,10,1000,0.1));
+				jS.setModel(new SpinnerNumberModel(27.1,10.0,50.0,0.1));
+            	jo = (JSpinner.NumberEditor )jS.getEditor();
+          	    jo.getTextField().setColumns(5);
+          	    jo.getFormat().applyPattern("###0.0");  
 			}
 		}
 	}
 
+	private void ShowHardCodeSettings(boolean bVisible)
+	{
+		for (int a=1;a<=16;a++)
+		{
+			ShowHideComponent(Timed[a],bVisible);
+			ShowHideComponent(Heater[a],bVisible);
+			ShowHideComponent(Chiller[a],bVisible);
+//			ShowHideComponent(ATO[a],bVisible);
+			ShowHideComponent(WM[a],bVisible);
+			ShowHideComponent(CO2Control[a],bVisible);
+			ShowHideComponent(pHControl[a],bVisible);
+			ShowHideComponent(Dosing[a],bVisible);
+			ShowHideComponent(Delayed[a],bVisible);
+//			ShowHideComponent(Opposite[a],bVisible);
+			
+			ATO[a].getComponent(4).setVisible(bVisible);
+			ATO[a].getComponent(5).setVisible(bVisible);
+					
+            JRadioButton j = (JRadioButton) memsettings.getComponent(1);
+            JRadioButton AOn = (JRadioButton) functions[a].getComponent(0);
+			if (AOn.isSelected())
+			{
+	            CardLayout cl = (CardLayout)(functionsettings[relay].getLayout());
+				
+	            if (j.isSelected())
+	          	  	cl.show(functionsettings[relay], "Light Schedule");
+	            else
+	          	  	cl.show(functionsettings[relay], "Time Schedule");
+	            	
+			}
+		}
+	}
+	
+	private void ShowHideComponent(JPanel c, boolean bVisible)
+	{
+		for (int a=1; a<c.getComponentCount();a++)
+		{
+			c.getComponent(a).setVisible(bVisible);
+		}
+		
+	}
+	
 	private void MessageBox(String msg)
 	{
 		JOptionPane.showMessageDialog(null,msg , "Message", JOptionPane.DEFAULT_OPTION);
