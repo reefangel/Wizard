@@ -1114,7 +1114,7 @@ import java.util.GregorianCalendar;
 				sp="Port";
 				poffset=0;
 			}
-			JRadioButton AOn = (JRadioButton) functions[a].getComponent(7);
+			JRadioButton AOn = (JRadioButton) functions[a].getComponent(10);
 			if (AOn.isSelected()) d+= "    ReefAngel.Relay.On( " + sp + (a-poffset) + " );\n";
 		}
 		d+="\n";
