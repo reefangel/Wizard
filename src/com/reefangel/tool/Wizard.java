@@ -177,7 +177,15 @@ import java.util.GregorianCalendar;
  
 	public void run() {
 
-		UIManager.put("control", new Color(219,227,249));
+    	if (editor.getSketch().getCode(0).isModified())
+    	{
+    		JOptionPane.showMessageDialog(editor,
+                    "You must save the currect sketch before proceeding",
+                    "Error",JOptionPane.ERROR_MESSAGE);
+    		return;
+    	}
+
+    	UIManager.put("control", new Color(219,227,249));
 		if (!Base.isMacOS())
 		{
 	        try {
@@ -193,13 +201,6 @@ import java.util.GregorianCalendar;
 			}
 		}
 		
-    	if (editor.getSketch().getCode(0).isModified())
-    	{
-    		JOptionPane.showMessageDialog(editor,
-                    "You must save the currect sketch before proceeding",
-                    "Error",JOptionPane.ERROR_MESSAGE);
-    		return;
-    	}
 		relay=1;
 		window=1;
 		tempunit=0;
@@ -927,15 +928,11 @@ import java.util.GregorianCalendar;
 		}
 		if (window<200)
 		{
-			try {
-				UIManager.setLookAndFeel(lf);
-			} catch (UnsupportedLookAndFeelException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			RetundLF();
 	        return;
 		}
 		ConstructCode();
+		RetundLF();
     }
 	
 	private void ConstructCode()
@@ -4697,7 +4694,15 @@ import java.util.GregorianCalendar;
 		JOptionPane.showMessageDialog(null,msg , "Message", JOptionPane.DEFAULT_OPTION);
 	}
 
-
+	private void RetundLF()
+	{
+		try {
+			UIManager.setLookAndFeel(lf);
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	}
  
  
