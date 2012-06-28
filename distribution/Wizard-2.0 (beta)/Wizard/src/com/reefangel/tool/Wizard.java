@@ -19,7 +19,7 @@
  * Boston, MA  02111-1307  USA
  * 
  * @author		Reef Angel http://www.reefangel.com
- * @modified	06/24/2012
+ * @modified	06/28/2012
  * @version		##version##
  */
 
@@ -32,6 +32,8 @@ import processing.app.Serial;
 import processing.app.SerialException;
 import processing.app.debug.MessageConsumer;
 import processing.app.tools.Tool;
+import processing.core.PApplet;
+import processing.core.PConstants;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -103,6 +105,7 @@ import java.awt.MenuItem;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.SplashScreen;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -111,20 +114,28 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class Wizard  implements Tool, MessageConsumer {
 	Editor editor;
@@ -133,20 +144,24 @@ public class Wizard  implements Tool, MessageConsumer {
 	boolean connected=false;
 	Serial serial;
 	LayoutConstraintsManager layoutConstraintsManager;
-
+int id=0;
 	private int relay=1;
 	private int window=1;
 	private int tempunit=0;
 	private int settingswidth=0;
 	private int displayPWM=0;
-	private int wifi=0;
-	private int ailed=0;
+
 	private int relayexpansion=0;
 	private int dimmingexpansion=0;
 	private int rfexpansion=0;
 	private int salinityexpansion=0;
 	private int ioexpansion=0;
 	private int orpexpansion=0;
+	private int phexpansion=0;
+	
+	private int wifi=0;
+	private int ailed=0;
+
 	private String nextwindow="";
 	private String prevwindow="";
 	private boolean atolow=false;
@@ -284,6 +299,16 @@ public class Wizard  implements Tool, MessageConsumer {
 //				"Step 2",JOptionPane.DEFAULT_OPTION);		
 	}
 
+	
+	public void setSelectedButton(JPanel j,int p)
+	{
+		((JRadioButton)j.getComponent(p)).setSelected(true);
+		ActionEvent e = new ActionEvent(j.getComponent(p),0,"Test");
+		for(ActionListener al: ((JRadioButton) j.getComponent(p)).getActionListeners()){
+			al.actionPerformed(e);
+		}
+	}
+	
 	public void run() {
 
 		if (editor.getSketch().getCode(0).isModified())
@@ -293,6 +318,7 @@ public class Wizard  implements Tool, MessageConsumer {
 					"Error",JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		Preferences.init(null);
 		UIManager.put("control", new Color(219,227,249));
 		UIManager.put("SimpleInternalFrame.activeTitleBackground",new Color(58,95,205));
 		InputStream is = null;
@@ -420,7 +446,8 @@ public class Wizard  implements Tool, MessageConsumer {
 			@Override
 			public void windowDeactivated(WindowEvent e) {
 				// TODO Auto-generated method stub
-				ReturnLF();			
+				ReturnLF();	
+				saveInitialValues();
 			}
 
 		});
@@ -3821,16 +3848,19 @@ public class Wizard  implements Tool, MessageConsumer {
 		if (swindow.indexOf("Expansion Relay Box - Port")==0) r+=8;
 		JSpinner TimerOn = (JSpinner)TimedMemorySettings[r].getComponent(2);
 		JSpinner TimerOff = (JSpinner)TimedMemorySettings[r].getComponent(4);
+		JSpinner TimerDelay = (JSpinner)TimedMemorySettings[r].getComponent(6);
 		JSpinner ActinicOffset = (JSpinner)TimedMemorySettings[r].getComponent(8);
 		
 		for (int a=1;a<=16;a++)
 		{
 			JSpinner TimerOn1 = (JSpinner)TimedMemorySettings[a].getComponent(2);
 			JSpinner TimerOff1 = (JSpinner)TimedMemorySettings[a].getComponent(4);
+			JSpinner TimerDelay1 = (JSpinner)TimedMemorySettings[a].getComponent(6);
 			JSpinner ActinicOffset1 = (JSpinner)TimedMemorySettings[a].getComponent(8);
 
 			TimerOn1.setValue(TimerOn.getValue());
 			TimerOff1.setValue(TimerOff.getValue());
+			TimerDelay1.setValue(TimerDelay.getValue());
 			ActinicOffset1.setValue(ActinicOffset.getValue());
 			
 			JLabel lact = (JLabel)TimedMemorySettings[a].getComponent(9);
@@ -3949,26 +3979,29 @@ public class Wizard  implements Tool, MessageConsumer {
 
 		ChangeListener MemSettingsListener = new ChangeListener(){
 		    public void stateChanged(ChangeEvent evt) {
-				String swindow=Title.GetText();
-				int r=Integer.parseInt(swindow.replace("Main Relay Box - Port", "").replace("Expansion Relay Box - Port","").replace(" ", ""));
-				if (swindow.indexOf("Expansion Relay Box - Port")==0) r+=8;
-				for (int a=1;a<=16;a++)
-				{
-					((JSpinner)Heater[a].getComponent(2)).setValue(((JSpinner)Heater[r].getComponent(2)).getValue());
-					((JSpinner)Heater[a].getComponent(4)).setValue(((JSpinner)Heater[r].getComponent(4)).getValue());
-					((JSpinner)Chiller[a].getComponent(2)).setValue(((JSpinner)Chiller[r].getComponent(2)).getValue());
-					((JSpinner)Chiller[a].getComponent(4)).setValue(((JSpinner)Chiller[r].getComponent(4)).getValue());
-					((JSpinner)ATO[a].getComponent(5)).setValue(((JSpinner)ATO[r].getComponent(5)).getValue());
-					((JSpinner)WM[a].getComponent(4)).setValue(((JSpinner)WM[r].getComponent(4)).getValue());
-					((JSpinner)CO2Control[a].getComponent(2)).setValue(((JSpinner)CO2Control[r].getComponent(2)).getValue());
-					((JSpinner)CO2Control[a].getComponent(4)).setValue(((JSpinner)CO2Control[r].getComponent(4)).getValue());
-					((JSpinner)pHControl[a].getComponent(2)).setValue(((JSpinner)pHControl[r].getComponent(2)).getValue());
-					((JSpinner)pHControl[a].getComponent(4)).setValue(((JSpinner)pHControl[r].getComponent(4)).getValue());
-//					((JSpinner)Dosing[a].getComponent(2)).setValue(((JSpinner)Dosing[r].getComponent(2)).getValue());
-//					((JSpinner)Dosing[a].getComponent(4)).setValue(((JSpinner)Dosing[r].getComponent(4)).getValue());
-//					((JSpinner)Dosing[a].getComponent(6)).setValue(((JSpinner)Dosing[r].getComponent(6)).getValue());
-					((JSpinner)Delayed[a].getComponent(2)).setValue(((JSpinner)Delayed[r].getComponent(2)).getValue());
-				}		
+		    	if (((JRadioButton) memsettings.getComponent(1)).isSelected())
+		    	{
+					String swindow=Title.GetText();
+					int r=Integer.parseInt(swindow.replace("Main Relay Box - Port", "").replace("Expansion Relay Box - Port","").replace(" ", ""));
+					if (swindow.indexOf("Expansion Relay Box - Port")==0) r+=8;
+					for (int a=1;a<=16;a++)
+					{
+						((JSpinner)Heater[a].getComponent(2)).setValue(((JSpinner)Heater[r].getComponent(2)).getValue());
+						((JSpinner)Heater[a].getComponent(4)).setValue(((JSpinner)Heater[r].getComponent(4)).getValue());
+						((JSpinner)Chiller[a].getComponent(2)).setValue(((JSpinner)Chiller[r].getComponent(2)).getValue());
+						((JSpinner)Chiller[a].getComponent(4)).setValue(((JSpinner)Chiller[r].getComponent(4)).getValue());
+						((JSpinner)ATO[a].getComponent(5)).setValue(((JSpinner)ATO[r].getComponent(5)).getValue());
+						((JSpinner)WM[a].getComponent(4)).setValue(((JSpinner)WM[r].getComponent(4)).getValue());
+						((JSpinner)CO2Control[a].getComponent(2)).setValue(((JSpinner)CO2Control[r].getComponent(2)).getValue());
+						((JSpinner)CO2Control[a].getComponent(4)).setValue(((JSpinner)CO2Control[r].getComponent(4)).getValue());
+						((JSpinner)pHControl[a].getComponent(2)).setValue(((JSpinner)pHControl[r].getComponent(2)).getValue());
+						((JSpinner)pHControl[a].getComponent(4)).setValue(((JSpinner)pHControl[r].getComponent(4)).getValue());
+//						((JSpinner)Dosing[a].getComponent(2)).setValue(((JSpinner)Dosing[r].getComponent(2)).getValue());
+//						((JSpinner)Dosing[a].getComponent(4)).setValue(((JSpinner)Dosing[r].getComponent(4)).getValue());
+//						((JSpinner)Dosing[a].getComponent(6)).setValue(((JSpinner)Dosing[r].getComponent(6)).getValue());
+						((JSpinner)Delayed[a].getComponent(2)).setValue(((JSpinner)Delayed[r].getComponent(2)).getValue());
+					}		
+		    	}
 			}			
 		};
 		ActionListener DisplayTempListener = new ActionListener() {
@@ -3979,24 +4012,24 @@ public class Wizard  implements Tool, MessageConsumer {
 					tempunit=1;
 					JLabel j=(JLabel)OverheatSettings.getComponent(0);
 					j.setText("Overheat Temperature (\u00b0C): ");
-					JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
-					js.setModel(new SpinnerNumberModel(30.9,10.0,50.0,0.1));
-					JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
-					jo.getTextField().setColumns(5);
-					jo.getFormat().applyPattern("###0.0");  
-					OverheatSettings.revalidate();
+//					JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
+//					js.setModel(new SpinnerNumberModel(30.9,10.0,50.0,0.1));
+//					JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
+//					jo.getTextField().setColumns(5);
+//					jo.getFormat().applyPattern("###0.0");  
+//					OverheatSettings.revalidate();
 				}
 				if (aButton.getText()=="Fahrenheit")
 				{
 					tempunit=0;
 					JLabel j=(JLabel)OverheatSettings.getComponent(0);
 					j.setText("Overheat Temperature (\u00b0F): ");
-					JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
-					js.setModel(new SpinnerNumberModel(86.9,60.0,150.0,0.1));
-					OverheatSettings.revalidate();
-					JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
-					jo.getTextField().setColumns(5);
-					jo.getFormat().applyPattern("###0.0");  
+//					JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
+//					js.setModel(new SpinnerNumberModel(86.9,60.0,150.0,0.1));
+//					OverheatSettings.revalidate();
+//					JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
+//					jo.getTextField().setColumns(5);
+//					jo.getFormat().applyPattern("###0.0");  
 				}
 
 			}
@@ -4022,7 +4055,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		JLabel OverheatLabel = new JLabel("Overheat Temperature (\u00b0F): ");
 		OverheatSettings.add(OverheatLabel);
 		OverheatLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		Overheat = new JSpinner( new SpinnerNumberModel(86.9,60.0,150.0,0.1));
+		Overheat = new JSpinner( new SpinnerNumberModel(86.9,10.0,150.0,0.1));
 		JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )Overheat.getEditor();
 		jo.getTextField().setColumns(5);
 		jo.getFormat().applyPattern("###0.0");
@@ -4355,7 +4388,7 @@ public class Wizard  implements Tool, MessageConsumer {
 
 			JLabel HeaterOnLabel=null;
 			JSpinner HeaterOn;
-			HeaterOn = new JSpinner( new SpinnerNumberModel(75.1,60.0,150.0,0.1) );
+			HeaterOn = new JSpinner( new SpinnerNumberModel(75.1,10.0,150.0,0.1) );
 			HeaterOn.addChangeListener(MemSettingsListener);
 			HeaterOnLabel=new JLabel ("Turn on at (\u00b0F): ",JLabel.TRAILING);
 			Heater[a].add(HeaterOnLabel);
@@ -4367,7 +4400,7 @@ public class Wizard  implements Tool, MessageConsumer {
 
 			JLabel HeaterOffLabel=null;
 			JSpinner HeaterOff;
-			HeaterOff = new JSpinner( new SpinnerNumberModel(76.1,60.0,150.0,0.1) );
+			HeaterOff = new JSpinner( new SpinnerNumberModel(76.1,10.0,150.0,0.1) );
 			HeaterOff.addChangeListener(MemSettingsListener);
 			HeaterOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
 			Heater[a].add(HeaterOffLabel);
@@ -4397,7 +4430,7 @@ public class Wizard  implements Tool, MessageConsumer {
 			JSpinner ChillerOn;
 			JLabel ChillerOnLabel=null;
 			ChillerOnLabel=new JLabel ("Turn on at (\u00b0F): ",JLabel.TRAILING);
-			ChillerOn = new JSpinner( new SpinnerNumberModel(78.1,60.0,150.0,0.1) );
+			ChillerOn = new JSpinner( new SpinnerNumberModel(78.1,10.0,150.0,0.1) );
 			ChillerOn.addChangeListener(MemSettingsListener);
 			Chiller[a].add(ChillerOnLabel);
 			Chiller[a].add(ChillerOn);
@@ -4409,7 +4442,7 @@ public class Wizard  implements Tool, MessageConsumer {
 			JLabel ChillerOffLabel=null;
 			JSpinner ChillerOff;
 			ChillerOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
-			ChillerOff = new JSpinner( new SpinnerNumberModel(77.1,60.0,150.0,0.1) );
+			ChillerOff = new JSpinner( new SpinnerNumberModel(77.1,10.0,150.0,0.1) );
 			ChillerOff.addChangeListener(MemSettingsListener);
 			Chiller[a].add(ChillerOffLabel);
 			Chiller[a].add(ChillerOff);		
@@ -4725,6 +4758,11 @@ public class Wizard  implements Tool, MessageConsumer {
 			Opposite[a].add(OppositeLabelOn);
 			JComboBox OppositeOn;
 			OppositeOn = new JComboBox();
+			for (int j=1;j<=8;j++)
+				OppositeOn.addItem("Main Box Port "+j);
+			for (int j=1;j<=8;j++)
+				OppositeOn.addItem("Expansion Box Port "+j);
+			OppositeOn.setSelectedIndex(0);
 			Opposite[a].add(OppositeOn);
 
 			ApplyLayout(Opposite[a],Oppositelayout);	        
@@ -5372,6 +5410,8 @@ public class Wizard  implements Tool, MessageConsumer {
 		Buzzermods.add(new JCheckBox ("Overheat"));
 		Buzzermods.add(new JCheckBox ("ATO Timeout"));
 		Buzzermods.add(new JCheckBox ("High ATO is activated"));
+		for (int a=0;a<6;a++)
+			Buzzermods.add(new JCheckBox ("I/O Channel " + a + " is activated"));
 
 		// TODO: BuildSettings
 	}
@@ -5760,16 +5800,16 @@ public class Wizard  implements Tool, MessageConsumer {
 				jL.setText("Turn on at (\u00b0F): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0F): ");
-				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(75.1,60.0,150.0,0.1));
-				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
-				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(76.1,60.0,150.0,0.1));
-				jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(2);
+//				jS.setModel(new SpinnerNumberModel(75.1,60.0,150.0,0.1));
+//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(4);
+//				jS.setModel(new SpinnerNumberModel(76.1,60.0,150.0,0.1));
+//				jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
 			}
 			else
 			{
@@ -5777,16 +5817,16 @@ public class Wizard  implements Tool, MessageConsumer {
 				jL.setText("Turn on at (\u00b0C): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0C): ");
-				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(25.1,10.0,50.0,0.1));
-				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
-				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(26.1,10.0,50.0,0.1));
-				jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(2);
+//				jS.setModel(new SpinnerNumberModel(25.1,10.0,50.0,0.1));
+//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(4);
+//				jS.setModel(new SpinnerNumberModel(26.1,10.0,50.0,0.1));
+//				jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
 			}
 			j=(JPanel)functionsettings[a].getComponent(3);
 			if (tempunit==0)
@@ -5795,16 +5835,16 @@ public class Wizard  implements Tool, MessageConsumer {
 				jL.setText("Turn on at (\u00b0F): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0F): ");
-				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(79.1,60.0,150.0,0.1));
-				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
-				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(78.1,60.0,150.0,0.1));
-				jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(2);
+//				jS.setModel(new SpinnerNumberModel(79.1,60.0,150.0,0.1));
+//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(4);
+//				jS.setModel(new SpinnerNumberModel(78.1,60.0,150.0,0.1));
+//				jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
 			}
 			else
 			{
@@ -5812,16 +5852,16 @@ public class Wizard  implements Tool, MessageConsumer {
 				jL.setText("Turn on at (\u00b0C): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0C): ");
-				jS=(JSpinner)j.getComponent(2);
-				jS.setModel(new SpinnerNumberModel(28.1,10.0,50.0,0.1));
-				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
-				jS=(JSpinner)j.getComponent(4);
-				jS.setModel(new SpinnerNumberModel(27.1,10.0,50.0,0.1));
-				jo = (JSpinner.NumberEditor )jS.getEditor();
-				jo.getTextField().setColumns(5);
-				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(2);
+//				jS.setModel(new SpinnerNumberModel(28.1,10.0,50.0,0.1));
+//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
+//				jS=(JSpinner)j.getComponent(4);
+//				jS.setModel(new SpinnerNumberModel(27.1,10.0,50.0,0.1));
+//				jo = (JSpinner.NumberEditor )jS.getEditor();
+//				jo.getTextField().setColumns(5);
+//				jo.getFormat().applyPattern("###0.0");  
 			}
 		}
 	}
@@ -6199,37 +6239,32 @@ public class Wizard  implements Tool, MessageConsumer {
 					{
 						prevwindow="Welcome";
 						nextwindow="Memory Settings";
+						loadInitialValues();
 					}
 					
 					if (swindow.indexOf("Memory Settings")==0)
 					{
 						prevwindow="Welcome";
 						nextwindow="Temperature Settings";
-						JRadioButton j = (JRadioButton) memsettings.getComponent(1);
+						JRadioButton j = (JRadioButton) memsettings.getComponent(0);
 						if (j.isSelected())
 						{
 							for (int a=1;a<=16;a++)
 							{
-								WM[a].getComponent(2).setEnabled(false);
-								((JRadioButton)WM[a].getComponent(1)).setSelected(true);
-								WM[a].getComponent(5).setVisible(false);
-								WM[a].getComponent(6).setVisible(false);
-								((JLabel)WM[a].getComponent(3)).setText("Cycle every (s): ");
-
+								WM[a].getComponent(2).setEnabled(true);
 							}
 						}
 						else
 						{
 							for (int a=1;a<=16;a++)
 							{
-								WM[a].getComponent(2).setEnabled(true);
-								((JRadioButton)WM[a].getComponent(1)).setSelected(true);
-								WM[a].getComponent(5).setVisible(false);
-								WM[a].getComponent(6).setVisible(false);
-								((JLabel)WM[a].getComponent(3)).setText("Cycle every (s): ");
+								if (a<=8) Title.SetText ("Main Relay Box - Port "+a);
+								if (a>8) Title.SetText ("Expansion Relay Box - Port "+(a-8));
+								WM[a].getComponent(2).setEnabled(false);
+								setSelectedButton(WM[a],1);
 							}
+							Title.SetText ("Memory Settings");
 						}
-
 					}
 					
 					if (swindow.indexOf("Temperature Settings")==0)
@@ -6251,14 +6286,20 @@ public class Wizard  implements Tool, MessageConsumer {
 							for (int a=1;a<=16;a++)
 							{
 								JComboBox c=(JComboBox) Opposite[a].getComponent(2);
-								c.removeAllItems();
-								for (int b=1;b<=8;b++)
+								int oldindex = c.getSelectedIndex();
+								if (oldindex==-1) oldindex=0;
+								if (c.getItemCount()!=16)
 								{
-									c.addItem("Main Box Port "+b);
-								}
-								for (int b=1;b<=8;b++)
-								{
-									c.addItem("Exp. Box Port "+b);
+									c.removeAllItems();
+									for (int b=1;b<=8;b++)
+									{
+										c.addItem("Main Box Port "+b);
+									}
+									for (int b=1;b<=8;b++)
+									{
+										c.addItem("Exp. Box Port "+b);
+									}
+									c.setSelectedIndex(oldindex);
 								}
 							}
 						}	
@@ -6268,10 +6309,17 @@ public class Wizard  implements Tool, MessageConsumer {
 							for (int a=1;a<=8;a++)
 							{
 								JComboBox c=(JComboBox) Opposite[a].getComponent(2);
-								c.removeAllItems();
-								for (int b=1;b<=8;b++)
+								if (c.getItemCount()!=8)
 								{
-									c.addItem("Main Box Port "+b);
+									int oldindex = c.getSelectedIndex();
+									if (oldindex>8) oldindex-=8;
+									if (oldindex==-1) oldindex=0;
+									c.removeAllItems();
+									for (int b=1;b<=8;b++)
+									{
+										c.addItem("Main Box Port "+b);
+									}
+									c.setSelectedIndex(oldindex);
 								}
 							}
 						}
@@ -6286,25 +6334,19 @@ public class Wizard  implements Tool, MessageConsumer {
 						if (jc.isSelected()) ioexpansion=1; else ioexpansion=0;
 						jc=(JCheckBox) expansionmods.getComponent(5);
 						if (jc.isSelected()) orpexpansion=1; else orpexpansion=0;
+						jc=(JCheckBox) expansionmods.getComponent(6);
+						if (jc.isSelected()) phexpansion=1; else phexpansion=0;
 						if (ioexpansion==1)
 						{
-							Buzzermods.removeAll();
-							Buzzermods.add(new JCheckBox ("Overheat"));
-							Buzzermods.add(new JCheckBox ("ATO Timeout"));
-							Buzzermods.add(new JCheckBox ("High ATO is activated"));
-							Buzzermods.add(new JCheckBox ("I/O Channel 0 is activated"));
-							Buzzermods.add(new JCheckBox ("I/O Channel 1 is activated"));
-							Buzzermods.add(new JCheckBox ("I/O Channel 2 is activated"));
-							Buzzermods.add(new JCheckBox ("I/O Channel 3 is activated"));
-							Buzzermods.add(new JCheckBox ("I/O Channel 4 is activated"));
-							Buzzermods.add(new JCheckBox ("I/O Channel 5 is activated"));
+							for (int a=0;a<9;a++)
+								Buzzermods.getComponent(a).setVisible(true);
 						}
 						else
 						{
-							Buzzermods.removeAll();
-							Buzzermods.add(new JCheckBox ("Overheat"));
-							Buzzermods.add(new JCheckBox ("ATO Timeout"));
-							Buzzermods.add(new JCheckBox ("High ATO is activated"));
+							for (int a=0;a<3;a++)
+								Buzzermods.getComponent(a).setVisible(true);
+							for (int a=3;a<9;a++)
+								Buzzermods.getComponent(a).setVisible(false);
 						}	
 					}
 
@@ -6588,24 +6630,7 @@ public class Wizard  implements Tool, MessageConsumer {
 						JRadioButton jpwmba = (JRadioButton) actinicpwm.getComponent(3);
 						buzzer=jpwmba.isSelected() || jpwmbd.isSelected();
 						if (dimmingexpansion==0)
-						{
-							nextwindow="Aqua Illumination Port";
-							if (ailed==0)
-							{
-								nextwindow="Vortech Mode";
-								if (rfexpansion==0)
-								{
-									nextwindow="Wifi Attachment";
-									if (wifi==0) 
-									{
-										nextwindow="Buzzer";
-										if (buzzer==false) nextwindow="Ready to Generate";
-										JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-										if (j.isSelected()) nextwindow="Upload Memory Settings";
-									}
-								}
-							}
-						}						
+							CheckNextAI();
 					}
 					
 					if (swindow.indexOf("Dimming Expansion Channel 0")==0)
@@ -6761,7 +6786,6 @@ public class Wizard  implements Tool, MessageConsumer {
 						}
 						if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
 						{
-							nextwindow="Aqua Illumination Port";
 							JRadioButton jpwmbd = (JRadioButton) daylightpwm.getComponent(3);
 							JRadioButton jpwmba = (JRadioButton) actinicpwm.getComponent(3);
 							JRadioButton jpwmb0 = (JRadioButton) exppwm[0].getComponent(3);
@@ -6771,21 +6795,7 @@ public class Wizard  implements Tool, MessageConsumer {
 							JRadioButton jpwmb4 = (JRadioButton) exppwm[4].getComponent(3);
 							JRadioButton jpwmb5 = (JRadioButton) exppwm[5].getComponent(3);
 							buzzer=jpwmba.isSelected() || jpwmbd.isSelected() || jpwmb0.isSelected() || jpwmb1.isSelected() || jpwmb2.isSelected() || jpwmb3.isSelected() || jpwmb4.isSelected() || jpwmb5.isSelected();
-							if (ailed==0)
-							{
-								nextwindow="Vortech Mode";
-								if (rfexpansion==0)
-								{
-									nextwindow="Wifi Attachment";
-									if (wifi==0) 
-									{
-										nextwindow="Buzzer";
-										if (buzzer==false) nextwindow="Ready to Generate";
-										JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-										if (j.isSelected()) nextwindow="Upload Memory Settings";
-									}
-								}
-							}
+							CheckNextAI();
 						}
 						else
 						{
@@ -6797,7 +6807,6 @@ public class Wizard  implements Tool, MessageConsumer {
 					if (swindow.indexOf("Dimming Channel 5 Settings")==0)
 					{
 						prevwindow="Dimming Expansion Channel 5";
-						nextwindow="Aqua Illumination Port";
 						JRadioButton jpwmbd = (JRadioButton) daylightpwm.getComponent(3);
 						JRadioButton jpwmba = (JRadioButton) actinicpwm.getComponent(3);
 						JRadioButton jpwmb0 = (JRadioButton) exppwm[0].getComponent(3);
@@ -6807,21 +6816,7 @@ public class Wizard  implements Tool, MessageConsumer {
 						JRadioButton jpwmb4 = (JRadioButton) exppwm[4].getComponent(3);
 						JRadioButton jpwmb5 = (JRadioButton) exppwm[5].getComponent(3);
 						buzzer=jpwmba.isSelected() || jpwmbd.isSelected() || jpwmb0.isSelected() || jpwmb1.isSelected() || jpwmb2.isSelected() || jpwmb3.isSelected() || jpwmb4.isSelected() || jpwmb5.isSelected();
-						if (ailed==0)
-						{
-							nextwindow="Vortech Mode";
-							if (rfexpansion==0)
-							{
-								nextwindow="Wifi Attachment";
-								if (wifi==0) 
-								{
-									nextwindow="Buzzer";
-									if (buzzer==false) nextwindow="Ready to Generate";
-									JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-									if (j.isSelected()) nextwindow="Upload Memory Settings";
-								}
-							}
-						}
+						CheckNextAI();
 					}
 
 					if (swindow.indexOf("Aqua Illumination Port")==0)
@@ -6829,32 +6824,7 @@ public class Wizard  implements Tool, MessageConsumer {
 						JRadioButton jah =(JRadioButton) aiport.getComponent(1);
 						if (jah.isSelected()) atohigh=true;
 						Buzzermods.getComponent(2).setEnabled(!atohigh);
-						if (dimmingexpansion==0)
-						{
-							if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
-							{
-								prevwindow="Actinic Dimming Channel";
-							}
-							else
-							{
-								CheckActinicPWM();
-								prevwindow="Actinic Dimming Settings";
-							}
-						}
-						else
-						{
-							if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
-							{
-								prevwindow="Dimming Expansion Channel 5";
-
-							}
-							else
-							{
-								CheckExpPWM();
-								prevwindow="Dimming Channel 5 Settings";
-							}
-						}
-						nextwindow="AI - White Channel";
+						CheckPrevDimming();
 					}
 					
 					if (swindow.indexOf("AI - White Channel")==0)
@@ -6920,18 +6890,7 @@ public class Wizard  implements Tool, MessageConsumer {
 						}
 						if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
 						{
-							nextwindow="Vortech Mode";
-							if (rfexpansion==0)
-							{
-								nextwindow="Wifi Attachment";
-								if (wifi==0) 
-								{
-									nextwindow="Buzzer";
-									if (buzzer==false) nextwindow="Ready to Generate";
-									JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-									if (j.isSelected()) nextwindow="Upload Memory Settings";
-								}
-							}
+							CheckNextRF();
 						}
 						else
 						{
@@ -6943,63 +6902,13 @@ public class Wizard  implements Tool, MessageConsumer {
 					if (swindow.indexOf("AI - Royal Blue Settings")==0)
 					{
 						prevwindow="AI - Royal Blue Channel";
-						nextwindow="Vortech Mode";
-						if (rfexpansion==0)
-						{
-							nextwindow="Wifi Attachment";
-							if (wifi==0) 
-							{
-								nextwindow="Buzzer";
-								if (buzzer==false) nextwindow="Ready to Generate";
-								JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-								if (j.isSelected()) nextwindow="Upload Memory Settings";
-							}
-						}
+						CheckNextRF();
 					}
 					
 					if (swindow.indexOf("Vortech Mode")==0)
 					{
 						
-						if (ailed==0)
-						{
-							if (dimmingexpansion==0)
-							{
-								if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
-								{
-									prevwindow="Actinic Dimming Channel";
-								}
-								else
-								{
-									CheckActinicPWM();
-									prevwindow="Actinic Dimming Settings";
-								}
-							}
-							else
-							{
-								if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
-								{
-									prevwindow="Dimming Expansion Channel 5";
-
-								}
-								else
-								{
-									CheckExpPWM();
-									prevwindow="Dimming Channel 5 Settings";
-								}
-							}
-						}
-						else
-						{
-							if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
-							{
-								prevwindow="AI - Royal Blue Channel";
-							}		
-							else
-							{
-								CheckAIPWM();
-								prevwindow="AI - Royal Blue Settings";
-							}
-						}
+						CheckPrevAI();
 						nextwindow="Radion White Channel";
 					}
 					
@@ -7148,14 +7057,7 @@ public class Wizard  implements Tool, MessageConsumer {
 						}
 						if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
 						{
-							nextwindow="Wifi Attachment";
-							if (wifi==0) 
-							{
-								nextwindow="Buzzer";
-								if (buzzer==false) nextwindow="Ready to Generate";
-								JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-								if (j.isSelected()) nextwindow="Upload Memory Settings";
-							}
+							CheckNextWifi();
 						}
 						else
 						{
@@ -7167,143 +7069,18 @@ public class Wizard  implements Tool, MessageConsumer {
 					if (swindow.indexOf("Radion Intensity Settings")==0)
 					{
 						prevwindow="Radion Intensity Channel";
-						nextwindow="Wifi Attachment";
-						if (wifi==0) 
-						{
-							nextwindow="Buzzer";
-							if (buzzer==false) nextwindow="Ready to Generate";
-							JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-							if (j.isSelected()) nextwindow="Upload Memory Settings";
-						}
+						CheckNextWifi();
 					}
 					
 					if (swindow.indexOf("Wifi Attachment")==0)
 					{
-						if (rfexpansion==0)
-						{
-							if (ailed==0)
-							{
-								if (dimmingexpansion==0)
-								{
-									if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
-									{
-										prevwindow="Actinic Dimming Channel";
-									}
-									else
-									{
-										CheckActinicPWM();
-										prevwindow="Actinic Dimming Settings";
-									}
-								}
-								else
-								{
-									if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
-									{
-										prevwindow="Dimming Expansion Channel 5";
-
-									}
-									else
-									{
-										CheckExpPWM();
-										prevwindow="Dimming Channel 5 Settings";
-									}
-								}
-							}
-							else
-							{
-								if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
-								{
-									prevwindow="AI - Royal Blue Channel";
-								}		
-								else
-								{
-									CheckAIPWM();
-									prevwindow="AI - Royal Blue Settings";
-								}
-							}
-						}
-						else
-						{
-							if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
-							{
-								prevwindow="Radion Intensity Channel";
-							}		
-							else
-							{
-								CheckRFPWM();
-								prevwindow="Radion Intensity Settings";
-							}							
-						}
-						nextwindow="Buzzer";
-						if (buzzer==false) nextwindow="Ready to Generate";
-						JRadioButton j = (JRadioButton) memsettings.getComponent(1);
-						if (j.isSelected()) nextwindow="Upload Memory Settings";
+						CheckPrevRF();
+						CheckNextBuzzer();
 					}					
 					
 					if (swindow.indexOf("Buzzer")==0)
 					{
-						if (wifi==0)
-						{
-							if (rfexpansion==0)
-							{
-								if (ailed==0)
-								{
-									if (dimmingexpansion==0)
-									{
-										if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
-										{
-											prevwindow="Actinic Dimming Channel";
-										}
-										else
-										{
-											CheckActinicPWM();
-											prevwindow="Actinic Dimming Settings";
-										}
-									}
-									else
-									{
-										if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
-										{
-											prevwindow="Dimming Expansion Channel 5";
-
-										}
-										else
-										{
-											CheckExpPWM();
-											prevwindow="Dimming Channel 5 Settings";
-										}
-									}
-								}
-								else
-								{
-									if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
-									{
-										prevwindow="AI - Royal Blue Channel";
-									}		
-									else
-									{
-										CheckAIPWM();
-										prevwindow="AI - Royal Blue Settings";
-									}
-								}
-							}
-							else
-							{
-								if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
-								{
-									prevwindow="Radion Intensity Channel";
-								}		
-								else
-								{
-									CheckRFPWM();
-									prevwindow="Radion Intensity Settings";
-								}							
-							}
-						}		
-						else
-						{
-							prevwindow="Wifi Attachment";
-						}
+						CheckPrevWifi();
 						nextwindow="Ready to Generate";
 						JRadioButton j = (JRadioButton) memsettings.getComponent(1);
 						if (j.isSelected()) nextwindow="Upload Memory Settings";
@@ -7312,75 +7089,7 @@ public class Wizard  implements Tool, MessageConsumer {
 					
 					if (swindow.indexOf("Upload Memory Settings")==0)
 					{
-						if (buzzer==false)
-						{
-							if (wifi==0)
-							{
-								if (rfexpansion==0)
-								{
-									if (ailed==0)
-									{
-										if (dimmingexpansion==0)
-										{
-											if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
-											{
-												prevwindow="Actinic Dimming Channel";
-											}
-											else
-											{
-												CheckActinicPWM();
-												prevwindow="Actinic Dimming Settings";
-											}
-										}
-										else
-										{
-											if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
-											{
-												prevwindow="Dimming Expansion Channel 5";
-
-											}
-											else
-											{
-												CheckExpPWM();
-												prevwindow="Dimming Channel 5 Settings";
-											}
-										}
-									}
-									else
-									{
-										if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
-										{
-											prevwindow="AI - Royal Blue Channel";
-										}		
-										else
-										{
-											CheckAIPWM();
-											prevwindow="AI - Royal Blue Settings";
-										}
-									}
-								}
-								else
-								{
-									if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
-									{
-										prevwindow="Radion Intensity Channel";
-									}		
-									else
-									{
-										CheckRFPWM();
-										prevwindow="Radion Intensity Settings";
-									}							
-								}
-							}		
-							else
-							{
-								prevwindow="Wifi Attachment";
-							}											
-						}
-						else
-						{
-							prevwindow="Buzzer";
-						}
+						CheckPrevBuzzer();
 						nextwindow="Uploading Memory Settings";
 					}
 	
@@ -7388,87 +7097,16 @@ public class Wizard  implements Tool, MessageConsumer {
 					{
 						JRadioButton j = (JRadioButton) memsettings.getComponent(0);
 						if (j.isSelected())
-						{
-							if (buzzer==false)
-							{
-								if (wifi==0)
-								{
-									if (rfexpansion==0)
-									{
-										if (ailed==0)
-										{
-											if (dimmingexpansion==0)
-											{
-												if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
-												{
-													prevwindow="Actinic Dimming Channel";
-												}
-												else
-												{
-													CheckActinicPWM();
-													prevwindow="Actinic Dimming Settings";
-												}
-											}
-											else
-											{
-												if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
-												{
-													prevwindow="Dimming Expansion Channel 5";
-
-												}
-												else
-												{
-													CheckExpPWM();
-													prevwindow="Dimming Channel 5 Settings";
-												}
-											}
-										}
-										else
-										{
-											if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
-											{
-												prevwindow="AI - Royal Blue Channel";
-											}		
-											else
-											{
-												CheckAIPWM();
-												prevwindow="AI - Royal Blue Settings";
-											}
-										}
-									}
-									else
-									{
-										if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
-										{
-											prevwindow="Radion Intensity Channel";
-										}		
-										else
-										{
-											CheckRFPWM();
-											prevwindow="Radion Intensity Settings";
-										}							
-									}
-								}		
-								else
-								{
-									prevwindow="Wifi Attachment";
-								}											
-							}
-							else
-							{
-								prevwindow="Buzzer";
-							}							
-						}
+							CheckPrevBuzzer();						
 						else
-						{
 							prevwindow="Upload Memory Settings";
-						}
 						nextwindow="Uploading Code";
 					}
 					
 					if (aButton.getText()=="Cancel" || aButton.getText()=="Exit")
 					{
 						ReturnLF();
+						saveInitialValues();
 						frame.setVisible(false);
 					}
 					else if (aButton.getText()=="Prev")
@@ -7491,6 +7129,7 @@ public class Wizard  implements Tool, MessageConsumer {
 					{
 						ConstructCode();
 						ReturnLF();
+						saveInitialValues();
 						frame.setVisible(false);						
 					}
 					else if (aButton.getText()=="Generate and Upload")
@@ -7635,6 +7274,129 @@ public class Wizard  implements Tool, MessageConsumer {
 		}
 	}
 
+	
+	public void CheckPrevDimming()
+	{
+		if (dimmingexpansion==0)
+		{
+			if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
+			{
+				prevwindow="Actinic Dimming Channel";
+			}
+			else
+			{
+				CheckActinicPWM();
+				prevwindow="Actinic Dimming Settings";
+			}
+		}
+		else
+		{
+			if (((JRadioButton) exppwm[5].getComponent(2)).isSelected() || ((JRadioButton) exppwm[5].getComponent(3)).isSelected() || ((JRadioButton) exppwm[5].getComponent(4)).isSelected())
+			{
+				prevwindow="Dimming Expansion Channel 5";
+
+			}
+			else
+			{
+				CheckExpPWM();
+				prevwindow="Dimming Channel 5 Settings";
+			}
+		}		
+	}
+	
+	public void CheckPrevAI()
+	{
+		if (ailed==0)
+		{
+			CheckPrevDimming();
+		}
+		else
+		{
+			if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
+			{
+				prevwindow="AI - Royal Blue Channel";
+			}		
+			else
+			{
+				CheckAIPWM();
+				prevwindow="AI - Royal Blue Settings";
+			}
+		}
+		
+	}
+	
+	public void CheckNextAI()
+	{
+		nextwindow="Aqua Illumination Port";
+		if (ailed==0)
+			CheckNextRF();
+	}
+	
+	public void CheckNextRF()
+	{
+		nextwindow="Vortech Mode";
+		if (rfexpansion==0)
+			CheckNextWifi();
+	}
+	
+	public void CheckPrevRF()
+	{
+		if (rfexpansion==0)
+		{
+			CheckPrevAI();
+		}
+		else
+		{
+			if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
+			{
+				prevwindow="Radion Intensity Channel";
+			}		
+			else
+			{
+				CheckRFPWM();
+				prevwindow="Radion Intensity Settings";
+			}							
+		}		
+	}
+	
+	public void CheckNextWifi()
+	{
+		nextwindow="Wifi Attachment";
+		if (wifi==0) 
+			CheckNextBuzzer();		
+	}
+	
+	public void CheckPrevWifi()
+	{
+		if (wifi==0)
+		{
+			CheckPrevRF();
+		}		
+		else
+		{
+			prevwindow="Wifi Attachment";
+		}		
+	}
+	
+	public void CheckNextBuzzer()
+	{
+		nextwindow="Buzzer";
+		if (buzzer==false)
+		{
+			nextwindow="Ready to Generate";
+			JRadioButton j = (JRadioButton) memsettings.getComponent(1);
+			if (j.isSelected()) nextwindow="Upload Memory Settings";
+		}
+	}
+	
+	public void CheckPrevBuzzer()
+	{
+		if (buzzer==false)
+			CheckPrevWifi();											
+		else
+			prevwindow="Buzzer";
+	}
+	
 	public class Inside extends JPanel {
 		JCustomEditorPane t;
 		
@@ -7718,7 +7480,438 @@ public class Wizard  implements Tool, MessageConsumer {
 		}
 	}
 
+	public static class Preferences {
+//		  static Hashtable defaults;
+		  static Hashtable table = new Hashtable();
+		  static File preferencesFile=new File (Base.getSketchbookFolder().getPath() +"/tools/Wizard/data/wizard.ini");
+		  
+		  static protected void init(String commandLinePrefs) {
 
+			  try {
+				  load(new FileInputStream(preferencesFile));
+			  } catch (Exception e) {
+			  }
+
+			  String platformExt = "." + PConstants.platformNames[PApplet.platform];
+			  int platformExtLength = platformExt.length();
+			  Enumeration e = table.keys();
+			  while (e.hasMoreElements()) {
+				  String key = (String) e.nextElement();
+				  if (key.endsWith(platformExt)) {
+					  // this is a key specific to a particular platform
+					  String actualKey = key.substring(0, key.length() - platformExtLength);
+					  String value = get(key);
+					  table.put(actualKey, value);
+				  }
+			  }
+		  }    
+			  
+		  
+		  static protected void load(InputStream input) throws IOException {
+			  load(input, table);
+		  }
+
+		  static public void load(InputStream input, Map table) throws IOException {  
+			  String[] lines = PApplet.loadStrings(input);  // Reads as UTF-8
+			  for (String line : lines) {
+				  if ((line.length() == 0) ||
+						  (line.charAt(0) == '#')) continue;
+
+				  // this won't properly handle = signs being in the text
+				  int equals = line.indexOf('=');
+				  if (equals != -1) {
+					  String key = line.substring(0, equals).trim();
+					  String value = line.substring(equals + 1).trim();
+					  table.put(key, value);
+				  }
+			  }
+		  }
+
+		  static protected void save() {
+			  //		    try {
+			  // on startup, don't worry about it
+			  // this is trying to update the prefs for who is open
+			  // before Preferences.init() has been called.
+			  if (preferencesFile == null) return;
+
+			  // Fix for 0163 to properly use Unicode when writing preferences.txt
+			  PrintWriter writer = PApplet.createWriter(preferencesFile);
+
+			  Enumeration e = table.keys(); //properties.propertyNames();
+			  while (e.hasMoreElements()) {
+				  String key = (String) e.nextElement();
+				  writer.println(key + "=" + ((String) table.get(key)));
+			  }
+
+			  writer.flush();
+			  writer.close();
+
+			  //		    } catch (Exception ex) {
+			  //		      Base.showWarning(null, "Error while saving the settings file", ex);
+			  //		    }
+		  }
+
+
+		  // .................................................................
+
+
+		  // all the information from preferences.txt
+
+		  //static public String get(String attribute) {
+		  //return get(attribute, null);
+		  //}
+
+		  static public String get(String attribute /*, String defaultValue */) {
+			  return (String) table.get(attribute);
+			  /*
+		    //String value = (properties != null) ?
+		    //properties.getProperty(attribute) : applet.getParameter(attribute);
+		    String value = properties.getProperty(attribute);
+
+		    return (value == null) ?
+		      defaultValue : value;
+			   */
+		  }		  
+
+		  static public void set(String attribute, String value) {
+			  table.put(attribute, value);
+		  }
+
+		  static public boolean getBoolean(String attribute) {
+			  String value = get(attribute); //, null);
+			  return (new Boolean(value)).booleanValue();
+
+			  /*
+			      supposedly not needed, because anything besides 'true'
+			      (ignoring case) will just be false.. so if malformed -> false
+			    if (value == null) return defaultValue;
+
+			    try {
+			      return (new Boolean(value)).booleanValue();
+			    } catch (NumberFormatException e) {
+			      System.err.println("expecting an integer: " + attribute + " = " + value);
+			    }
+			    return defaultValue;
+			   */
+		  }
+
+
+		  static public void setBoolean(String attribute, boolean value) {
+			  set(attribute, value ? "true" : "false");
+		  }		 
+		  
+		  static public int getInteger(String attribute /*, int defaultValue*/) {
+			  return Integer.parseInt(get(attribute));
+
+			  /*
+			    String value = get(attribute, null);
+			    if (value == null) return defaultValue;
+
+			    try {
+			      return Integer.parseInt(value);
+			    } catch (NumberFormatException e) {
+			      // ignored will just fall through to returning the default
+			      System.err.println("expecting an integer: " + attribute + " = " + value);
+			    }
+			    return defaultValue;
+			    //if (value == null) return defaultValue;
+			    //return (value == null) ? defaultValue :
+			    //Integer.parseInt(value);
+			   */
+		  }
+
+
+		  static public void setInteger(String key, int value) {
+			  set(key, String.valueOf(value));
+		  }		  
+
+		  static public Double getDouble(String attribute /*, int defaultValue*/) {
+			  return Double.parseDouble(get(attribute));
+
+			  /*
+			    String value = get(attribute, null);
+			    if (value == null) return defaultValue;
+
+			    try {
+			      return Integer.parseInt(value);
+			    } catch (NumberFormatException e) {
+			      // ignored will just fall through to returning the default
+			      System.err.println("expecting an integer: " + attribute + " = " + value);
+			    }
+			    return defaultValue;
+			    //if (value == null) return defaultValue;
+			    //return (value == null) ? defaultValue :
+			    //Integer.parseInt(value);
+			   */
+		  }
+
+
+		  static public void setDouble(String key, Double value) {
+			  set(key, String.valueOf(value));
+		  }				  
+	}
+	public void loadInitialValues()
+	{
+		setSelected(memsettings,"memsettings");
+		setSelected(disptemp,"disptemp");
+		setDouble(Overheat,"Overheat");
+		relayexpansion=setChecked(expansionmods.getComponent(0),"relayexpansion");
+		dimmingexpansion=setChecked(expansionmods.getComponent(1),"dimmingexpansion");
+		rfexpansion=setChecked(expansionmods.getComponent(2),"rfexpansion");
+		salinityexpansion=setChecked(expansionmods.getComponent(3),"salinityexpansion");
+		ioexpansion=setChecked(expansionmods.getComponent(4),"ioexpansion");
+		orpexpansion=setChecked(expansionmods.getComponent(5),"orpexpansion");
+		phexpansion=setChecked(expansionmods.getComponent(6),"phexpansion");
+		wifi=setChecked(attachmentmods.getComponent(0),"wifi");
+		ailed=setChecked(attachmentmods.getComponent(1),"ailed");
+		for (int a=1;a<16;a++)
+		{
+			if (a<=8) Title.SetText ("Main Relay Box - Port "+a);
+			if (a>8) Title.SetText ("Expansion Relay Box - Port "+(a-8));
+			setSelected(functions[a],"functions"+a);
+			if (Preferences.getBoolean("portfeeding"+a)) ((JCheckBox)ports[a].getComponent(0)).setSelected(true);
+			if (Preferences.getBoolean("portwaterchange"+a)) ((JCheckBox)ports[a].getComponent(1)).setSelected(true);
+			if (Preferences.getBoolean("portlights"+a)) ((JCheckBox)ports[a].getComponent(2)).setSelected(true);
+			if (Preferences.getBoolean("portoverheat"+a)) ((JCheckBox)ports[a].getComponent(3)).setSelected(true);
+			setTime((JSpinner)Timed[a].getComponent(2),"TimedOn"+a);
+			setTime((JSpinner)Timed[a].getComponent(4),"TimedOff"+a);
+			setInteger((JSpinner)Timed[a].getComponent(6),"TimedDelayed"+a);
+			setSelected(TimedMemory[a],"TimedMemory"+a);
+			setTime((JSpinner)TimedMemorySettings[a].getComponent(2),"TimedMemorySettingsOn"+a);
+			setTime((JSpinner)TimedMemorySettings[a].getComponent(4),"TimedMemorySettingsOff"+a);
+			setInteger((JSpinner)TimedMemorySettings[a].getComponent(6),"TimedMemorySettingsDelayed"+a);
+			setInteger((JSpinner)TimedMemorySettings[a].getComponent(8),"TimedMemorySettingsActinicOffset"+a);
+			setDouble((JSpinner)Heater[a].getComponent(2),"HeaterOn"+a);
+			setDouble((JSpinner)Heater[a].getComponent(4),"HeaterOff"+a);
+			setDouble((JSpinner)Chiller[a].getComponent(2),"ChillerOn"+a);
+			setDouble((JSpinner)Chiller[a].getComponent(4),"ChillerOff"+a);
+			setSelected(ATO[a],"ATO"+a);
+			setInteger((JSpinner)ATO[a].getComponent(5),"ATOTimeout"+a);
+			setSelected(WM[a],"WM"+a);
+			setInteger((JSpinner)WM[a].getComponent(4),"WMTimer"+a);
+			setInteger((JSpinner)WM[a].getComponent(6),"WMTimerR"+a);
+			setDouble((JSpinner)CO2Control[a].getComponent(2),"CO2ControlOn"+a);
+			setDouble((JSpinner)CO2Control[a].getComponent(4),"CO2ControlOff"+a);
+			setDouble((JSpinner)pHControl[a].getComponent(2),"pHControlOn"+a);
+			setDouble((JSpinner)pHControl[a].getComponent(4),"pHControlOff"+a);
+			setInteger((JSpinner)Dosing[a].getComponent(2),"DPInterval"+a);
+			setInteger((JSpinner)Dosing[a].getComponent(4),"DPTimer"+a);
+			setInteger((JSpinner)Dosing[a].getComponent(6),"DPOffset"+a);
+			setInteger((JSpinner)Delayed[a].getComponent(2),"Delayed"+a);
+			if (Preferences.get("Opposite"+a)!=null) ((JComboBox)Opposite[a].getComponent(2)).setSelectedIndex(Preferences.getInteger("Opposite"+a));
+		}		
+		setSelected(daylightpwm,"daylightpwm");
+		setTime((JSpinner)daylightpwmsettings.getComponent(2),"daylightpwmon");
+		setTime((JSpinner)daylightpwmsettings.getComponent(4),"daylightpwmoff");
+		setInteger((JSpinner)daylightpwmsettings.getComponent(8),"daylightpwmstart");
+		setInteger((JSpinner)daylightpwmsettings.getComponent(10),"daylightpwmend");
+		setInteger((JSpinner)daylightpwmsettings.getComponent(14),"daylightpwmduration");
+		setSelected(actinicpwm,"actinicpwm");
+		setTime((JSpinner)actinicpwmsettings.getComponent(2),"actinicpwmon");
+		setTime((JSpinner)actinicpwmsettings.getComponent(4),"actinicpwmoff");
+		setInteger((JSpinner)actinicpwmsettings.getComponent(8),"actinicpwmstart");
+		setInteger((JSpinner)actinicpwmsettings.getComponent(10),"actinicpwmend");
+		setInteger((JSpinner)actinicpwmsettings.getComponent(14),"actinicpwmduration");
+		for (int a=0;a<9;a++)
+			if (Preferences.getBoolean("buzzermod"+a)) ((JCheckBox)Buzzermods.getComponent(a)).setSelected(true);
+		for (int a=0;a<6;a++)
+		{
+			setSelected(exppwm[a],"exppwm"+a);
+			setTime((JSpinner)exppwmsettings[a].getComponent(2),"exppwm"+a+"on");
+			setTime((JSpinner)exppwmsettings[a].getComponent(4),"exppwm"+a+"off");
+			setInteger((JSpinner)exppwmsettings[a].getComponent(8),"exppwm"+a+"start");
+			setInteger((JSpinner)exppwmsettings[a].getComponent(10),"exppwm"+a+"end");
+			setInteger((JSpinner)exppwmsettings[a].getComponent(14),"exppwm"+a+"duration");
+		}
+		setSelected(aiport,"aiport");
+		for (int a=0;a<3;a++)
+		{
+			setSelected(aipwm[a],"aipwm"+a);
+			setTime((JSpinner)aipwmsettings[a].getComponent(2),"aipwm"+a+"on");
+			setTime((JSpinner)aipwmsettings[a].getComponent(4),"aipwm"+a+"off");
+			setInteger((JSpinner)aipwmsettings[a].getComponent(8),"aipwm"+a+"start");
+			setInteger((JSpinner)aipwmsettings[a].getComponent(10),"aipwm"+a+"end");
+			setInteger((JSpinner)aipwmsettings[a].getComponent(14),"aipwm"+a+"duration");
+		}
+		if (Preferences.get("RFmodsMode")!=null) ((JComboBox)RFmods.getComponent(1)).setSelectedIndex(Preferences.getInteger("RFmodsMode"));
+		setInteger((JSpinner)RFmods.getComponent(3),"RFmodsSpeed");
+		setInteger((JSpinner)RFmods.getComponent(5),"RFmodsDuration");
+		for (int a=0;a<6;a++)
+		{
+			setSelected(rfpwm[a],"rfpwm"+a);
+			setTime((JSpinner)rfpwmsettings[a].getComponent(2),"rfpwm"+a+"on");
+			setTime((JSpinner)rfpwmsettings[a].getComponent(4),"rfpwm"+a+"off");
+			setInteger((JSpinner)rfpwmsettings[a].getComponent(8),"rfpwm"+a+"start");
+			setInteger((JSpinner)rfpwmsettings[a].getComponent(10),"rfpwm"+a+"end");
+			setInteger((JSpinner)rfpwmsettings[a].getComponent(14),"rfpwm"+a+"duration");
+		}
+		((JTextField) wifiportal.getComponent(1)).setText(Preferences.get("wifiportal"));
+		Title.SetText("Memory Settings");
+	}
+	
+	public void saveInitialValues()
+	{
+		SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
+		 
+		Preferences.setInteger("memsettings", getSelected(memsettings));
+		Preferences.setInteger("disptemp", getSelected(disptemp));
+		Preferences.setDouble("Overheat",(Double)Overheat.getValue());
+		Preferences.setInteger("relayexpansion", relayexpansion);
+		Preferences.setInteger("dimmingexpansion", dimmingexpansion);
+		Preferences.setInteger("rfexpansion", rfexpansion);
+		Preferences.setInteger("salinityexpansion", salinityexpansion);
+		Preferences.setInteger("ioexpansion", ioexpansion);
+		Preferences.setInteger("orpexpansion", orpexpansion);
+		Preferences.setInteger("phexpansion", phexpansion);
+		Preferences.setInteger("wifi", wifi);
+		Preferences.setInteger("ailed", ailed);
+		for (int a=1;a<16;a++)
+		{
+			Preferences.setInteger("functions"+a, getSelected(functions[a]));
+			Preferences.setBoolean("portfeeding"+a, ((JCheckBox)ports[a].getComponent(0)).isSelected());
+			Preferences.setBoolean("portwaterchange"+a, ((JCheckBox)ports[a].getComponent(1)).isSelected());
+			Preferences.setBoolean("portlights"+a, ((JCheckBox)ports[a].getComponent(2)).isSelected());
+			Preferences.setBoolean("portoverheat"+a, ((JCheckBox)ports[a].getComponent(3)).isSelected());
+			Preferences.set("TimedOn"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(2)).getValue()));
+			Preferences.set("TimedOff"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(4)).getValue()));
+			Preferences.set("TimedDelayed"+a, ((JSpinner)Timed[a].getComponent(6)).getValue().toString());
+			Preferences.setInteger("TimedMemory"+a, getSelected(TimedMemory[a]));
+			Preferences.set("TimedMemorySettingsOn"+a, formatter.format((Date)((JSpinner)TimedMemorySettings[a].getComponent(2)).getValue()));
+			Preferences.set("TimedMemorySettingsOff"+a, formatter.format((Date)((JSpinner)TimedMemorySettings[a].getComponent(4)).getValue()));
+			Preferences.set("TimedMemorySettingsDelayed"+a, ((JSpinner)TimedMemorySettings[a].getComponent(6)).getValue().toString());
+			Preferences.set("TimedMemorySettingsActinicOffset"+a, ((JSpinner)TimedMemorySettings[a].getComponent(8)).getValue().toString());
+			Preferences.set("HeaterOn"+a, ((JSpinner)Heater[a].getComponent(2)).getValue().toString());
+			Preferences.set("HeaterOff"+a, ((JSpinner)Heater[a].getComponent(4)).getValue().toString());
+			Preferences.set("ChillerOn"+a, ((JSpinner)Chiller[a].getComponent(2)).getValue().toString());
+			Preferences.set("ChillerOff"+a, ((JSpinner)Chiller[a].getComponent(4)).getValue().toString());
+			Preferences.setInteger("ATO"+a, getSelected(ATO[a]));
+			Preferences.set("ATOTimeout"+a, ((JSpinner)ATO[a].getComponent(5)).getValue().toString());
+			Preferences.setInteger("WM"+a, getSelected(WM[a]));
+			Preferences.set("WMTimer"+a, ((JSpinner)WM[a].getComponent(4)).getValue().toString());
+			Preferences.set("WMTimerR"+a, ((JSpinner)WM[a].getComponent(6)).getValue().toString());
+			Preferences.set("CO2ControlOn"+a, ((JSpinner)CO2Control[a].getComponent(2)).getValue().toString());
+			Preferences.set("CO2ControlOff"+a, ((JSpinner)CO2Control[a].getComponent(4)).getValue().toString());
+			Preferences.set("pHControlOn"+a, ((JSpinner)pHControl[a].getComponent(2)).getValue().toString());
+			Preferences.set("pHControlOff"+a, ((JSpinner)pHControl[a].getComponent(4)).getValue().toString());
+			Preferences.set("DPInterval"+a, ((JSpinner)Dosing[a].getComponent(2)).getValue().toString());
+			Preferences.set("DPTimer"+a, ((JSpinner)Dosing[a].getComponent(4)).getValue().toString());
+			Preferences.set("DPOffset"+a, ((JSpinner)Dosing[a].getComponent(6)).getValue().toString());
+			Preferences.set("Delayed"+a, ((JSpinner)Delayed[a].getComponent(2)).getValue().toString());
+			Preferences.setInteger("Opposite"+a, ((JComboBox)Opposite[a].getComponent(2)).getSelectedIndex());
+		}
+		Preferences.setInteger("daylightpwm", getSelected(daylightpwm));
+		Preferences.set("daylightpwmon", formatter.format((Date)((JSpinner)daylightpwmsettings.getComponent(2)).getValue()));
+		Preferences.set("daylightpwmoff", formatter.format((Date)((JSpinner)daylightpwmsettings.getComponent(4)).getValue()));
+		Preferences.set("daylightpwmstart", ((JSpinner)daylightpwmsettings.getComponent(8)).getValue().toString());
+		Preferences.set("daylightpwmend", ((JSpinner)daylightpwmsettings.getComponent(10)).getValue().toString());
+		Preferences.set("daylightpwmduration", ((JSpinner)daylightpwmsettings.getComponent(14)).getValue().toString());
+		Preferences.setInteger("actinicpwm", getSelected(actinicpwm));
+		Preferences.set("actinicpwmon", formatter.format((Date)((JSpinner)actinicpwmsettings.getComponent(2)).getValue()));
+		Preferences.set("actinicpwmoff", formatter.format((Date)((JSpinner)actinicpwmsettings.getComponent(4)).getValue()));
+		Preferences.set("actinicpwmstart", ((JSpinner)actinicpwmsettings.getComponent(8)).getValue().toString());
+		Preferences.set("actinicpwmend", ((JSpinner)actinicpwmsettings.getComponent(10)).getValue().toString());
+		Preferences.set("actinicpwmduration", ((JSpinner)actinicpwmsettings.getComponent(14)).getValue().toString());
+		for (int a=0;a<9;a++)
+			Preferences.setBoolean("buzzermod"+a,((JCheckBox)Buzzermods.getComponent(a)).isSelected());
+		for (int a=0;a<6;a++)
+		{
+			Preferences.setInteger("exppwm"+a, getSelected(exppwm[a]));
+			Preferences.set("exppwm"+a+"on", formatter.format((Date)((JSpinner)exppwmsettings[a].getComponent(2)).getValue()));
+			Preferences.set("exppwm"+a+"off", formatter.format((Date)((JSpinner)exppwmsettings[a].getComponent(4)).getValue()));
+			Preferences.set("exppwm"+a+"start", ((JSpinner)exppwmsettings[a].getComponent(8)).getValue().toString());
+			Preferences.set("exppwm"+a+"end", ((JSpinner)exppwmsettings[a].getComponent(10)).getValue().toString());
+			Preferences.set("exppwm"+a+"duration", ((JSpinner)exppwmsettings[a].getComponent(14)).getValue().toString());
+		}
+		Preferences.setInteger("aiport", getSelected(aiport));
+		for (int a=0;a<3;a++)
+		{
+			Preferences.setInteger("aipwm"+a, getSelected(aipwm[a]));
+			Preferences.set("aipwm"+a+"on", formatter.format((Date)((JSpinner)aipwmsettings[a].getComponent(2)).getValue()));
+			Preferences.set("aipwm"+a+"off", formatter.format((Date)((JSpinner)aipwmsettings[a].getComponent(4)).getValue()));
+			Preferences.set("aipwm"+a+"start", ((JSpinner)aipwmsettings[a].getComponent(8)).getValue().toString());
+			Preferences.set("aipwm"+a+"end", ((JSpinner)aipwmsettings[a].getComponent(10)).getValue().toString());
+			Preferences.set("aipwm"+a+"duration", ((JSpinner)aipwmsettings[a].getComponent(14)).getValue().toString());
+		}
+		Preferences.setInteger("RFmodsMode", ((JComboBox)RFmods.getComponent(1)).getSelectedIndex());
+		Preferences.set("RFmodsSpeed", ((JSpinner)RFmods.getComponent(3)).getValue().toString());
+		Preferences.set("RFmodsDuration", ((JSpinner)RFmods.getComponent(5)).getValue().toString());
+		for (int a=0;a<6;a++)
+		{
+			Preferences.setInteger("rfpwm"+a, getSelected(rfpwm[a]));
+			Preferences.set("rfpwm"+a+"on", formatter.format((Date)((JSpinner)rfpwmsettings[a].getComponent(2)).getValue()));
+			Preferences.set("rfpwm"+a+"off", formatter.format((Date)((JSpinner)rfpwmsettings[a].getComponent(4)).getValue()));
+			Preferences.set("rfpwm"+a+"start", ((JSpinner)rfpwmsettings[a].getComponent(8)).getValue().toString());
+			Preferences.set("rfpwm"+a+"end", ((JSpinner)rfpwmsettings[a].getComponent(10)).getValue().toString());
+			Preferences.set("rfpwm"+a+"duration", ((JSpinner)rfpwmsettings[a].getComponent(14)).getValue().toString());
+		}
+		Preferences.set("wifiportal",((JTextField) wifiportal.getComponent(1)).getText());
+		Preferences.save();
+	}
+	
+	public int getSelected(JPanel j)
+	{
+		int r=-1;
+		for (int a=0;a<j.getComponentCount();a++)
+			if (j.getComponent(a) instanceof JRadioButton)
+				if (((JRadioButton)j.getComponent(a)).isSelected()) 
+					r=a;
+		return r;
+	}
+	
+	public void setSelected(JPanel j,String p)
+	{
+		if (Preferences.get(p)!=null)
+		{
+			if (Integer.parseInt(Preferences.get(p))>=0)
+			{
+				((JRadioButton)j.getComponent(Integer.parseInt(Preferences.get(p)))).setSelected(true);
+				ActionEvent e = new ActionEvent(j.getComponent(Integer.parseInt(Preferences.get(p))),0,"Test");
+				for(ActionListener al: ((JRadioButton) j.getComponent(Integer.parseInt(Preferences.get(p)))).getActionListeners()){
+					al.actionPerformed(e);
+				}
+			}
+		}
+	}
+	
+	public void setDouble(JSpinner j,String p)
+	{
+		if (Preferences.get(p)!=null)
+		{
+			j.setValue( new Double(Preferences.get(p)));
+		}
+	}	
+	
+	public void setInteger(JSpinner j,String p)
+	{
+		if (Preferences.get(p)!=null)
+		{
+			j.setValue( new Integer(Preferences.get(p)));
+		}
+	}	
+
+	public int setChecked(Component j, String p)
+	{
+		int r=0;
+		if (Preferences.get(p)!=null)
+			r=Preferences.getInteger(p);
+			if (r!=0) ((JCheckBox)j).setSelected(true);
+		return r;
+	}
+	
+	public void setTime(JSpinner j,String p)
+	{
+		if (Preferences.get(p)!=null)
+		{
+			SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
+			try {
+				Date date = (Date)formatter.parse(Preferences.get(p));
+				j.setValue(date);
+			} catch (ParseException e) {
+				Title.SetText("Memory Settings");
+				e.printStackTrace();
+			}  
+		}		
+	}
 }
 
 
