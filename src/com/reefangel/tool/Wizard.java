@@ -237,7 +237,7 @@ int id=0;
 		"This function turns on/off at specific times of the day. Example of devices that may use this function are light fixtures, refugium light, moonlight, powerheads and fans. Delayed Start is useful for MH ballasts.",
 		"This function turns on/off at specific temperatures. Example of device that may use this function is an electric heater.",
 		"This function turns on/off at specific temperatures. Example of devices that may use this function are fans, blowers, chillers and coolers.",
-		"This function turns on/off according to the state of one or more float switches. For more information on each ATO type, please visit ",
+		"This function turns on/off according to the state of one or more float switches. For more information on each ATO type, please check out the online guide at <a href='http://forum.reefangel.com/viewtopic.php?f=7&t=240'>ATO Float Switch Guide</a>.",
 		"This function turns on/off on a cycle at every specific or random number of seconds. Example of devices that may use this function are powerheads and circulation pumps.",
 		"This function turns on/off at specific pH readings. The device that uses this function must lower pH. Example of device that may use this function is a calcium reactor.",
 		"This function turns on/off at specific pH readings. The device that uses this function must increase pH. Example of device that may use this function is a Kalk based Doser.",
