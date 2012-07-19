@@ -19,7 +19,7 @@
  * Boston, MA  02111-1307  USA
  * 
  * @author		Reef Angel http://www.reefangel.com
- * @modified	07/01/2012
+ * @modified	07/18/2012
  * @version		##version##
  */
 
@@ -451,731 +451,6 @@ int id=0;
 			}
 
 		});
-//		window=101;
-////TODO
-//		while(window<100)
-//		{
-//			switch (window)
-//			{
-//			case 1:
-//				//				window += ShowWelcome();
-//				break;
-//			case 2:
-//				//				window += ShowMemorySettings();
-//				break;
-//			case 3:
-//				//				window += ShowTemperature();
-//				ResetTempRange();
-//				break;
-//			case 4:
-////				window += ShowExpansion();
-//				JCheckBox jc=null;
-//				jc=(JCheckBox) expansionmods.getComponent(0);
-//				if (jc.isSelected())
-//				{
-//					relayexpansion=1;
-//					for (int a=1;a<=16;a++)
-//					{
-//						JComboBox c=(JComboBox) Opposite[a].getComponent(2);
-//						c.removeAllItems();
-//						for (int b=1;b<=8;b++)
-//						{
-//							c.addItem("Main Box Port "+b);
-//						}
-//						for (int b=1;b<=8;b++)
-//						{
-//							c.addItem("Exp. Box Port "+b);
-//						}
-//					}
-//				}	
-//				else
-//				{
-//					relayexpansion=0;
-//					for (int a=1;a<=8;a++)
-//					{
-//						JComboBox c=(JComboBox) Opposite[a].getComponent(2);
-//						c.removeAllItems();
-//						for (int b=1;b<=8;b++)
-//						{
-//							c.addItem("Main Box Port "+b);
-//						}
-//					}
-//				}
-//
-//				jc=(JCheckBox) expansionmods.getComponent(1);
-//				if (jc.isSelected()) dimmingexpansion=1; else dimmingexpansion=0;
-//				jc=(JCheckBox) expansionmods.getComponent(2);
-//				if (jc.isSelected()) rfexpansion=1; else rfexpansion=0;
-//				jc=(JCheckBox) expansionmods.getComponent(3);
-//				if (jc.isSelected()) salinityexpansion=1; else salinityexpansion=0;
-//				jc=(JCheckBox) expansionmods.getComponent(4);
-//				if (jc.isSelected()) ioexpansion=1; else ioexpansion=0;
-//				jc=(JCheckBox) expansionmods.getComponent(5);
-//				if (jc.isSelected()) orpexpansion=1; else orpexpansion=0;
-//				if (ioexpansion==1)
-//				{
-//					Buzzermods= new JPanel();
-//					Buzzermods.setLayout(new BoxLayout( Buzzermods, BoxLayout.PAGE_AXIS));
-//					Buzzermods.add(new JCheckBox ("Overheat"));
-//					Buzzermods.add(new JCheckBox ("ATO Timeout"));
-//					Buzzermods.add(new JCheckBox ("High ATO is activated"));
-//					Buzzermods.add(new JCheckBox ("I/O Channel 0 is activated"));
-//					Buzzermods.add(new JCheckBox ("I/O Channel 1 is activated"));
-//					Buzzermods.add(new JCheckBox ("I/O Channel 2 is activated"));
-//					Buzzermods.add(new JCheckBox ("I/O Channel 3 is activated"));
-//					Buzzermods.add(new JCheckBox ("I/O Channel 4 is activated"));
-//					Buzzermods.add(new JCheckBox ("I/O Channel 5 is activated"));
-//				}
-//				else
-//				{
-//					Buzzermods= new JPanel();
-//					Buzzermods.setLayout(new BoxLayout( Buzzermods, BoxLayout.PAGE_AXIS));
-//					Buzzermods.add(new JCheckBox ("Overheat"));
-//					Buzzermods.add(new JCheckBox ("ATO Timeout"));
-//					Buzzermods.add(new JCheckBox ("High ATO is activated"));
-//				}
-//
-//				break;
-//			case 5:
-////				window += ShowAttachment();
-//				jc=null;
-//				jc=(JCheckBox) attachmentmods.getComponent(0);
-//				if (jc.isSelected()) wifi=1; else wifi=0;
-//				jc=(JCheckBox) attachmentmods.getComponent(1);
-//				if (jc.isSelected()) ailed=1; else ailed=0;
-//
-//				break;
-//			case 6:
-////				window += ShowRelays();
-//				break;
-//			case 7:
-//			{
-//				int r=0;
-////				int relaystatus=ShowRelaySetup();
-//				int relaystatus=0;
-//				switch (relaystatus)
-//				{
-//				case -1:
-//					if (relay-- == 1) 
-//					{
-//						relay=1;
-//						window--;					
-//					}
-//					r=0;
-//					if (relayexpansion==1 && relay==8)
-//					{
-//						relay++;
-////						r = ShowRelays();
-//					}
-//					if (r==-1)
-//						relay=8;
-//					if (r==100) window+=r;
-//
-//					break;
-//				case 1:
-//					r=0;
-//					if (relay++ == 16) window++;
-//					if (relayexpansion==0 && relay==9) window++;
-////					if (relayexpansion==1 && relay==9) r = ShowRelays();
-//					if (r==-1)
-//						relay=8;
-//					if (r==100) window+=r;
-//					break;
-//				case 100:
-//					window+=100;
-//					return;
-//				default:
-//					JOptionPane.showMessageDialog(editor,
-//							"Error Code: " + relaystatus,
-//							"Error",JOptionPane.ERROR_MESSAGE);
-//					window+=100;
-//					return;
-//				}
-//
-//				atolow=false;
-//				atohigh=false;
-//				for (int a=1;a<=16;a++)
-//				{
-//					ATO[a].getComponent(1).setEnabled(true);
-//					ATO[a].getComponent(2).setEnabled(true);
-//					ATO[a].getComponent(3).setEnabled(true);
-//					functions[a].getComponent(3).setEnabled(true);
-//				}				
-//
-//				for (int a=1;a<=16;a++)
-//				{
-//					JRadioButton AOn = (JRadioButton) functions[a].getComponent(3);
-//					if (AOn.isSelected())
-//					{
-//						JRadioButton jat=(JRadioButton) ATO[a].getComponent(1);
-//						if (jat.isSelected())
-//						{
-//							atolow=true;
-//							atohigh=true;
-//						}
-//						jat=(JRadioButton) ATO[a].getComponent(2);
-//						if (jat.isSelected()) atolow=true;
-//						jat=(JRadioButton) ATO[a].getComponent(3);
-//						if (jat.isSelected()) atohigh=true;
-//					}
-//				}
-//				if (atolow || atohigh)
-//				{
-//					for (int a=1;a<=16;a++)
-//					{
-//						JRadioButton AOn = (JRadioButton) functions[a].getComponent(3);
-//						if (!AOn.isSelected())
-//						{
-//							AOn.setEnabled(false);
-//						}
-//					}
-//				}
-//
-//				break;
-//			}
-//
-//			case 8:
-////				atolow=false;
-////				atohigh=false;
-////				for (int a=1;a<=16;a++)
-////				{
-////					JRadioButton AOn = (JRadioButton) functions[a].getComponent(3);
-////					if (AOn.isSelected())
-////					{
-////						JRadioButton jat=(JRadioButton) ATO[a].getComponent(1);
-////						if (jat.isSelected())
-////						{
-////							atolow=true;
-////							atohigh=true;
-////						}
-////						jat=(JRadioButton) ATO[a].getComponent(2);
-////						if (jat.isSelected()) atolow=true;
-////						jat=(JRadioButton) ATO[a].getComponent(3);
-////						if (jat.isSelected()) atohigh=true;
-////					}
-////				}
-////				aiport.getComponent(0).setEnabled(!atolow);
-////				if (!atolow && atohigh)
-////				{
-////					JRadioButton jatc=(JRadioButton) aiport.getComponent(0);
-////					jatc.setSelected(true);
-////				}
-////				aiport.getComponent(1).setEnabled(!atohigh);
-////				if (atolow && !atohigh)
-////				{
-////					JRadioButton jatc=(JRadioButton) aiport.getComponent(1);
-////					jatc.setSelected(true);
-////				}
-////				Buzzermods.getComponent(2).setEnabled(!atohigh);
-////				window += ShowPWM("Daylight",daylightpwm);
-//				if (window==9)
-//				{
-//					JRadioButton jpwm = (JRadioButton) daylightpwm.getComponent(0);
-//
-//					if (jpwm.isSelected())
-//					{
-//						JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-//						if (jb.isSelected())
-//						{
-////							int i=ShowPWMSettings("Daylight",daylightpwmsettings,daylightpwm);
-////							if (i!=1) window+=i;
-//						}
-//					}
-//
-//					jpwm = (JRadioButton) daylightpwm.getComponent(1);
-//					if (jpwm.isSelected())
-//					{
-//						JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-//						if (jb.isSelected())
-//						{
-////							int i=ShowPWMSettings("Daylight",daylightpwmsettings,daylightpwm);
-////							if (i!=1) window+=i;
-//						}
-//					}
-//				}
-//				if (window==7)
-//				{
-//					if (relayexpansion==0) relay=8;
-//					if (relayexpansion==1) relay=16;
-//				}
-//				break;
-//			case 9:
-////				window += ShowPWM("Actinic",actinicpwm);
-//				if (window==10)
-//				{
-//					JRadioButton jpwm = (JRadioButton) actinicpwm.getComponent(0);
-//
-//					if (jpwm.isSelected())
-//					{
-//						JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-//						if (jb.isSelected())
-//						{
-////							int i=ShowPWMSettings("Actinic",actinicpwmsettings,actinicpwm);
-////							if (i!=1) window+=i;
-//						}
-//					}
-//
-//					jpwm = (JRadioButton) actinicpwm.getComponent(1);
-//					if (jpwm.isSelected())
-//					{
-//						JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-//						if (jb.isSelected())
-//						{
-////							int i=ShowPWMSettings("Actinic",actinicpwmsettings,actinicpwm);
-////							if (i!=1) window+=i;
-//						}
-//					}
-//
-//					JRadioButton jpwmbd = (JRadioButton) daylightpwm.getComponent(3);
-//					JRadioButton jpwmba = (JRadioButton) actinicpwm.getComponent(3);
-//					buzzer=jpwmba.isSelected() || jpwmbd.isSelected();
-//					if (dimmingexpansion==0)
-//					{
-//						window++;
-//						if (ailed==0)
-//						{
-//							window+=2;
-//							if (rfexpansion==0)
-//							{
-//								window+=2;
-//								if (wifi==0) 
-//								{
-//									window++;
-//									if (buzzer==false) window++;
-//								}
-//							}
-//						}
-//					}
-//				}
-//				if (window==8)
-//				{
-//					if (relayexpansion==0) relay=8;
-//					if (relayexpansion==1) relay=16;
-//				}
-//				break;
-//			case 10:
-//				while (w<100)
-//				{
-////					int wr = ShowExpPWM("Channel "+w,exppwm[w]);
-////					int ws = 0;
-////					if (wr==1)
-////					{
-////						JRadioButton jpwm0 = (JRadioButton) exppwm[w].getComponent(0);
-////						JRadioButton jpwm1 = (JRadioButton) exppwm[w].getComponent(1);
-////						JRadioButton jpwm2 = (JRadioButton) exppwm[w].getComponent(2);
-////						JRadioButton jpwm3 = (JRadioButton) exppwm[w].getComponent(3);
-////						JRadioButton jpwm4 = (JRadioButton) exppwm[w].getComponent(4);
-////
-////						if (jpwm0.isSelected())
-////						{
-////							JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-////							if (jb.isSelected())
-////								ws=ShowExpPWMSettings("Channel "+w,exppwmsettings[w],exppwm[w]);
-////							else
-////								w++;
-////						}
-////
-////						if (jpwm1.isSelected())
-////						{
-////							JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-////							if (jb.isSelected())
-////								ws=ShowExpPWMSettings("Channel "+w,exppwmsettings[w],exppwm[w]);
-////							else
-////								w++;
-////						}
-////						if (jpwm2.isSelected()) w++;
-////						if (jpwm3.isSelected()) w++;
-////						if (jpwm4.isSelected()) w++;
-////
-////						if (ws==1) w++;
-////						if (ws==100) w+=100;
-////					}
-////					if (wr==-1)
-////					{
-////						w--;
-////					}
-////					if (wr==100)
-////					{
-////						w=100;
-////						window=100;
-////						break;
-////					}
-////					if (w<0)
-////					{
-////						w=0;
-////						window--;
-////						break;
-////
-////					}
-////					if (w>=100)
-////					{
-////						w=100;
-////						window=100;
-////						break;
-////					}						
-//					if (w>5)
-//					{
-//						window++;
-//						JRadioButton jpwmbd = (JRadioButton) daylightpwm.getComponent(3);
-//						JRadioButton jpwmba = (JRadioButton) actinicpwm.getComponent(3);
-//						JRadioButton jpwmb0 = (JRadioButton) exppwm[0].getComponent(3);
-//						JRadioButton jpwmb1 = (JRadioButton) exppwm[1].getComponent(3);
-//						JRadioButton jpwmb2 = (JRadioButton) exppwm[2].getComponent(3);
-//						JRadioButton jpwmb3 = (JRadioButton) exppwm[3].getComponent(3);
-//						JRadioButton jpwmb4 = (JRadioButton) exppwm[4].getComponent(3);
-//						JRadioButton jpwmb5 = (JRadioButton) exppwm[5].getComponent(3);
-//						buzzer=jpwmba.isSelected() || jpwmbd.isSelected() || jpwmb0.isSelected() || jpwmb1.isSelected() || jpwmb2.isSelected() || jpwmb3.isSelected() || jpwmb4.isSelected() || jpwmb5.isSelected();
-//						if (ailed==0)
-//						{
-//							window+=2;
-//							if (rfexpansion==0)
-//							{
-//								window+=2;
-//								if (wifi==0) 
-//								{
-//									window++;
-//									if (buzzer==false) window++;
-//								}
-//							}
-//						}
-//						w=100;
-//					}
-//				}
-//				break;
-//			case 11:
-////				window+=ShowAIPort();
-//				if (window==10)
-//					if (dimmingexpansion==0)
-//					{
-//						window--;
-//					}
-//					else
-//					{
-//						w=5;
-//					}
-//				if (window==12) wa=0;
-//				JRadioButton jah =(JRadioButton) aiport.getComponent(1);
-//				if (jah.isSelected()) atohigh=true;
-//				Buzzermods.getComponent(2).setEnabled(!atohigh);
-//				break;
-//			case 12:
-//				while (wa<100)
-//				{
-////					int wr = ShowAIPWM(AIChannels[wa],aipwm[wa]);
-////					int ws = 0;
-////					if (wr==1)
-////					{
-////						JRadioButton jpwm0 = (JRadioButton) aipwm[wa].getComponent(0);
-////						JRadioButton jpwm1 = (JRadioButton) aipwm[wa].getComponent(1);
-////						JRadioButton jpwm2 = (JRadioButton) aipwm[wa].getComponent(2);
-////						JRadioButton jpwm3 = (JRadioButton) aipwm[wa].getComponent(3);
-////
-////						if (jpwm0.isSelected())
-////						{
-////							JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-////							if (jb.isSelected())
-////								ws=ShowAIPWMSettings(AIChannels[wa],aipwmsettings[wa],aipwm[wa]);
-////							else
-////								wa++;
-////						}
-////
-////						if (jpwm1.isSelected())
-////						{
-////							JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-////							if (jb.isSelected())
-////								ws=ShowAIPWMSettings(AIChannels[wa],aipwmsettings[wa],aipwm[wa]);
-////							else
-////								wa++;
-////						}
-////						if (jpwm2.isSelected()) wa++;
-////						if (jpwm3.isSelected()) wa++;
-////
-////						if (ws==1) wa++;
-////						if (ws==100) wa+=100;
-////					}
-////					if (wr==-1)
-////					{
-////						wa--;
-////					}
-////					if (wr==100)
-////					{
-////						wa=100;
-////						window=100;
-////						break;
-////					}
-////					if (wa<0)
-////					{
-////						wa=0;
-////						window--;
-////						break;
-////
-////					}
-////					if (wa>=100)
-////					{
-////						wa=100;
-////						window=100;
-////						break;
-////					}						
-////					if (wa>=AIChannels.length)
-////					{
-////						window++;
-////						if (rfexpansion==0)
-////						{
-////							window+=2;
-////							if (wifi==0) 
-////							{
-////								window++;
-////								if (buzzer==false) window++;
-////							}
-////						}
-////
-////						wa=100;
-////					}
-//				}
-//				break;
-//			case 13:
-//				JRadioButton jb = (JRadioButton) memsettings.getComponent(0);
-//				if (jb.isSelected())
-//					window+=0;//ShowVortech();
-//				else
-//					window++;
-//				if (window==12)
-//				{
-//					if (ailed==0)
-//					{
-//						window-=2;
-//						if (dimmingexpansion==0)
-//						{
-//							window--;
-//						}
-//						else
-//						{
-//							w=5;
-//						}
-//
-//					}
-//					else
-//					{
-//						wa=2;
-//					}
-//				}
-//				if (window==14) wra=0;
-//				break;
-//			case 14:
-//				while (wra<100)
-//				{
-//					int wr = 1;//ShowRFPWM(RadionChannels[wra],rfpwm[wra]);
-//					int ws = 0;
-//					if (wr==1)
-//					{
-//						JRadioButton jpwm0 = (JRadioButton) rfpwm[wra].getComponent(0);
-//						JRadioButton jpwm1 = (JRadioButton) rfpwm[wra].getComponent(1);
-//						JRadioButton jpwm2 = (JRadioButton) rfpwm[wra].getComponent(2);
-//						JRadioButton jpwm3 = (JRadioButton) rfpwm[wra].getComponent(3);
-//
-//						if (jpwm0.isSelected())
-//						{
-//							JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
-//							if (jb1.isSelected())
-//								ws=1;//ShowRFPWMSettings(RadionChannels[wra],rfpwmsettings[wra],rfpwm[wra]);
-//							else
-//								wra++;
-//						}
-//
-//						if (jpwm1.isSelected())
-//						{
-//							JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
-//							if (jb1.isSelected())
-//								ws=1;//ShowRFPWMSettings(RadionChannels[wra],rfpwmsettings[wra],rfpwm[wra]);
-//							else
-//								wra++;
-//						}
-//						if (jpwm2.isSelected()) wra++;
-//						if (jpwm3.isSelected()) wra++;
-//
-//						if (ws==1) wra++;
-//						if (ws==100) wra+=100;
-//					}
-//					if (wr==-1)
-//					{
-//						wra--;
-//					}
-//					if (wr==100)
-//					{
-//						wra=100;
-//						window=100;
-//						break;
-//					}
-//					if (wra<0)
-//					{
-//						wra=0;
-//						JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
-//						if (jb1.isSelected())
-//						{
-//							window--;
-//						}
-//						else
-//						{
-//							if (ailed==0)
-//							{
-//								window-=4;
-//								if (dimmingexpansion==0)
-//								{
-//									window--;
-//								}
-//								else
-//								{
-//									w=5;
-//								}
-//
-//							}
-//							else
-//							{
-//								window-=2;
-//								wa=2;
-//							}
-//						}
-//						break;
-//					}
-//					if (wra>=100)
-//					{
-//						wra=100;
-//						window=100;
-//						break;
-//					}						
-//					if (wra>=RadionChannels.length)
-//					{
-//						window++;
-//						if (wifi==0) 
-//						{
-//							window++;
-//							if (buzzer==false) window++;
-//						}
-//						wra=100;
-//					}
-//				}
-//				break;
-//			case 15:
-////				window += ShowWifi();	
-//				if (window==14)
-//				{
-//					if (rfexpansion==0)
-//					{
-//						window-=2;
-//						if (ailed==0)
-//						{
-//							window-=2;
-//							if (dimmingexpansion==0)
-//							{
-//								window--;
-//							}
-//							else
-//							{
-//								w=5;
-//							}
-//
-//						}
-//						else
-//						{
-//							wa=2;
-//						}
-//					}
-//					else
-//					{
-//						wra=5;
-//					}
-//				}
-//				if (window==16 && buzzer==false) window++;
-//				break;
-//			case 16:
-////				window+=ShowBuzzer();
-//				if (window==15)
-//				{
-//					if (wifi==0)
-//					{
-//						window--;
-//						if (rfexpansion==0)
-//						{
-//							window-=2;
-//							if (ailed==0)
-//							{
-//								window-=2;
-//								if (dimmingexpansion==0)
-//								{
-//									window--;
-//								}
-//								else
-//								{
-//									w=5;
-//								}
-//
-//							}
-//							else
-//							{
-//								wa=2;
-//							}
-//						}
-//						else
-//						{
-//							wra=5;
-//						}
-//					}
-//				}				
-//				break;
-//			case 17:
-////				window+=ShowGenerate();
-//				if (window==16)
-//				{
-//					if (buzzer==false)
-//					{
-//						window--;
-//						if (wifi==0)
-//						{
-//							window--;
-//							if (rfexpansion==0)
-//							{
-//								window-=2;
-//								if (ailed==0)
-//								{
-//									window-=2;
-//									if (dimmingexpansion==0)
-//									{
-//										window--;
-//									}
-//									else
-//									{
-//										w=5;
-//									}
-//
-//								}
-//								else
-//								{
-//									wa=2;
-//								}
-//							}
-//							else
-//							{
-//								wra=5;
-//							}
-//						}
-//					}
-//				}
-//				break;
-//			case 18:
-//				//TODO: Finish Code
-//				window += 200;
-//				break;
-//			default:
-//				break;
-//			}
-//		}
-//		if (window<200)
-//		{
-//			ReturnLF();
-//			return;
-//		}
-//		ConstructCode();
-//		ReturnLF();
 	}
 
 	private void ConstructCode()
@@ -1393,10 +668,14 @@ int id=0;
 					case 0:
 						if (jb1.isSelected())
 						{
-							d+= "    ReefAngel.StandardLights( " + sp + (a-poffset);
+							JSpinner j = null; 
+							j = (JSpinner) Timed[a].getComponent(6);
+							if ((Integer)j.getValue()>0)
+								d+= "    ReefAngel.MHLights( " + sp + (a-poffset);
+							else
+								d+= "    ReefAngel.StandardLights( " + sp + (a-poffset);
 							d+= ",";
 							Calendar toh= Calendar.getInstance();
-							JSpinner j = null; 
 							java.util.Date dt=null; 
 							j = (JSpinner) Timed[a].getComponent(2);
 							dt = (java.util.Date)j.getValue();
@@ -1408,6 +687,10 @@ int id=0;
 							toh.setTime(dt);
 							d+=toh.get(Calendar.HOUR_OF_DAY) + ",";
 							d+=toh.get(Calendar.MINUTE);
+							j = (JSpinner) Timed[a].getComponent(6);
+							if ((Integer)j.getValue()>0)
+								
+								d+= "," +j.getValue();
 							d+= " );\n";
 						}
 						else
@@ -2582,23 +1865,6 @@ int id=0;
 		j.add(attachmentmods,"attachmentmods");
 
 		insidePanel.add(j,Titles[4]);		
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps = new JLabel("Attachments");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		panel2.add(steps);
-//		JLabel text = new JLabel("<HTML><br>Please select the attachments you have:<br><br></HTML>");
-//		panel2.add(text);
-//		panel2.add(attachmentmods);
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Attachments");
-
 	}	
 
 	private void ShowRelays()
@@ -2626,37 +1892,6 @@ int id=0;
 		j.add(c,"icon");
 
 		insidePanel.add(j,Titles[14]);	
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		if (relay<9)
-//			steps = new JLabel("Main Relay Box");
-//		else
-//			steps = new JLabel("Expansion Relay Box");
-//
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		panel2.add(steps);
-//		JLabel text=null;
-//		if (relay<9)
-//			text = new JLabel("<HTML><br>On the following 8 steps, we are going to be assigning a function for each port<br>on the main relay box.<br><br>Each port number is identified on the picture below.<br><br></HTML>");
-//		else
-//			text = new JLabel("<HTML><br>On the following 8 steps, we are going to be assigning a function for each port<br>on the expansion relay box.<br><br>Each port number is identified on the picture below.<br><br></HTML>");
-//		panel2.add(text);
-//		ImageIcon iconnection = null;
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/relay_small.png");
-//		JLabel c = new JLabel(iconnection);
-//		panel2.add(c);
-//		panel.add(panel2);
-//		if (relay<9)
-//			return NextPrevButton(panel, "Main Relay Box");
-//		else
-//			return NextPrevButton(panel, "Expansion Relay Box");
 	}
 
 	private void ShowRelaySetup()
@@ -2694,46 +1929,6 @@ int id=0;
 
 			insidePanel.add(j,Titles[a+14]);	
 		}			
-		//		JPanel panel = new JPanel();
-//		AddPanelRelay(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		if (relay<9)
-//			steps = new JLabel("Main Relay Box - Port " + relay);
-//		else
-//			steps = new JLabel("Expansion Relay Box - Port " + (relay-8));
-//
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		panel2.add(steps);
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(new JLabel(" "));
-//		JLabel text=null;
-//		if (relay<9)
-//			text = new JLabel("<HTML><br>Choose which function you would like to assign for Port " + relay + " of your main relay box:<br><br></HTML>");
-//		else
-//			text = new JLabel("<HTML><br>Choose which function you would like to assign for Port " + (relay-8) + " of your expansion relay box:<br><br></HTML>");
-//		panel2.add(text);
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//
-//		JPanel functionpanel = new JPanel();
-//		functionpanel.setLayout(new GridLayout( 3,1));
-//		functionpanel.add(functions[relay]);
-//		functionpanel.add(functionsettings[relay]);
-//		functionpanel.add(ports[relay]);
-//		functionpanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-//
-//		panel2.add(functionpanel);
-//		functionpanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-//
-//		panel.add(panel2);
-//		if (relay<9)
-//			return NextPrevButton(panel, "Main Relay Box - Port " + relay);
-//		else
-//			return NextPrevButton(panel, "Expansion Relay Box - Port " + (relay-8));
-
 	}
 	
 	private void ShowPWM()
@@ -2765,82 +1960,10 @@ int id=0;
 //		j.add(actinicpwm1,"pwm1");
 		
 		insidePanel.add(j,Titles[25]);
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Standard " + channel + " Dimming Channel");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//		JLabel text=null;
-//		text = new JLabel("<HTML><br>What type of waveform would you like to use on your " + channel + " dimming channel?<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		ImageIcon iconnection = null;
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_dimming.png");
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//		text = new JLabel("<HTML><br</HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		JPanel jpic = new JPanel(new GridLayout(1,5));
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
-//		JLabel ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabola.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/moon.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		jpic.add(new JLabel(""));
-//		jpic.add(new JLabel(""));
-//
-//
-//		jpic.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpic);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Standard Dimming Channels");
 	}	
 
 	private void ShowPWMSettings()
 	{
-		
-//		JRadioButton jpd=(JRadioButton) daylightpwm.getComponent(0);
-//		if (jpd.isSelected())
-//		{
-//			daylightpwmsettings.getComponent(13).setVisible(true);
-//			daylightpwmsettings.getComponent(14).setVisible(true);
-//			if (jm.isSelected())
-//				i = new Inside("<HTML>Please enter the start %, end %, duration, start time and end time of the slope.<br>This waveform is symetrical on both ends of the cycle.<br><br></HTML>");
-//			else
-//				i = new Inside("<HTML>Please enter the start %, end % and duration of the slope.<br>This waveform is symetrical on both ends of the cycle.<br><br></HTML>");
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slopesettings.png");
-//		}
-//		jpd=(JRadioButton) daylightpwm.getComponent(1);
-//		if (jpd.isSelected())
-//		{
-//			daylightpwmsettings.getComponent(13).setVisible(false);
-//			daylightpwmsettings.getComponent(14).setVisible(false);
-//			if (jm.isSelected())
-//				i = new Inside("<HTML>Please enter the start %, end %, start time and end time of the parabola.<br><br></HTML>");
-//			else
-//				i = new Inside("<HTML>Please enter the start % and end % of the parabola.<br><br></HTML>");
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
-//		}
-
 		daylightpwmsettingspanel = new JPanel();
 		daylightpwmsettingspanel.setOpaque(false);
 		daylightpwmsettingspanel.setLayout(layoutConstraintsManager.createLayout("pwmsettingspaneld", daylightpwmsettingspanel));
@@ -2864,52 +1987,6 @@ int id=0;
 		actinicpwmsettingspanel.add(actinicpwmsettings,"pwma");
 		actinicpwmsettingspanel.add(new JLabel(""),"memlabel");
 		insidePanel.add(actinicpwmsettingspanel,Titles[26]);
-
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Standard " + channel + " Dimming Channel");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//
-//		JLabel text=null;
-//		ImageIcon iconnection = null;
-//		JRadioButton jpd=(JRadioButton) jpwmchoice.getComponent(0);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slopesettings.png");
-//			jpwm.getComponent(13).setVisible(true);
-//			jpwm.getComponent(14).setVisible(true);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start %, end % and duration of the slope.<br>This waveform is symetrical on both ends of the cycle.<br><br></HTML>");
-//		}
-//
-//		jpd=(JRadioButton) jpwmchoice.getComponent(1);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
-//			jpwm.getComponent(13).setVisible(false);
-//			jpwm.getComponent(14).setVisible(false);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start % and end % of the parabola.<br><br></HTML>");
-//		}
-//
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Standard Dimming Channels");
 	}
 	
 
@@ -2931,54 +2008,6 @@ int id=0;
 			
 			insidePanel.add(j,Titles[27+(a*2)]);
 		}
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Dimming Expansion " + channel);
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//		JLabel text=null;
-//		text = new JLabel("<HTML><br>What type of waveform would you like to use on your " + channel + " of your dimming expansion module?<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		ImageIcon iconnection = null;
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_dimming.png");
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//		text = new JLabel("<HTML><br</HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		JPanel jpic = new JPanel(new GridLayout(1,5));
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
-//		JLabel ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabola.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/moon.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		jpic.add(new JLabel(""));
-//		jpic.add(new JLabel(""));
-//
-//
-//		jpic.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpic);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Dimming Expansion Channels");
 	}		
 	
 	private void ShowExpPWMSettings()
@@ -2997,52 +2026,6 @@ int id=0;
 			exppwmsettingspanel[a].add(new JLabel(""),"memlabel");			
 			insidePanel.add(exppwmsettingspanel[a],Titles[28+(a*2)]);
 		}		
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Dimming Expansion " + channel);
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//
-//		JLabel text=null;
-//		ImageIcon iconnection = null;
-//		JRadioButton jpd=(JRadioButton) jpwmchoice.getComponent(0);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slopesettings.png");
-//			jpwm.getComponent(13).setVisible(true);
-//			jpwm.getComponent(14).setVisible(true);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start %, end % and duration of the slope.<br>This waveform is symetrical on both ends of the cycle.<br><br></HTML>");
-//		}
-//
-//		jpd=(JRadioButton) jpwmchoice.getComponent(1);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
-//			jpwm.getComponent(13).setVisible(false);
-//			jpwm.getComponent(14).setVisible(false);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start % and end % of the parabola.<br><br></HTML>");
-//		}
-//
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Dimming Expansion Channels");
 	}	
 	
 	private void ShowAIPort()
@@ -3060,36 +2043,6 @@ int id=0;
 		j.add(aiport,"aiport");
 
 		insidePanel.add(j,Titles[39]);			
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Aqua Illumination Port");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//		JLabel text=null;
-//		text = new JLabel("<HTML><br>Which ATO port would you like to use to communicate with your AI fixture?<br><br>Port choice that has been disabled was assigned to ATO function previously.<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		ImageIcon iconnection = null;
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_ato.png");
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//		text = new JLabel("<HTML><br</HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		aiport.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(aiport);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Aqua Illumination Port");
 	}		
 	
 	private void ShowAIPWM()
@@ -3110,52 +2063,6 @@ int id=0;
 			
 			insidePanel.add(j,Titles[40+(a*2)]);
 		}		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Aqua Illumination " + channel + " Channel");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//		JLabel text=null;
-//		text = new JLabel("<HTML><br>What type of waveform would you like to use on your " + channel + " channel of your Aqua Illumination fixture?<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		ImageIcon iconnection = null;
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ai.png");
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//		text = new JLabel("<HTML><br</HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		JPanel jpic = new JPanel(new GridLayout(1,4));
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
-//		JLabel ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabola.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/moon.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		jpic.add(new JLabel(""));
-//
-//
-//		jpic.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpic);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Aqua Illumination Channels");
 	}		
 
 	private void ShowAIPWMSettings()
@@ -3174,52 +2081,6 @@ int id=0;
 			aisettingspanel[a].add(new JLabel(""),"memlabel");			
 			insidePanel.add(aisettingspanel[a],Titles[41+(a*2)]);
 		}		
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Aqua Illumination " + channel + " Channel");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//
-//		JLabel text=null;
-//		ImageIcon iconnection = null;
-//		JRadioButton jpd=(JRadioButton) jpwmchoice.getComponent(0);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slopesettings.png");
-//			jpwm.getComponent(13).setVisible(true);
-//			jpwm.getComponent(14).setVisible(true);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start %, end % and duration of the slope.<br>This waveform is symetrical on both ends of the cycle.<br><br></HTML>");
-//		}
-//
-//		jpd=(JRadioButton) jpwmchoice.getComponent(1);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
-//			jpwm.getComponent(13).setVisible(false);
-//			jpwm.getComponent(14).setVisible(false);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start % and end % of the parabola.<br><br></HTML>");
-//		}
-//
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Aqua Illumination Channels");
 	}		
 	
 
@@ -3234,25 +2095,6 @@ int id=0;
 		j.add(RFmods,"icon");
 
 		insidePanel.add(j,Titles[46]);	
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps = new JLabel("Vortech Mode");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		panel2.add(steps);
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		JLabel text = new JLabel("<HTML><br>Please choose the default vortech mode:<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		RFmods.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(RFmods);
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "RF Expansion");
 	}		
 	
 
@@ -3273,52 +2115,6 @@ int id=0;
 			
 			insidePanel.add(j,Titles[47+(a*2)]);
 		}		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Ecotech Radion " + channel + " Channel");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//		JLabel text=null;
-//		text = new JLabel("<HTML><br>What type of waveform would you like to use on your " + channel + " channel of your Ecotech Radion fixture?<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		ImageIcon iconnection = null;
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/radion.png");
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//		text = new JLabel("<HTML><br</HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		JPanel jpic = new JPanel(new GridLayout(1,4));
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
-//		JLabel ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabola.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/moon.png");
-//		ic = new JLabel(iconnection);
-//		jpic.add(ic);
-//		jpic.add(new JLabel(""));
-//
-//
-//		jpic.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpic);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Ecotech Radion Channels");
 	}		
 
 	private void ShowRFPWMSettings()
@@ -3338,52 +2134,6 @@ int id=0;
 			rfsettingspanel[a].add(new JLabel(""),"memlabel");			
 			insidePanel.add(rfsettingspanel[a],Titles[48+(a*2)]);
 		}		
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps=null;
-//		steps = new JLabel("Ecotech Radion " + channel + " Channel");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(steps);
-//
-//		JLabel text=null;
-//		ImageIcon iconnection = null;
-//		JRadioButton jpd=(JRadioButton) jpwmchoice.getComponent(0);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slopesettings.png");
-//			jpwm.getComponent(13).setVisible(true);
-//			jpwm.getComponent(14).setVisible(true);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start %, end % and duration of the slope.<br>This waveform is symetrical on both ends of the cycle.<br><br></HTML>");
-//		}
-//
-//		jpd=(JRadioButton) jpwmchoice.getComponent(1);
-//		if (jpd.isSelected())
-//		{
-//			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
-//			jpwm.getComponent(13).setVisible(false);
-//			jpwm.getComponent(14).setVisible(false);
-//			text = new JLabel("<HTML><br>Please enter the start time, end time, start % and end % of the parabola.<br><br></HTML>");
-//		}
-//
-//		JLabel c = new JLabel(iconnection);
-//		c.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(c);
-//
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//
-//		jpwm.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(jpwm);
-//
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Ecotech Radion Channels");
 	}		
 
 	private void ShowWifi()
@@ -3397,25 +2147,6 @@ int id=0;
 		j.add(wifiportal,"icon");
 
 		insidePanel.add(j,Titles[59]);	
-
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps = new JLabel("Portal Settings");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		panel2.add(steps);
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		JLabel text = new JLabel("<HTML><br>Please enter your forum username to send data to the Portal :<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		wifiportal.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(wifiportal);
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Portal Settings");
 	}	
 	
 	private void ShowBuzzer()
@@ -3429,25 +2160,6 @@ int id=0;
 		j.add(Buzzermods,"icon");
 
 		insidePanel.add(j,Titles[60]);	
-		
-//		JPanel panel = new JPanel();
-//
-//		AddPanel(panel);
-//
-//		JPanel panel2 = new JPanel();
-//		panel2.setLayout(new BoxLayout( panel2, BoxLayout.PAGE_AXIS));
-//		JLabel steps = new JLabel("Buzzer Settings");
-//		steps.setForeground(new Color(58,95,205));
-//		steps.setFont(new Font("Arial", Font.BOLD, 24));
-//		panel2.add(steps);
-//		steps.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		JLabel text = new JLabel("<HTML><br>Please choose when to turn buzzer on:<br><br></HTML>");
-//		text.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(text);
-//		Buzzermods.setAlignmentX(Component.LEFT_ALIGNMENT);
-//		panel2.add(Buzzermods);
-//		panel.add(panel2);
-//		return NextPrevButton(panel, "Buzzer Settings");
 	}	
 	private void ShowGenerate()
 	{
@@ -3608,62 +2320,44 @@ int id=0;
 
 	private void AddPanel(JPanel container)
 	{
+    	JPanel panel1 = new JPanel(); 
+    	panel1.setLayout(new BoxLayout( panel1, BoxLayout.PAGE_AXIS));
+    	ImageIcon icon=null;
+		icon = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_small.png");
+		JLabel logo=new JLabel(icon);
+		panel1.add(logo);
+		logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+	    JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");   
+		RA_link.setEditable(false);   
+		RA_link.setOpaque(false);   
+		RA_link.setBorder(BorderFactory.createEmptyBorder()); 
+		RA_link.setBackground(new Color(0,0,0,0)); 
+	    ((HTMLDocument)RA_link.getDocument()).getStyleSheet().addRule(bodyRule);
+	    panel1.add(RA_link);
+	    RA_link.addHyperlinkListener(new HyperlinkListener() {   
+		public void hyperlinkUpdate(HyperlinkEvent hle)
+		{   
+			if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
+			{   
+				if (isBrowsingSupported()) { 
+				      try { 
+				          Desktop desktop = java.awt.Desktop.getDesktop(); 
+				          URI uri = new java.net.URI(hle.getURL().toString()); 
+				          desktop.browse(uri); 
+				      } catch (URISyntaxException use) { 
+				          throw new AssertionError(use); 
+				      } catch (IOException ioe) { 
+				          ioe.printStackTrace(); 
+				          JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE); 
+				      } 							       
+				} 
 
-		//		toppanel.setBorder(com.jgoodies.forms.factories.Borders.DIALOG_BORDER);
-		//		toppanel.setLayout(layoutConstraintsManager.createLayout("toppanel", toppanel));
-
-		ImageIcon icon=null;
-		icon = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_horizontal.png");
-
-		JPanel headerPanel = new JPanel(new BorderLayout());
-		HeaderPanel header = new HeaderPanel("Reef Angel Wizard",icon,0.0f);
-		headerPanel.add(BorderLayout.NORTH, header);
-		headerPanel.add(BorderLayout.SOUTH, new JSeparator(JSeparator.HORIZONTAL));
-		headerPanel.setBorder(new EmptyBorder(0, 0, 6, 0));
-
-		container.add(headerPanel,"headerPanel");
-
-		//    	JPanel panel1 = new JPanel(); 
-		//    	panel1.setLayout(new BoxLayout( panel1, BoxLayout.PAGE_AXIS));
-		//    	icon=null;
-		//		icon = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_small.png");
-		//		JLabel logo=new JLabel(icon);
-		//		panel1.add(logo);
-		//		logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-		//
-		//	    JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");   
-		//		RA_link.setEditable(false);   
-		//		RA_link.setOpaque(false);   
-		//		RA_link.setBorder(BorderFactory.createEmptyBorder()); 
-		//		RA_link.setBackground(new Color(0,0,0,0)); 
-		//	    ((HTMLDocument)RA_link.getDocument()).getStyleSheet().addRule(bodyRule);
-		//	    panel1.add(RA_link);
-		//	    RA_link.addHyperlinkListener(new HyperlinkListener() {   
-		//		public void hyperlinkUpdate(HyperlinkEvent hle)
-		//		{   
-		//			if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
-		//			{   
-		//				if (isBrowsingSupported()) { 
-		//				      try { 
-		//				          Desktop desktop = java.awt.Desktop.getDesktop(); 
-		//				          URI uri = new java.net.URI(hle.getURL().toString()); 
-		//				          desktop.browse(uri); 
-		//				      } catch (URISyntaxException use) { 
-		//				          throw new AssertionError(use); 
-		//				      } catch (IOException ioe) { 
-		//				          ioe.printStackTrace(); 
-		//				          JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE); 
-		//				      } 							       
-		//				} 
-		//
-		//			}   
-		//		}
-		//		});
-		//		
-		//	    container.add(panel1);
-
-
+			}   
+		}
+		});
+		
+	    container.add(panel1);
 	}
 
 	private void AddPanelRelay(JPanel container)
@@ -3928,28 +2622,6 @@ int id=0;
 			lmoon.setText(s);
 			ltm.setText(s1);
 		}
-		
-//    	String s="Turns on at ";
-//    	Date dt=null; 
-//		dt = (Date) daylighton.getValue();
-//		dt.setTime(dt.getTime()-((Integer) actinicoffset.getValue() * 60 * 1000)) ;
-//		DateFormat formatter = new SimpleDateFormat("h:mm a");
-//		s+=formatter.format(dt);
-//		s+=" and Turns off at ";
-//		dt = (Date) daylightoff.getValue();
-//		dt.setTime(dt.getTime()+((Integer) actinicoffset.getValue() * 60 * 1000)) ;
-//		s+=formatter.format(dt);
-//    	actinictimelabel.setText(s);
-//    	
-//		s="<html>Please choose the Start %, End % and Duration for your slope on the daylight channel.<br>Start time is ";
-//		dt=null; 
-//		dt = (Date) daylighton.getValue();
-//		s+=formatter.format(dt);
-//		s+=" and End time is ";
-//		dt = (Date) daylightoff.getValue();
-//		s+=formatter.format(dt);
-//		s+="<br>To change the Start and End time, please <a href='http://2'>click here</a></html>";
-//		daylightslopelabel.setText(s);
 	}
 	
 	private void BuildSettings()
@@ -3996,9 +2668,6 @@ int id=0;
 						((JSpinner)CO2Control[a].getComponent(4)).setValue(((JSpinner)CO2Control[r].getComponent(4)).getValue());
 						((JSpinner)pHControl[a].getComponent(2)).setValue(((JSpinner)pHControl[r].getComponent(2)).getValue());
 						((JSpinner)pHControl[a].getComponent(4)).setValue(((JSpinner)pHControl[r].getComponent(4)).getValue());
-//						((JSpinner)Dosing[a].getComponent(2)).setValue(((JSpinner)Dosing[r].getComponent(2)).getValue());
-//						((JSpinner)Dosing[a].getComponent(4)).setValue(((JSpinner)Dosing[r].getComponent(4)).getValue());
-//						((JSpinner)Dosing[a].getComponent(6)).setValue(((JSpinner)Dosing[r].getComponent(6)).getValue());
 						((JSpinner)Delayed[a].getComponent(2)).setValue(((JSpinner)Delayed[r].getComponent(2)).getValue());
 					}		
 		    	}
@@ -4012,24 +2681,12 @@ int id=0;
 					tempunit=1;
 					JLabel j=(JLabel)OverheatSettings.getComponent(0);
 					j.setText("Overheat Temperature (\u00b0C): ");
-//					JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
-//					js.setModel(new SpinnerNumberModel(30.9,10.0,50.0,0.1));
-//					JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
-//					jo.getTextField().setColumns(5);
-//					jo.getFormat().applyPattern("###0.0");  
-//					OverheatSettings.revalidate();
 				}
 				if (aButton.getText()=="Fahrenheit")
 				{
 					tempunit=0;
 					JLabel j=(JLabel)OverheatSettings.getComponent(0);
 					j.setText("Overheat Temperature (\u00b0F): ");
-//					JSpinner js=(JSpinner)OverheatSettings.getComponent(1);
-//					js.setModel(new SpinnerNumberModel(86.9,60.0,150.0,0.1));
-//					OverheatSettings.revalidate();
-//					JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )js.getEditor();
-//					jo.getTextField().setColumns(5);
-//					jo.getFormat().applyPattern("###0.0");  
 				}
 
 			}
@@ -4131,22 +2788,11 @@ int id=0;
 			// Time Schedule
 			Timed[a] = new JPanel();
 			
-//			Timed[a].setLayout(new BoxLayout( Timed[a], BoxLayout.PAGE_AXIS));
-//			Timed[a].setLayout(layoutConstraintsManager.createLayout("timedpanel", Timed[a]));
-
 			SpringLayout Timedlayout=new SpringLayout();
 			Timed[a].setLayout(Timedlayout);
 
 			JCustomEditorPane i = new JCustomEditorPane("<HTML>" + DescButtons[0] + "</HTML>");
 			Timed[a].add(i,"i");
-
-//			JEditorPane description = new JEditorPane("text/html","<html><p>" + DescButtons[0] + "</p></html>");   
-//			description.setEditable(false);   
-//			description.setOpaque(false);
-//			description.setBorder(BorderFactory.createEmptyBorder()); 
-//			description.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)description.getDocument()).getStyleSheet().addRule(bodyRule);
-//			Timed[a].add(description);
 
 			Calendar calendar = new GregorianCalendar();
 			calendar.set(Calendar.HOUR_OF_DAY, 9);
@@ -4300,14 +2946,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[0] + "</HTML>");
 			TimedMemory[a].add(i,"i");
 
-//			JEditorPane tmdescription = new JEditorPane("text/html","<html><p>" + DescButtons[0] + "</p></html>");   
-//			tmdescription.setEditable(false);   
-//			tmdescription.setOpaque(false);
-//			tmdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			tmdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)tmdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			TimedMemory[a].add(tmdescription);
-
 			ButtonGroup TMgroup = new ButtonGroup();
 			JRadioButton TMOption;
 			TMOption = new JRadioButton("Daylight");		
@@ -4331,10 +2969,6 @@ int id=0;
 			
 			TimedMemory[a].add(new JLabel(s));
 			
-//			TMOption = new JRadioButton("Delayed Start Daylight (For MH ballasts)");		
-//			TMgroup.add(TMOption);
-//			TimedMemory[a].add(TMOption);
-//			TimedMemory[a].add(new JLabel("Turns on at 9:00am and turns off at 6:00pm with 7 minutes delay"));
 			TMOption = new JRadioButton("Actinic (Turn on/off x minutes before and after Daylights)");		
 			TMgroup.add(TMOption);
 			TimedMemory[a].add(TMOption);
@@ -4378,14 +3012,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[1] + "</HTML>");
 			Heater[a].add(i,"i");
 
-			//			JEditorPane hdescription = new JEditorPane("text/html","<html><p>" + DescButtons[1] + "</p></html>");   
-//			hdescription.setEditable(false);   
-//			hdescription.setOpaque(false);   
-//			hdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			hdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)hdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			Heater[a].add(hdescription);
-
 			JLabel HeaterOnLabel=null;
 			JSpinner HeaterOn;
 			HeaterOn = new JSpinner( new SpinnerNumberModel(75.1,10.0,150.0,0.1) );
@@ -4418,14 +3044,6 @@ int id=0;
 
 			i = new JCustomEditorPane("<HTML>" + DescButtons[2] + "</HTML>");
 			Chiller[a].add(i,"i");
-			
-//			JEditorPane cdescription = new JEditorPane("text/html","<html><p>" + DescButtons[2] + "</p></html>");   
-//			cdescription.setEditable(false);   
-//			cdescription.setOpaque(false);   
-//			cdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			cdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)cdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			Chiller[a].add(cdescription);
 
 			JSpinner ChillerOn;
 			JLabel ChillerOnLabel=null;
@@ -4461,14 +3079,6 @@ int id=0;
 
 			i = new JCustomEditorPane("<HTML>" + DescButtons[3] + "</HTML>");
 			ATO[a].add(i,"i");
-			
-//			JEditorPane ATOdescription = new JEditorPane("text/html","<html><p>" + DescButtons[3] + "<a href='http://forum.reefangel.com/viewtopic.php?f=7&t=240'> ATO Float Switch Guide</a>.</p></html>");   
-//			ATOdescription.setEditable(false);   
-//			ATOdescription.setOpaque(false);   
-//			ATOdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			ATOdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)ATOdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			ATO[a].add(ATOdescription);
 
 			ButtonGroup ATOgroup = new ButtonGroup();
 			JRadioButton ATOOption;
@@ -4550,14 +3160,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[4] + "</HTML>");
 			WM[a].add(i,"i");
 
-			//			JEditorPane wdescription = new JEditorPane("text/html","<html><p>" + DescButtons[4] + "</p></html>");   
-//			wdescription.setEditable(false);   
-//			wdescription.setOpaque(false);   
-//			wdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			wdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)wdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			WM[a].add(wdescription);
-
 			ButtonGroup WMgroup = new ButtonGroup();
 			JRadioButton WMOption;
 			WMOption = new JRadioButton("Constant");		
@@ -4596,14 +3198,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[5] + "</HTML>");
 			CO2Control[a].add(i,"i");
 
-//			JEditorPane codescription = new JEditorPane("text/html","<html><p>" + DescButtons[5] + "</p></html>");   
-//			codescription.setEditable(false);   
-//			codescription.setOpaque(false);   
-//			codescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			codescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)codescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			CO2Control[a].add(codescription);
-
 			JLabel CO2ControlOnLabel=null;
 			JSpinner CO2ControlOn;
 			CO2ControlOn = new JSpinner( new SpinnerNumberModel(7.52,1.00,14.00,0.01) );
@@ -4637,14 +3231,6 @@ int id=0;
 
 			i = new JCustomEditorPane("<HTML>" + DescButtons[6] + "</HTML>");
 			pHControl[a].add(i,"i");
-
-//			JEditorPane pdescription = new JEditorPane("text/html","<html><p>" + DescButtons[6] + "</p></html>");   
-//			pdescription.setEditable(false);   
-//			pdescription.setOpaque(false);   
-//			pdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			pdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)pdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			pHControl[a].add(pdescription);
 
 			JLabel pHControlOnLabel=null;
 			JSpinner pHControlOn;
@@ -4680,14 +3266,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[7] + "</HTML>");
 			Dosing[a].add(i,"i");
 
-//			JEditorPane ddescription = new JEditorPane("text/html","<html><p>" + DescButtons[7] + "</p></html>");   
-//			ddescription.setEditable(false);   
-//			ddescription.setOpaque(false);   
-//			ddescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			ddescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)ddescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			Dosing[a].add(ddescription);
-
 			JLabel DosingOnLabel=new JLabel ("Turn on every (m): ",JLabel.TRAILING);
 			Dosing[a].add(DosingOnLabel);
 			JSpinner DosingOn;
@@ -4720,14 +3298,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[8] + "</HTML>");
 			Delayed[a].add(i,"i");
 
-//			JEditorPane dsdescription = new JEditorPane("text/html","<html><p>" + DescButtons[8] + "</p></html>");   
-//			dsdescription.setEditable(false);   
-//			dsdescription.setOpaque(false);   
-//			dsdescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			dsdescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)dsdescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			Delayed[a].add(dsdescription);
-
 			JLabel DelayedOnLabel=new JLabel ("Delayed Start (m): ",JLabel.TRAILING);
 			Delayed[a].add(DelayedOnLabel);
 			JSpinner DelayedOn;
@@ -4745,15 +3315,6 @@ int id=0;
 
 			i = new JCustomEditorPane("<HTML>" + DescButtons[9] + "</HTML>");
 			Opposite[a].add(i,"i");
-
-//			JEditorPane odescription = new JEditorPane("text/html","<html><p>" + DescButtons[9] + "</p></html>");   
-//			odescription.setEditable(false);   
-//			odescription.setOpaque(false);   
-//			odescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			odescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)odescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			Opposite[a].add(odescription);
-
 			JLabel OppositeLabelOn=new JLabel ("Opposite of Port: ",JLabel.TRAILING);
 			Opposite[a].add(OppositeLabelOn);
 			JComboBox OppositeOn;
@@ -4776,14 +3337,6 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[10] + "</HTML>");
 			AlwaysOn[a].add(i,"i");
 
-//			JEditorPane adescription = new JEditorPane("text/html","<html><p>" + DescButtons[10] + "</p></html>");   
-//			adescription.setEditable(false);   
-//			adescription.setOpaque(false);   
-//			adescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			adescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)adescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			AlwaysOn[a].add(adescription);
-
 			AlwaysOn[a].add(new JLabel(""));
 			AlwaysOn[a].add(new JLabel(""));
 
@@ -4797,14 +3350,6 @@ int id=0;
 
 			i = new JCustomEditorPane("<HTML>" + DescButtons[11] + "</HTML>");
 			NotUsed[a].add(i,"i");
-
-//			JEditorPane ndescription = new JEditorPane("text/html","<html><p>" + DescButtons[11] + "</p></html>");   
-//			ndescription.setEditable(false);   
-//			ndescription.setOpaque(false);   
-//			ndescription.setBorder(BorderFactory.createEmptyBorder()); 
-//			ndescription.setBackground(new Color(0,0,0,0)); 
-//			((HTMLDocument)ndescription.getDocument()).getStyleSheet().addRule(bodyRule);
-//			NotUsed[a].add(ndescription);
 
 			NotUsed[a].add(new JLabel(""));
 			NotUsed[a].add(new JLabel(""));
@@ -5662,46 +4207,6 @@ int id=0;
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
 			y=Spring.sum(y, Spring.constant(5));
 		}			
-		//		Spring y = Spring.constant(5);
-		//		Spring x = Spring.constant(5);
-		//		Spring width = Spring.constant(0);
-		//		
-		//		layout.getConstraints(panel.getComponent(0)).setX(Spring.constant(5));
-		//		layout.getConstraints(panel.getComponent(0)).setY(Spring.constant(-15));
-		//		
-		//		y=Spring.sum(y, layout.getConstraints(panel.getComponent(0)).getHeight());
-		//		y=Spring.sum(y, Spring.constant(-15));
-		//		
-		//		
-		//		layout.getConstraints(panel.getComponent(1)).setX(Spring.constant(0));
-		//		width=layout.getConstraints(panel.getComponent(1)).getWidth();
-		//		width=Spring.sum(Spring.constant(5),width);
-		//		layout.getConstraints(panel.getComponent(2)).setX(width);
-		//		width=Spring.sum(layout.getConstraints(panel.getComponent(2)).getWidth(),width);
-		//		width=Spring.sum(Spring.constant(5),width);
-		//		layout.getConstraints(panel.getComponent(3)).setX(width);
-		//		layout.getConstraints(panel.getComponent(1)).setY(y);
-		//		layout.getConstraints(panel.getComponent(2)).setY(y);
-		//		layout.getConstraints(panel.getComponent(3)).setY(y);
-		//		
-		//		y=Spring.sum(y, layout.getConstraints(panel.getComponent(1)).getHeight());
-		//		y=Spring.sum(y, Spring.constant(5));
-		//
-		//		width = Spring.constant(0);
-		//		for (int c=4;c<panel.getComponentCount();c+=2)
-		//			width=Spring.max(width, layout.getConstraints(panel.getComponent(c)).getWidth());
-		//		x=Spring.sum(x, width);
-		//		x=Spring.sum(x, Spring.constant(5));
-		//		for (int c=4;c<panel.getComponentCount();c+=2)
-		//		{
-		//			layout.getConstraints(panel.getComponent(c)).setX(Spring.constant(5));
-		//			layout.getConstraints(panel.getComponent(c)).setY(y);
-		//			layout.getConstraints(panel.getComponent(c)).setWidth(width);
-		//			layout.getConstraints(panel.getComponent(c+1)).setX(x);
-		//			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-2)));
-		//			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
-		//			y=Spring.sum(y, Spring.constant(5));
-		//		}		
 	}
 
 	private void RevalidateSettings()
@@ -5800,16 +4305,6 @@ int id=0;
 				jL.setText("Turn on at (\u00b0F): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0F): ");
-//				jS=(JSpinner)j.getComponent(2);
-//				jS.setModel(new SpinnerNumberModel(75.1,60.0,150.0,0.1));
-//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
-//				jS=(JSpinner)j.getComponent(4);
-//				jS.setModel(new SpinnerNumberModel(76.1,60.0,150.0,0.1));
-//				jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
 			}
 			else
 			{
@@ -5817,16 +4312,6 @@ int id=0;
 				jL.setText("Turn on at (\u00b0C): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0C): ");
-//				jS=(JSpinner)j.getComponent(2);
-//				jS.setModel(new SpinnerNumberModel(25.1,10.0,50.0,0.1));
-//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
-//				jS=(JSpinner)j.getComponent(4);
-//				jS.setModel(new SpinnerNumberModel(26.1,10.0,50.0,0.1));
-//				jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
 			}
 			j=(JPanel)functionsettings[a].getComponent(3);
 			if (tempunit==0)
@@ -5835,16 +4320,6 @@ int id=0;
 				jL.setText("Turn on at (\u00b0F): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0F): ");
-//				jS=(JSpinner)j.getComponent(2);
-//				jS.setModel(new SpinnerNumberModel(79.1,60.0,150.0,0.1));
-//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
-//				jS=(JSpinner)j.getComponent(4);
-//				jS.setModel(new SpinnerNumberModel(78.1,60.0,150.0,0.1));
-//				jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
 			}
 			else
 			{
@@ -5852,16 +4327,6 @@ int id=0;
 				jL.setText("Turn on at (\u00b0C): ");
 				jL=(JLabel)j.getComponent(3);
 				jL.setText("Turn off at (\u00b0C): ");
-//				jS=(JSpinner)j.getComponent(2);
-//				jS.setModel(new SpinnerNumberModel(28.1,10.0,50.0,0.1));
-//				JSpinner.NumberEditor  jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
-//				jS=(JSpinner)j.getComponent(4);
-//				jS.setModel(new SpinnerNumberModel(27.1,10.0,50.0,0.1));
-//				jo = (JSpinner.NumberEditor )jS.getEditor();
-//				jo.getTextField().setColumns(5);
-//				jo.getFormat().applyPattern("###0.0");  
 			}
 		}
 	}
@@ -5871,21 +4336,6 @@ int id=0;
 		int numdosing=0;
 		for (int a=1;a<=16;a++)
 		{
-//			ShowHideComponent(Timed[a],bVisible);
-//			ShowHideComponent(Heater[a],bVisible);
-//			ShowHideComponent(Chiller[a],bVisible);
-//			//			ShowHideComponent(ATO[a],bVisible);
-//			ShowHideComponent(WM[a],bVisible);
-//			ShowHideComponent(CO2Control[a],bVisible);
-//			ShowHideComponent(pHControl[a],bVisible);
-//			ShowHideComponent(Dosing[a],bVisible);
-//			ShowHideComponent(Delayed[a],bVisible);
-//			//			ShowHideComponent(Opposite[a],bVisible);
-//
-//			ATO[a].getComponent(4).setVisible(bVisible);
-//			ATO[a].getComponent(5).setVisible(bVisible);
-
-//			JRadioButton j = (JRadioButton) memsettings.getComponent(1);
 			CardLayout cl = (CardLayout)(functionsettings[a].getLayout());
 			JRadioButton AOn = (JRadioButton) functions[a].getComponent(0);
 			if (AOn.isSelected())
@@ -7446,34 +5896,18 @@ int id=0;
 		}
 		public void paintComponent(Graphics g) {
 			Color blender=new Color(0, 0, 0, 5);
-			//	    	AlphaComposite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
 			super.paintComponent(g);
-			//	        if (!isOpaque()) {
-			//	            return;
-			//	        }
+
 
 			GraphicsEnvironment.getLocalGraphicsEnvironment();
 			Graphics2D g2 = (Graphics2D) g;
-//			g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-//			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-//			g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 			int width = getWidth();
 			int height = getHeight();
 			Paint storedPaint = g2.getPaint();
 			g2.setPaint(new GradientPaint(0, height, new Color(255, 255, 255, 30), 0, 0, new Color(0, 0, 0, 20)));
-			//	        g2.fillRect(0, 0, width, height);
 			g2.setFont(new Font("LucidaSans", Font.BOLD, 100));
-			//	        g2.setColor(blender);
 			g2.drawString(this.s, 100, 40);
 			g2.setPaint(storedPaint);
-
-
-
-			//	        g2.drawImage(this.icon.getImage(), 0, 0, this);
-			//	        g2.setColor(blender);
-			//	        g2.setComposite(composite);
-			//	        g2.fillRect(0, 0, this.icon.getIconWidth(), this.icon.getIconHeight());
 		}
 		public void repaint(){
 			super.repaint();
@@ -7481,7 +5915,7 @@ int id=0;
 	}
 
 	public static class Preferences {
-//		  static Hashtable defaults;
+
 		  static Hashtable table = new Hashtable();
 		  static File preferencesFile=new File (Base.getSketchbookFolder().getPath() +"/tools/Wizard/data/wizard.ini");
 		  
@@ -7528,10 +5962,7 @@ int id=0;
 		  }
 
 		  static protected void save() {
-			  //		    try {
-			  // on startup, don't worry about it
-			  // this is trying to update the prefs for who is open
-			  // before Preferences.init() has been called.
+
 			  if (preferencesFile == null) return;
 
 			  // Fix for 0163 to properly use Unicode when writing preferences.txt
@@ -7545,32 +5976,11 @@ int id=0;
 
 			  writer.flush();
 			  writer.close();
-
-			  //		    } catch (Exception ex) {
-			  //		      Base.showWarning(null, "Error while saving the settings file", ex);
-			  //		    }
 		  }
 
 
-		  // .................................................................
-
-
-		  // all the information from preferences.txt
-
-		  //static public String get(String attribute) {
-		  //return get(attribute, null);
-		  //}
-
 		  static public String get(String attribute /*, String defaultValue */) {
 			  return (String) table.get(attribute);
-			  /*
-		    //String value = (properties != null) ?
-		    //properties.getProperty(attribute) : applet.getParameter(attribute);
-		    String value = properties.getProperty(attribute);
-
-		    return (value == null) ?
-		      defaultValue : value;
-			   */
 		  }		  
 
 		  static public void set(String attribute, String value) {
@@ -7580,19 +5990,6 @@ int id=0;
 		  static public boolean getBoolean(String attribute) {
 			  String value = get(attribute); //, null);
 			  return (new Boolean(value)).booleanValue();
-
-			  /*
-			      supposedly not needed, because anything besides 'true'
-			      (ignoring case) will just be false.. so if malformed -> false
-			    if (value == null) return defaultValue;
-
-			    try {
-			      return (new Boolean(value)).booleanValue();
-			    } catch (NumberFormatException e) {
-			      System.err.println("expecting an integer: " + attribute + " = " + value);
-			    }
-			    return defaultValue;
-			   */
 		  }
 
 
@@ -7602,22 +5999,6 @@ int id=0;
 		  
 		  static public int getInteger(String attribute /*, int defaultValue*/) {
 			  return Integer.parseInt(get(attribute));
-
-			  /*
-			    String value = get(attribute, null);
-			    if (value == null) return defaultValue;
-
-			    try {
-			      return Integer.parseInt(value);
-			    } catch (NumberFormatException e) {
-			      // ignored will just fall through to returning the default
-			      System.err.println("expecting an integer: " + attribute + " = " + value);
-			    }
-			    return defaultValue;
-			    //if (value == null) return defaultValue;
-			    //return (value == null) ? defaultValue :
-			    //Integer.parseInt(value);
-			   */
 		  }
 
 
@@ -7627,22 +6008,6 @@ int id=0;
 
 		  static public Double getDouble(String attribute /*, int defaultValue*/) {
 			  return Double.parseDouble(get(attribute));
-
-			  /*
-			    String value = get(attribute, null);
-			    if (value == null) return defaultValue;
-
-			    try {
-			      return Integer.parseInt(value);
-			    } catch (NumberFormatException e) {
-			      // ignored will just fall through to returning the default
-			      System.err.println("expecting an integer: " + attribute + " = " + value);
-			    }
-			    return defaultValue;
-			    //if (value == null) return defaultValue;
-			    //return (value == null) ? defaultValue :
-			    //Integer.parseInt(value);
-			   */
 		  }
 
 
