@@ -5275,6 +5275,7 @@ int id=0;
 						if (jah.isSelected()) atohigh=true;
 						Buzzermods.getComponent(2).setEnabled(!atohigh);
 						CheckPrevDimming();
+						nextwindow="AI - White Channel";
 					}
 					
 					if (swindow.indexOf("AI - White Channel")==0)
