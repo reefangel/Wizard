@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/jace.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/Regex.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/retroweaver.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/l2fprod-common-tasks.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

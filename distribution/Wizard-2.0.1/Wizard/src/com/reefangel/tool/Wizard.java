@@ -19,7 +19,7 @@
  * Boston, MA  02111-1307  USA
  * 
  * @author		Reef Angel http://www.reefangel.com
- * @modified	07/18/2012
+ * @modified	07/20/2012
  * @version		##version##
  */
 
@@ -35,7 +35,9 @@ import processing.app.tools.Tool;
 import processing.core.PApplet;
 import processing.core.PConstants;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -80,6 +82,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.mlc.swing.layout.LayoutConstraintsManager;
 
 import com.jgoodies.forms.factories.DefaultComponentFactory;
+import com.l2fprod.common.swing.JTaskPane;
+import com.l2fprod.common.swing.JTaskPaneGroup;
+import com.l2fprod.common.swing.plaf.LookAndFeelAddons;
+import com.l2fprod.common.swing.plaf.aqua.AquaLookAndFeelAddons;
+import com.l2fprod.common.swing.plaf.metal.MetalLookAndFeelAddons;
 
 
 import java.awt.AlphaComposite;
@@ -175,7 +182,9 @@ int id=0;
 	String daylightwaveform="";
 	String actinicwaveform="";
 	Footer Footer;
+	JPanel Side;
 	JDialog dialog;
+	JTaskPaneGroup taskGroup;
 
 	public static JPanel disptemp;
 	public static JPanel memsettings;
@@ -362,10 +371,35 @@ int id=0;
 		Title = new TitleLabel();
 		Title.SetText(Titles[0]);
 		Footer = new Footer();
+		Side = new JPanel();
+		Side.setLayout(new BorderLayout());
+		Side.add(BorderLayout.EAST, new JSeparator(JSeparator.VERTICAL));
+		JTaskPane taskPane = new JTaskPane();
+
+		taskGroup = new JTaskPaneGroup();
+		taskGroup.setTitle("Navigation");
+		taskPane.add(taskGroup);
+		taskPane.setOpaque(false);
+		taskPane.setBackground(new Color(255,255,245));
+
+		try {
+			LookAndFeelAddons.setAddon(MetalLookAndFeelAddons.class);
+		} catch (InstantiationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IllegalAccessException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
+		SwingUtilities.updateComponentTreeUI(taskPane);
+		Side.add(taskPane);
+
+
 		panel.setLayout(layoutConstraintsManager.createLayout("panel", panel));
 		panel.add (new Header(),"headerPanel");
 		panel.add (Title,"titlePanel");
 		panel.add (Footer,"footerPanel");
+		panel.add (Side,"sidePanel");
 
 		cl = new CardLayout();
 		insidePanel = new JPanel();
@@ -405,7 +439,7 @@ int id=0;
 		frame = new JDialog(editor,"Reef Angel Wizard",true);
 //		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.getContentPane().add(panel, BorderLayout.CENTER);
-		frame.setPreferredSize(new Dimension(700,685));
+		frame.setPreferredSize(new Dimension(900,685));
 //		frame.setMinimumSize(new Dimension(700,600));
 		frame.setResizable(false);
 		frame.pack();
@@ -4690,6 +4724,7 @@ int id=0;
 						prevwindow="Welcome";
 						nextwindow="Memory Settings";
 						loadInitialValues();
+						CheckNav();
 					}
 					
 					if (swindow.indexOf("Memory Settings")==0)
@@ -5700,6 +5735,7 @@ int id=0;
 						j.getComponent(3).setVisible(false);
 					}
 					
+					CheckNav();
 				}
 			};
 
@@ -6276,6 +6312,85 @@ int id=0;
 				Title.SetText("Memory Settings");
 				e.printStackTrace();
 			}  
+		}		
+	}
+	public void CheckNav()
+	{
+		ActionListener al = new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+				String s ="";
+				if (aButton.getText() == "Welcome") s = "Welcome";
+				if (aButton.getText() == "Memory") s = "Memory Settings";
+				if (aButton.getText() == "Temperature") s = "Temperature Settings";
+				if (aButton.getText() == "Expansion") s = "Expansion Modules";
+				if (aButton.getText() == "Attachments") s = "Attachments";
+				if (aButton.getText() == "Main Relay") s = "Main Relay Box";
+				if (aButton.getText() == "Expansion Relay" ) s = "Expansion Relay Box";
+				if (aButton.getText() == "Standard Dimming") s = "Daylight Dimming Channel";
+				if (aButton.getText() == "Dimming Expansion") s = "Dimming Expansion Channel 0";
+				if (aButton.getText() == "Aqua Illumination") s = "Aqua Illumination Port";
+				if (aButton.getText() == "RF Expansion") s = "Vortech Mode";
+				if (aButton.getText() == "Wifi") s = "Wifi Attachment";
+				if (s!="")
+				{
+					cl.show(insidePanel, s);
+					Title.SetText(s);
+				}
+			}
+		};		
+		taskGroup.removeAll();
+		JButton jb;
+		jb=new JButton("Welcome");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		jb=new JButton("Memory");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		jb=new JButton("Temperature");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		jb=new JButton("Expansion");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		jb=new JButton("Attachments");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		jb=new JButton("Main Relay");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		if (relayexpansion==1)
+		{
+			jb=new JButton("Expansion Relay");
+			jb.addActionListener(al);
+			taskGroup.add(jb);
+		}
+		jb=new JButton("Standard Dimming");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		if (dimmingexpansion==1)
+		{
+			jb=new JButton("Dimming Expansion");
+			jb.addActionListener(al);
+			taskGroup.add(jb);
+		}
+		if (ailed==1)
+		{
+			jb=new JButton("Aqua Illumination");
+			jb.addActionListener(al);
+			taskGroup.add(jb);
+		}
+		if (rfexpansion==1)
+		{
+			jb=new JButton("RF Expansion");
+			jb.addActionListener(al);
+			taskGroup.add(jb);
+		}
+		if (wifi==1)
+		{
+			jb=new JButton("Wifi");
+			jb.addActionListener(al);
+			taskGroup.add(jb);
 		}		
 	}
 }
