@@ -1,7 +1,7 @@
 /**
  * you can put a one sentence description of your tool here.
  *
- * ##copyright##
+ * (C) 2012
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
  * 
- * @author		##author##
- * @modified	##date##
+ * @author		Reef Angel http://www.reefangel.com
+ * @modified	09/15/2012
  * @version		##version##
  */
 
@@ -1853,7 +1853,7 @@ int id=0;
 	
 	private void ShowWelcome()
 	{
-		insidePanel.add(new Inside("<HTML>Welcome to the Reef Angel Wizard.<br><br>I'm going to walk you through the whole process of generating a code for your Reef Angel Controller.<br><br>Version: ##tool.version##<br><br></HTML>"), Titles[0]);	
+		insidePanel.add(new Inside("<HTML>Welcome to the Reef Angel Wizard.<br><br>I'm going to walk you through the whole process of generating a code for your Reef Angel Controller.<br><br>Version: 2.1.1<br><br></HTML>"), Titles[0]);	
 	}
 
 	private void ShowMemorySettings()

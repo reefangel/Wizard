@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<containers>
+    <container name="panel"
+               columnSpecs="200px,pref:grow"
+               rowSpecs="pref,pref,pref:grow,pref">
+        <cellconstraints name="sidePanel" gridX="1" gridY="1" gridWidth="1" gridHeight="4" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="headerPanel" gridX="2" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="titlePanel" gridX="2" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="top" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="insidePanel" gridX="2" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="footerPanel" gridX="2" gridY="4" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="footer"
+               columnSpecs="pref:grow,pref,10dlu,pref,10dlu,pref,10dlu,pref,pref:grow"
+               rowSpecs="pref:grow">
+        <cellconstraints name="Cancel" gridX="2" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="center" verticalAlignment="center" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="Prev" gridX="4" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="center" verticalAlignment="center" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="Next" gridX="6" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="center" verticalAlignment="center" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="Generate" gridX="8" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="center" verticalAlignment="center" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="temppanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="disptemp" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="text1" gridX="1" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="OverheatSettings" gridX="1" gridY="4" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+    
+    <container name="exppanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="expansionmods" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="attchpanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="attachmentmods" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="relaypanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="icon" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="exprelaypanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="icon" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+    
+    <container name="relaysetuppanel"
+               columnSpecs="pref,pref:grow"
+               rowSpecs="pref,pref,pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="2" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="functions" gridX="1" gridY="2" gridWidth="1" gridHeight="2" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="functionsettings" gridX="2" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="ports" gridX="2" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>    
+
+    <container name="timedpanel"
+               columnSpecs="pref,3dlu,pref,pref:grow"
+               rowSpecs="pref,pref,3dlu,pref,3dlu,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="4" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="TimerOnLabel" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="TimerOn" gridX="3" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="TimerOffLabel" gridX="1" gridY="4" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="TimerOff" gridX="3" gridY="4" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="DelayedTimerLabel" gridX="1" gridY="6" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="DelayedTimer" gridX="3" gridY="6" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>   
+    
+    <container name="pwmpanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="icon" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="pwm" gridX="1" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="pwmsettingspaneld"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref,10dlu,pref,pref:grow">
+        <cellconstraints name="id" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="icond" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="pwmd" gridX="1" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="memlabel" gridX="1" gridY="5" gridWidth="1" gridHeight="1" horizontalAlignment="center" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="pwmsettingspanela"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref,10dlu,pref,pref:grow">
+        <cellconstraints name="ia" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="icona" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="pwma" gridX="1" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="memlabel" gridX="1" gridY="5" gridWidth="1" gridHeight="1" horizontalAlignment="center" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>
+
+    <container name="aipanel"
+               columnSpecs="pref:grow"
+               rowSpecs="pref,pref,pref,pref,pref:grow">
+        <cellconstraints name="i" gridX="1" gridY="1" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="icon" gridX="1" gridY="2" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+        <cellconstraints name="aiport" gridX="1" gridY="3" gridWidth="1" gridHeight="1" horizontalAlignment="default" verticalAlignment="default" topInset="0" bottomInset="0" rightInset="0" leftInset="0"/>
+    </container>                
+         
+</containers>
