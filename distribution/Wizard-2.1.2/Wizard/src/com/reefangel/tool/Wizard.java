@@ -19,7 +19,7 @@
  * Boston, MA  02111-1307  USA
  * 
  * @author		Reef Angel http://www.reefangel.com
- * @modified	09/15/2012
+ * @modified	10/11/2012
  * @version		##version##
  */
 
@@ -1270,6 +1270,10 @@ int id=0;
 				JSpinner jd = (JSpinner) RFmods.getComponent(5);
 				d+="    ReefAngel.RF.UseMemory = false;\n" + 
 						"    ReefAngel.RF.SetMode( " + jc.getSelectedItem().toString().replace(" ","") + "," + js.getValue() + "," + jd.getValue() + " );\n";
+			}
+			else
+			{
+				d+="    ReefAngel.RF.UseMemory = true;\n";
 			}
 			boolean radionset=false;
 			for (int i=0;i<RadionChannels.length;i++)

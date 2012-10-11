@@ -1271,6 +1271,10 @@ int id=0;
 				d+="    ReefAngel.RF.UseMemory = false;\n" + 
 						"    ReefAngel.RF.SetMode( " + jc.getSelectedItem().toString().replace(" ","") + "," + js.getValue() + "," + jd.getValue() + " );\n";
 			}
+			else
+			{
+				d+="    ReefAngel.RF.UseMemory = true;\n";
+			}
 			boolean radionset=false;
 			for (int i=0;i<RadionChannels.length;i++)
 			{
