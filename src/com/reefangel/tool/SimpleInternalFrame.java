@@ -77,6 +77,7 @@ import javax.swing.border.AbstractBorder;
  * @see    javax.swing.JDesktopPane
  */
 
+@SuppressWarnings("serial")
 public class SimpleInternalFrame extends JPanel {
 
     private JLabel          titleLabel;
@@ -401,7 +402,7 @@ public class SimpleInternalFrame extends JPanel {
     // Helper Classes *******************************************************
 
     // A custom border for the raised header pseudo 3D effect.
-    private static class RaisedHeaderBorder extends AbstractBorder {
+	private static class RaisedHeaderBorder extends AbstractBorder {
 
         private static final Insets INSETS = new Insets(1, 1, 1, 0);
 
@@ -421,7 +422,7 @@ public class SimpleInternalFrame extends JPanel {
     }
 
     // A custom border that has a shadow on the right and lower sides.
-    private static class ShadowBorder extends AbstractBorder {
+	private static class ShadowBorder extends AbstractBorder {
 
         private static final Insets INSETS = new Insets(1, 1, 3, 3);
 
@@ -467,7 +468,7 @@ public class SimpleInternalFrame extends JPanel {
     }
 
     // A panel with a horizontal gradient background.
-    private static class GradientPanel extends JPanel {
+	private static class GradientPanel extends JPanel {
         
         private GradientPanel(LayoutManager lm, Color background) {
             super(lm);

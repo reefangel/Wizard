@@ -27,7 +27,6 @@ package com.reefangel.tool;
 
 import processing.app.Base;
 import processing.app.Editor;
-import processing.app.Preferences;
 import processing.app.Serial;
 import processing.app.SerialException;
 import processing.app.debug.MessageConsumer;
@@ -35,9 +34,7 @@ import processing.app.tools.Tool;
 import processing.core.PApplet;
 import processing.core.PConstants;
 
-import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -47,12 +44,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -68,28 +63,20 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.mlc.swing.layout.LayoutConstraintsManager;
 
-import com.jgoodies.forms.factories.DefaultComponentFactory;
 import com.l2fprod.common.swing.JTaskPane;
 import com.l2fprod.common.swing.JTaskPaneGroup;
 import com.l2fprod.common.swing.plaf.LookAndFeelAddons;
-import com.l2fprod.common.swing.plaf.aqua.AquaLookAndFeelAddons;
 import com.l2fprod.common.swing.plaf.metal.MetalLookAndFeelAddons;
 
-
-import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -98,38 +85,22 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
 import java.awt.Paint;
-import java.awt.RenderingHints;
-import java.awt.SplashScreen;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import java.net.URI;
@@ -139,10 +110,20 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
+
+enum TempUnit {
+  FAHRENHEIT("F"),
+  CELCIUS("C");
+
+  public final String DEGREES;
+
+  TempUnit(String symbol) {
+    DEGREES = "\u00b0" + symbol;
+  }
+  };
 
 public class Wizard  implements Tool, MessageConsumer {
 	Editor editor;
@@ -154,7 +135,7 @@ public class Wizard  implements Tool, MessageConsumer {
 int id=0;
 	private int relay=1;
 	private int window=1;
-	private int tempunit=0;
+	private TempUnit tempunit = TempUnit.FAHRENHEIT;
 	private int settingswidth=0;
 	private int displayPWM=0;
 
@@ -336,16 +317,16 @@ int id=0;
 		    File layoutXML = new File(Base.getSketchbookFolder(), "tools/Wizard/data/layout.xml");
 			is = new FileInputStream(layoutXML);
 			layoutConstraintsManager = LayoutConstraintsManager.getLayoutConstraintsManager(is);
-		} finally {
-		  if(is != null) {
-		    try {
-		        is.close();
-		    } catch(IOException ignored) {
-		        ;
-		    }
-		   }
-		} catch (FileNotFoundException e) {
+		}  catch (FileNotFoundException e) {
 			e.printStackTrace(System.err);
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException ignored) {
+					;
+				}
+			}
 		}
 
 		if (!Base.isMacOS())
@@ -369,7 +350,7 @@ int id=0;
 
 		relay=1;
 		window=1;
-		tempunit=0;
+		tempunit= TempUnit.FAHRENHEIT;
 		settingswidth=0;
 		window=1;
 		int w=0;
@@ -454,7 +435,6 @@ int id=0;
 		frame.setResizable(false);
 		frame.pack();
 		frame.setLocationRelativeTo(editor);
-		frame.setVisible(true);
 		frame.addWindowListener(new WindowListener(){
 
 			@Override
@@ -469,7 +449,8 @@ int id=0;
 
 			@Override
 			public void windowClosed(WindowEvent e) {
-				// TODO Auto-generated method stub
+				ReturnLF();
+				saveInitialValues();
 			}
 
 			@Override
@@ -495,6 +476,7 @@ int id=0;
 			}
 
 		});
+		frame.setVisible(true);
 	}
 
 	private void ConstructCode()
@@ -563,7 +545,7 @@ int id=0;
 				"{\n" +
 				"    // This must be the first line\n" +
 				"    ReefAngel.Init();  //Initialize controller\n";
-		if (tempunit==1) d+="    ReefAngel.SetTemperatureUnit( Celsius );  // set to Celsius Temperature\n\n";
+		if (tempunit==TempUnit.CELCIUS) d+="    ReefAngel.SetTemperatureUnit( Celsius );  // set to Celsius Temperature\n\n";
 		if (wifi==0) d+="    ReefAngel.AddStandardMenu();  // Add Standard Menu\n\n";
 
 		String f="";
@@ -1859,7 +1841,7 @@ int id=0;
 				"{\r\n" +
 				"}\r\n";
 
-		Base.handleNewReplace();
+		editor.getBase().handleNewReplace();
 		editor.setSelectedText(s);
 
 		}
@@ -2752,17 +2734,14 @@ int id=0;
 				AbstractButton aButton = (AbstractButton) actionEvent.getSource();
 				if (aButton.getText()=="Celsius")
 				{
-					tempunit=1;
-					JLabel j=(JLabel)OverheatSettings.getComponent(0);
-					j.setText("Overheat Temperature (\u00b0C): ");
+					tempunit=TempUnit.CELCIUS;
 				}
 				if (aButton.getText()=="Fahrenheit")
 				{
-					tempunit=0;
-					JLabel j=(JLabel)OverheatSettings.getComponent(0);
-					j.setText("Overheat Temperature (\u00b0F): ");
+					tempunit=TempUnit.FAHRENHEIT;
 				}
-
+    			JLabel j=(JLabel)OverheatSettings.getComponent(0);
+	     		j.setText(String.format("Overheat Temperature (%s): ",tempunit.DEGREES) );
 			}
 		};
 
@@ -3391,8 +3370,7 @@ int id=0;
 			Opposite[a].add(i,"i");
 			JLabel OppositeLabelOn=new JLabel ("Opposite of Port: ",JLabel.TRAILING);
 			Opposite[a].add(OppositeLabelOn);
-			JComboBox OppositeOn;
-			OppositeOn = new JComboBox();
+			JComboBox<String> OppositeOn = new JComboBox<String>();
 			for (int j=1;j<=8;j++)
 				OppositeOn.addItem("Main Box Port "+j);
 			for (int j=1;j<=8;j++)
@@ -3451,10 +3429,10 @@ int id=0;
 
 			cl.show(functionsettings[a], "Not Used");
 
-			feeding[a] = new JCheckBox ("Turn off this port on \"Feeding\" Mode");
-			waterchange[a] = new JCheckBox ("Turn off this port on \"Water Change\" Mode");
-			lightson[a] = new JCheckBox ("Turn on this port on \"Lights On\" mode");
-			overheat[a] = new JCheckBox ("Turn off this port on \"Overheat\"");
+			feeding[a] = new JCheckBox ("Turn off this port in \"Feeding\" mode");
+			waterchange[a] = new JCheckBox ("Turn off this port in \"Water Change\" mode");
+			lightson[a] = new JCheckBox ("Turn on this port in \"Lights On\" mode");
+			overheat[a] = new JCheckBox ("Turn off this port in \"Overheat\" mode");
 			ports[a] = new JPanel();
 			ports[a].setLayout(new BoxLayout( ports[a], BoxLayout.PAGE_AXIS));
 			ports[a].setBorder(BorderFactory.createTitledBorder(null, "Port Mode",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
@@ -3919,7 +3897,8 @@ int id=0;
 
 		ActionListener RFListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
-				JComboBox cb = (JComboBox)actionEvent.getSource();
+				@SuppressWarnings("unchecked")
+				JComboBox<String> cb = (JComboBox<String>)actionEvent.getSource();
 				String vm = (String)cb.getSelectedItem();
 
 				if (vm=="Constant" || vm=="Lagoon" || vm=="ReefCrest" || vm=="Tidal Swell")
@@ -3951,7 +3930,7 @@ int id=0;
 
 		RFmods= new JPanel(new GridLayout(3,2));
 		RFmods.add(new JLabel("Vortech Mode:"));
-		JComboBox vm=new JComboBox(VortechModes);
+		JComboBox<String> vm=new JComboBox<String>(VortechModes);
 		vm.addActionListener(RFListener);
 		RFmods.add(vm);
 
@@ -4373,35 +4352,15 @@ int id=0;
 			JLabel jL = null;
 			JSpinner jS = null;
 			j=(JPanel)functionsettings[a].getComponent(2);
-			if (tempunit==0)
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0F): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0F): ");
-			}
-			else
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0C): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0C): ");
-			}
+            jL=(JLabel)j.getComponent(1);
+            jL.setText(String.format("Turn on below (%s): ",tempunit.DEGREES));
+            jL=(JLabel)j.getComponent(3);
+            jL.setText(String.format("Turn off above (%s): ",tempunit.DEGREES));
 			j=(JPanel)functionsettings[a].getComponent(3);
-			if (tempunit==0)
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0F): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0F): ");
-			}
-			else
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0C): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0C): ");
-			}
+            jL=(JLabel)j.getComponent(1);
+            jL.setText(String.format("Turn on above (%s): ",tempunit.DEGREES));
+            jL=(JLabel)j.getComponent(3);
+            jL.setText(String.format("Turn off below (%s): ",tempunit.DEGREES));
 		}
 	}
 
@@ -4715,6 +4674,7 @@ int id=0;
 
 		}
 	}
+	@SuppressWarnings("serial")
 	public class JCustomEditorPane extends JEditorPane {
 		public JCustomEditorPane(String s)
 		{
@@ -4729,6 +4689,7 @@ int id=0;
 
 	}
 
+	@SuppressWarnings("serial")
 	public class Header extends JPanel {
 		public Header()
 		{
@@ -4742,6 +4703,7 @@ int id=0;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class Footer extends JPanel {
 		public Footer()
 		{
@@ -4810,7 +4772,8 @@ int id=0;
 							relayexpansion=1;
 							for (int a=1;a<=16;a++)
 							{
-								JComboBox c=(JComboBox) Opposite[a].getComponent(2);
+								@SuppressWarnings("unchecked")
+								JComboBox<String> c=(JComboBox<String>) Opposite[a].getComponent(2);
 								int oldindex = c.getSelectedIndex();
 								if (oldindex==-1) oldindex=0;
 								if (c.getItemCount()!=16)
@@ -4833,7 +4796,8 @@ int id=0;
 							relayexpansion=0;
 							for (int a=1;a<=8;a++)
 							{
-								JComboBox c=(JComboBox) Opposite[a].getComponent(2);
+								@SuppressWarnings("unchecked")
+								JComboBox<String> c=(JComboBox<String>) Opposite[a].getComponent(2);
 								if (c.getItemCount()!=8)
 								{
 									int oldindex = c.getSelectedIndex();
@@ -5926,6 +5890,7 @@ int id=0;
 			prevwindow="Buzzer";
 	}
 
+	@SuppressWarnings("serial")
 	public class Inside extends JPanel {
 		JCustomEditorPane t;
 
@@ -5947,6 +5912,7 @@ int id=0;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class TitleLabel extends JPanel {
 
 		JLabel t;
@@ -5995,8 +5961,8 @@ int id=0;
 
 	public static class Preferences {
 
-		  static Hashtable table = new Hashtable();
-		  static File preferencesFile=new File (Base.getSketchbookFolder().getPath() +"/tools/Wizard/data/wizard.ini");
+		  static Map<String,String> table = new HashMap<String,String>();
+		  static File preferencesFile=new File (Base.getSketchbookFolder(), "tools/Wizard/data/wizard.ini");
 
 		  static protected void init(String commandLinePrefs) {
 
@@ -6007,9 +5973,8 @@ int id=0;
 
 			  String platformExt = "." + PConstants.platformNames[PApplet.platform];
 			  int platformExtLength = platformExt.length();
-			  Enumeration e = table.keys();
-			  while (e.hasMoreElements()) {
-				  String key = (String) e.nextElement();
+
+			  for (String key : table.keySet()) {
 				  if (key.endsWith(platformExt)) {
 					  // this is a key specific to a particular platform
 					  String actualKey = key.substring(0, key.length() - platformExtLength);
@@ -6024,7 +5989,7 @@ int id=0;
 			  load(input, table);
 		  }
 
-		  static public void load(InputStream input, Map table) throws IOException {
+		  static public void load(InputStream input, Map<String,String> table) throws IOException {
 			  String[] lines = PApplet.loadStrings(input);  // Reads as UTF-8
 			  for (String line : lines) {
 				  if ((line.length() == 0) ||
@@ -6047,10 +6012,8 @@ int id=0;
 			  // Fix for 0163 to properly use Unicode when writing preferences.txt
 			  PrintWriter writer = PApplet.createWriter(preferencesFile);
 
-			  Enumeration e = table.keys(); //properties.propertyNames();
-			  while (e.hasMoreElements()) {
-				  String key = (String) e.nextElement();
-				  writer.println(key + "=" + ((String) table.get(key)));
+			  for (Map.Entry<String,String> each : table.entrySet()) {			 
+				  writer.println(each.getKey() + "=" + each.getValue());
 			  }
 
 			  writer.flush();

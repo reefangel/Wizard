@@ -28,6 +28,7 @@ import javax.swing.border.EmptyBorder;
  * 
  * @author Roguy
  */
+@SuppressWarnings("serial")
 public class HeaderPanel extends JPanel {
 
     private Color blender;

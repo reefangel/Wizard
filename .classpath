@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/core.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/pde.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/bcel-5.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/bsh-2.0b4.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/formLayoutMaker.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/forms-1.0.3.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/jace.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/Regex.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/retroweaver.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Owner/Desktop/eclipse/libs/l2fprod-common-tasks.jar"/>
+	<classpathentry kind="lib" path="lib/bcel-5.1.jar"/>
+	<classpathentry kind="lib" path="lib/bsh-2.0b4.jar"/>
+	<classpathentry kind="lib" path="lib/formLayoutMaker.jar"/>
+	<classpathentry kind="lib" path="lib/forms-1.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/jace.jar"/>
+	<classpathentry kind="lib" path="lib/l2fprod-common-tasks.jar"/>
+	<classpathentry kind="lib" path="lib/Regex.jar"/>
+	<classpathentry kind="lib" path="lib/retroweaver.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/mike/Desktop/Reef Angel/Arduino ra.app/Contents/Resources/Java/core.jar" sourcepath="/Arduino/core/src"/>
+	<classpathentry kind="lib" path="/Users/mike/Desktop/Reef Angel/Arduino ra.app/Contents/Resources/Java/pde.jar" sourcepath="/Arduino/app/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
