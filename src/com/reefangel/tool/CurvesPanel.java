@@ -13,6 +13,7 @@ import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.GeneralPath;
 
+@SuppressWarnings("serial")
 public class CurvesPanel extends GradientPanel {
 	private RenderingHints hints;
 	private int counter = 0;

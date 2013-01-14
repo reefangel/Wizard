@@ -1,5 +1,5 @@
 /**
- * you can put a one sentence description of your tool here.
+ * I put on my robe and wizard hat...
  *
  * ##copyright##
  *
@@ -7,17 +7,17 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
- * 
+ *
  * @author		##author##
  * @modified	##date##
  * @version		##version##
@@ -27,7 +27,6 @@ package com.reefangel.tool;
 
 import processing.app.Base;
 import processing.app.Editor;
-import processing.app.Preferences;
 import processing.app.Serial;
 import processing.app.SerialException;
 import processing.app.debug.MessageConsumer;
@@ -35,9 +34,7 @@ import processing.app.tools.Tool;
 import processing.core.PApplet;
 import processing.core.PConstants;
 
-import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -47,12 +44,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -68,28 +63,20 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.mlc.swing.layout.LayoutConstraintsManager;
 
-import com.jgoodies.forms.factories.DefaultComponentFactory;
 import com.l2fprod.common.swing.JTaskPane;
 import com.l2fprod.common.swing.JTaskPaneGroup;
 import com.l2fprod.common.swing.plaf.LookAndFeelAddons;
-import com.l2fprod.common.swing.plaf.aqua.AquaLookAndFeelAddons;
 import com.l2fprod.common.swing.plaf.metal.MetalLookAndFeelAddons;
 
-
-import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -98,38 +85,22 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Menu;
-import java.awt.MenuBar;
-import java.awt.MenuItem;
 import java.awt.Paint;
-import java.awt.RenderingHints;
-import java.awt.SplashScreen;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import java.net.URI;
@@ -139,10 +110,25 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
+
+enum TempUnit {
+  FAHRENHEIT("F"),
+  CELCIUS("C");
+
+  public final String DEGREES;
+
+  TempUnit(String symbol) {
+    DEGREES = "\u00b0" + symbol;
+  }
+};
+
+enum TimeFormat{
+	  US12HOUR(),
+	  ISO8601();
+	};
 
 public class Wizard  implements Tool, MessageConsumer {
 	Editor editor;
@@ -151,10 +137,11 @@ public class Wizard  implements Tool, MessageConsumer {
 	boolean connected=false;
 	Serial serial;
 	LayoutConstraintsManager layoutConstraintsManager;
-int id=0;
+    int id=0;
 	private int relay=1;
 	private int window=1;
-	private int tempunit=0;
+	private TimeFormat timeformat = TimeFormat.ISO8601;
+	private TempUnit tempunit = TempUnit.FAHRENHEIT;
 	private int settingswidth=0;
 	private int displayPWM=0;
 
@@ -166,7 +153,7 @@ int id=0;
 	private int orpexpansion=0;
 	private int phexpansion=0;
 	private int waterlevelexpansion=0;
-	
+
 	private int wifi=0;
 	private int ailed=0;
 
@@ -265,14 +252,14 @@ int id=0;
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
 	public static String RadionChannels[] = {"White","Royal Blue","Red","Green","Blue","Intensity"};
 	public static String Titles[] = {"Welcome","Memory Settings","Temperature Settings","Expansion Modules","Attachments",
-		"Main Relay Box", "Main Relay Box - Port 1", "Main Relay Box - Port 2", "Main Relay Box - Port 3", "Main Relay Box - Port 4", "Main Relay Box - Port 5", "Main Relay Box - Port 6", "Main Relay Box - Port 7", "Main Relay Box - Port 8",  
+		"Main Relay Box", "Main Relay Box - Port 1", "Main Relay Box - Port 2", "Main Relay Box - Port 3", "Main Relay Box - Port 4", "Main Relay Box - Port 5", "Main Relay Box - Port 6", "Main Relay Box - Port 7", "Main Relay Box - Port 8",
 		"Expansion Relay Box", "Expansion Relay Box - Port 1", "Expansion Relay Box - Port 2", "Expansion Relay Box - Port 3", "Expansion Relay Box - Port 4", "Expansion Relay Box - Port 5", "Expansion Relay Box - Port 6", "Expansion Relay Box - Port 7", "Expansion Relay Box - Port 8",
 		"Daylight Dimming Channel","Daylight Dimming Settings","Actinic Dimming Channel","Actinic Dimming Settings",
 		"Dimming Expansion Channel 0", "Dimming Channel 0 Settings", "Dimming Expansion Channel 1", "Dimming Channel 1 Settings", "Dimming Expansion Channel 2", "Dimming Channel 2 Settings", "Dimming Expansion Channel 3", "Dimming Channel 3 Settings", "Dimming Expansion Channel 4", "Dimming Channel 4 Settings", "Dimming Expansion Channel 5", "Dimming Channel 5 Settings",
 		"Aqua Illumination Port", "AI - White Channel", "AI - White Settings", "AI - Blue Channel", "AI - Blue Settings", "AI - Royal Blue Channel", "AI - Royal Blue Settings",
 		"Vortech Mode", "Radion White Channel", "Radion White Settings", "Radion Royal Blue Channel", "Radion Royal Blue Settings", "Radion Red Channel", "Radion Red Settings", "Radion Green Channel", "Radion Green Settings", "Radion Blue Channel", "Radion Blue Settings", "Radion Intensity Channel", "Radion Intensity Settings",
 		"Wifi Attachment","Buzzer"};
-	
+
 
 	public String getMenuTitle() {
 		return "Reef Angel Wizard";
@@ -281,7 +268,7 @@ int id=0;
 	public void init(Editor theEditor) {
 		this.editor = theEditor;
 	}
-	
+
 	private void ShowStep2()
 	{
 		JPanel panel = new JPanel();
@@ -297,19 +284,19 @@ int id=0;
 		JLabel text = new JLabel("<HTML><br>Arduino is now compiling your code.<br>In a few seconds, it will start uploading it to your Reef Angel Controller.<br><br>Please wait...<br><br></HTML>");
 		panel2.add(text);
 		panel.add(panel2);
-		
+
 		JOptionPane pane = new JOptionPane(panel);
 		pane.setOptions(new Object[] {});
-		dialog = pane.createDialog(editor,"Uploading code"); 
-		dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); 
+		dialog = pane.createDialog(editor,"Uploading code");
+		dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		dialog.setVisible(true);
 
 //		JOptionPane.showMessageDialog(editor,
 //				panel,
-//				"Step 2",JOptionPane.DEFAULT_OPTION);		
+//				"Step 2",JOptionPane.DEFAULT_OPTION);
 	}
 
-	
+
 	public void setSelectedButton(JPanel j,int p)
 	{
 		((JRadioButton)j.getComponent(p)).setSelected(true);
@@ -318,7 +305,7 @@ int id=0;
 			al.actionPerformed(e);
 		}
 	}
-	
+
 	public void run() {
 
 		if (editor.getSketch().getCode(0).isModified())
@@ -333,11 +320,21 @@ int id=0;
 		UIManager.put("SimpleInternalFrame.activeTitleBackground",new Color(58,95,205));
 		InputStream is = null;
 		try {
-			is = new FileInputStream(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/layout.xml");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		    File layoutXML = new File(Base.getSketchbookFolder(), "tools/Wizard/data/layout.xml");
+			is = new FileInputStream(layoutXML);
+			layoutConstraintsManager = LayoutConstraintsManager.getLayoutConstraintsManager(is);
+		}  catch (FileNotFoundException e) {
+			e.printStackTrace(System.err);
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException ignored) {
+					;
+				}
+			}
 		}
-		layoutConstraintsManager = LayoutConstraintsManager.getLayoutConstraintsManager(is);		
+
 		if (!Base.isMacOS())
 		{
 			try {
@@ -359,13 +356,12 @@ int id=0;
 
 		relay=1;
 		window=1;
-		tempunit=0;
+		tempunit= TempUnit.FAHRENHEIT;
 		settingswidth=0;
 		window=1;
 		int w=0;
 		int wa=0;
 		int wra=0;
-		editor.getBase();
 		BuildSettings();
 
 		CurvesPanel panel = new CurvesPanel();
@@ -391,7 +387,7 @@ int id=0;
 		} catch (IllegalAccessException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} 
+		}
 		SwingUtilities.updateComponentTreeUI(taskPane);
 		Side.add(taskPane);
 
@@ -435,7 +431,7 @@ int id=0;
 		ShowGenerate();
 		ShowInitialMemory();
 		ShowDone();
-		
+
 		panel.add (insidePanel,"insidePanel");
 		frame = new JDialog(editor,"Reef Angel Wizard",true);
 //		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -445,7 +441,6 @@ int id=0;
 		frame.setResizable(false);
 		frame.pack();
 		frame.setLocationRelativeTo(editor);
-		frame.setVisible(true);
 		frame.addWindowListener(new WindowListener(){
 
 			@Override
@@ -460,7 +455,8 @@ int id=0;
 
 			@Override
 			public void windowClosed(WindowEvent e) {
-				// TODO Auto-generated method stub
+				ReturnLF();
+				saveInitialValues();
 			}
 
 			@Override
@@ -481,11 +477,12 @@ int id=0;
 			@Override
 			public void windowDeactivated(WindowEvent e) {
 				// TODO Auto-generated method stub
-				ReturnLF();	
+				ReturnLF();
 				saveInitialValues();
 			}
 
 		});
+		frame.setVisible(true);
 	}
 
 	private void ConstructCode()
@@ -493,35 +490,39 @@ int id=0;
 		String d="";
 		JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
 		int NumDosing=1;
+		
+		if(timeformat == TimeFormat.ISO8601) {
+			d+= "#define DATETIME24\n";
+		}
 
-		d+="#include <ReefAngel_Features.h>\n" + 
-				"#include <Globals.h>\n" + 
-				"#include <RA_Wifi.h>\n" + 
-				"#include <Wire.h>\n" + 
-				"#include <OneWire.h>\n" + 
-				"#include <Time.h>\n" + 
-				"#include <DS1307RTC.h>\n" + 
-				"#include <InternalEEPROM.h>\n" + 
-				"#include <RA_NokiaLCD.h>\n" + 
-				"#include <RA_ATO.h>\n" + 
-				"#include <RA_Joystick.h>\n" + 
-				"#include <LED.h>\n" + 
-				"#include <RA_TempSensor.h>\n" + 
-				"#include <Relay.h>\n" + 
-				"#include <RA_PWM.h>\n" + 
-				"#include <Timer.h>\n" + 
-				"#include <Memory.h>\n" + 
-				"#include <InternalEEPROM.h>\n" + 
-				"#include <RA_Colors.h>\n" + 
-				"#include <RA_CustomColors.h>\n" + 
-				"#include <Salinity.h>\n" + 
-				"#include <RF.h>\n" + 
-				"#include <IO.h>\n" + 
-				"#include <ORP.h>\n" + 
-				"#include <AI.h>\n" + 
-				"#include <PH.h>\n" + 
-				"#include <WaterLevel.h>\n" + 
-				"#include <ReefAngel.h>\n\n"; 
+		d+="#include <ReefAngel_Features.h>\n" +
+				"#include <Globals.h>\n" +
+				"#include <RA_Wifi.h>\n" +
+				"#include <Wire.h>\n" +
+				"#include <OneWire.h>\n" +
+				"#include <Time.h>\n" +
+				"#include <DS1307RTC.h>\n" +
+				"#include <InternalEEPROM.h>\n" +
+				"#include <RA_NokiaLCD.h>\n" +
+				"#include <RA_ATO.h>\n" +
+				"#include <RA_Joystick.h>\n" +
+				"#include <LED.h>\n" +
+				"#include <RA_TempSensor.h>\n" +
+				"#include <Relay.h>\n" +
+				"#include <RA_PWM.h>\n" +
+				"#include <Timer.h>\n" +
+				"#include <Memory.h>\n" +
+				"#include <InternalEEPROM.h>\n" +
+				"#include <RA_Colors.h>\n" +
+				"#include <RA_CustomColors.h>\n" +
+				"#include <Salinity.h>\n" +
+				"#include <RF.h>\n" +
+				"#include <IO.h>\n" +
+				"#include <ORP.h>\n" +
+				"#include <AI.h>\n" +
+				"#include <PH.h>\n" +
+				"#include <WaterLevel.h>\n" +
+				"#include <ReefAngel.h>\n\n";
 
 		if (buzzer)
 		{
@@ -542,19 +543,20 @@ int id=0;
 				}
 			}
 			d+="\n";
-		}		
+		}
 
-		d+="////// Place global variable code below here\n" + 
-				"\n" + 
-				"\n" + 
-				"////// Place global variable code above here\n" + 
-				"\n" + 
-				"\n" + 
-				"void setup()\n" + 
-				"{\n" + 
-				"    // This must be the first line\n" + 
-				"    ReefAngel.Init();  //Initialize controller\n";
-		if (tempunit==1) d+="    ReefAngel.SetTemperatureUnit( Celsius );  // set to Celsius Temperature\n\n";
+		d+="////// Place global variable code below here\n" +
+				"\n" +
+				"\n" +
+				"////// Place global variable code above here\n" +
+				"\n" +
+				"\n" +
+				"void setup()\n" +
+				"{\n" +
+				"    // This must be the first line\n" +
+				"    ReefAngel.Init( " + 
+				    (tempunit==TempUnit.CELCIUS ? "DEGREE_C" : "DEGREE_F") +  
+				" );  //Initialize controller\n";
 		if (wifi==0) d+="    ReefAngel.AddStandardMenu();  // Add Standard Menu\n\n";
 
 		String f="";
@@ -617,47 +619,67 @@ int id=0;
 		if (oe!="")
 			oe=oe.substring(0, oe.length()-3);
 		else
-			oe="0";		
-		d+="    // Ports toggled in Feeding Mode\n" + 
+			oe="0";
+		d+="    // Ports toggled in Feeding Mode\n" +
 				"    ReefAngel.FeedingModePorts = " + f + ";\n";
 		if (relayexpansion==1)
 			d+="    ReefAngel.FeedingModePortsE[0] = " + fe + ";\n";
-		d+="    // Ports toggled in Water Change Mode\n" + 
+		d+="    // Ports toggled in Water Change Mode\n" +
 				"    ReefAngel.WaterChangePorts = " + w + ";\n";
 		if (relayexpansion==1)
 			d+="    ReefAngel.WaterChangePortsE[0] = " + we + ";\n";
-		d+="    // Ports toggled when Lights On / Off menu entry selected\n" + 
+		d+="    // Ports toggled when Lights On / Off menu entry selected\n" +
 				"    ReefAngel.LightsOnPorts = " + l + ";\n";
 		if (relayexpansion==1)
 			d+="    ReefAngel.LightsOnPortsE[0] = " + le + ";\n";
-		d+="    // Ports turned off when Overheat temperature exceeded\n" + 
+		d+="    // Ports turned off when Overheat temperature exceeded\n" +
 				"    ReefAngel.OverheatShutoffPorts = " + o + ";\n";
 		if (relayexpansion==1)
 			d+="    ReefAngel.OverheatShutoffPortsE[0] = " + oe + ";\n";
-		d+="    // Use T1 probe as temperature and overheat functions\n" + 
-				"    ReefAngel.TempProbe = T1_PROBE;\n" + 
+		d+="    // Use T1 probe as temperature and overheat functions\n" +
+				"    ReefAngel.TempProbe = T1_PROBE;\n" +
 				"    ReefAngel.OverheatProbe = T1_PROBE;\n";
 		if (jb1.isSelected())
-			d+="    // Set the Overheat temperature setting\n" + 
+			d+="    // Set the Overheat temperature setting\n" +
 					"    InternalMemory.OverheatTemp_write( " + (int)((Double)Overheat.getValue() *10) + " );\n";
 
 		if (ailed==1)
 		{
 			d+="\n    // Setup ATO Port for AI communication\n";
 			JRadioButton jatc=(JRadioButton) aiport.getComponent(0);
-			if (jatc.isSelected()) d+="    ReefAngel.AI.SetPort( lowATOPin );\n"; 
+			if (jatc.isSelected()) d+="    ReefAngel.AI.SetPort( lowATOPin );\n";
 
 			jatc=(JRadioButton) aiport.getComponent(1);
-			if (jatc.isSelected()) d+="    ReefAngel.AI.SetPort( highATOPin );\n"; 
+			if (jatc.isSelected()) d+="    ReefAngel.AI.SetPort( highATOPin );\n";
 
 		}
 
-		d+="\n" + 
-				"\n" + 
-				"    // Ports that are always on\n";
+		d+="\n" +
+				"\n" +
+				"    // Ports that are not used (off for safety)\n";
 
 		String sp;
 		int poffset;
+		for (int a=1;a<=16;a++)
+		{
+			if(a>8)
+			{
+				sp="Box1_Port";
+				poffset=8;
+			}
+			else
+			{
+				sp="Port";
+				poffset=0;
+			}
+			JRadioButton AOff = (JRadioButton) functions[a].getComponent(11);
+			if (AOff.isSelected()) d+= "    ReefAngel.Relay.Off( " + sp + (a-poffset) + " );\n";
+		}
+
+		d+="\n" +
+				"\n" +
+				"    // Ports that are always on\n";
+
 		for (int a=1;a<=16;a++)
 		{
 			if(a>8)
@@ -674,13 +696,13 @@ int id=0;
 			if (AOn.isSelected()) d+= "    ReefAngel.Relay.On( " + sp + (a-poffset) + " );\n";
 		}
 		d+="\n";
-		d+="    ////// Place additional initialization code below here\n" + 
-				"    \n" + 
-				"\n" + 
-				"    ////// Place additional initialization code above here\n" + 
-				"}\n" + 
-				"\n" + 
-				"void loop()\n" + 
+		d+="    ////// Place additional initialization code below here\n" +
+				"    \n" +
+				"\n" +
+				"    ////// Place additional initialization code above here\n" +
+				"}\n" +
+				"\n" +
+				"void loop()\n" +
 				"{\n";
 		for (int a=1;a<=16;a++)
 		{
@@ -705,7 +727,7 @@ int id=0;
 					case 0:
 						if (jb1.isSelected())
 						{
-							JSpinner j = null; 
+							JSpinner j = null;
 							j = (JSpinner) Timed[a].getComponent(6);
 							if ((Integer)j.getValue()>0)
 								d+= "    ReefAngel.MHLights( " + sp + (a-poffset);
@@ -713,7 +735,7 @@ int id=0;
 								d+= "    ReefAngel.StandardLights( " + sp + (a-poffset);
 							d+= ",";
 							Calendar toh= Calendar.getInstance();
-							java.util.Date dt=null; 
+							java.util.Date dt=null;
 							j = (JSpinner) Timed[a].getComponent(2);
 							dt = (java.util.Date)j.getValue();
 							toh.setTime(dt);
@@ -726,7 +748,7 @@ int id=0;
 							d+=toh.get(Calendar.MINUTE);
 							j = (JSpinner) Timed[a].getComponent(6);
 							if ((Integer)j.getValue()>0)
-								
+
 								d+= "," +j.getValue();
 							d+= " );\n";
 						}
@@ -735,15 +757,15 @@ int id=0;
 							JRadioButton jt1 = (JRadioButton) TimedMemory[a].getComponent(1);
 							if (jt1.isSelected())
 								if (((Integer) ((JSpinner)TimedMemorySettings[1].getComponent(6)).getValue()) >0)
-									d+= "    ReefAngel.DelayedStartLights( " + sp + (a-poffset) + " );\n";	
+									d+= "    ReefAngel.DelayedStartLights( " + sp + (a-poffset) + " );\n";
 								else
-									d+= "    ReefAngel.DayLights( " + sp + (a-poffset) + " );\n";	
+									d+= "    ReefAngel.DayLights( " + sp + (a-poffset) + " );\n";
 							jt1 = (JRadioButton) TimedMemory[a].getComponent(3);
 							if (jt1.isSelected())
-								d+= "    ReefAngel.ActinicLights( " + sp + (a-poffset) + " );\n";	
+								d+= "    ReefAngel.ActinicLights( " + sp + (a-poffset) + " );\n";
 							jt1 = (JRadioButton) TimedMemory[a].getComponent(5);
 							if (jt1.isSelected())
-								d+= "    ReefAngel.MoonLights( " + sp + (a-poffset) + " );\n";	
+								d+= "    ReefAngel.MoonLights( " + sp + (a-poffset) + " );\n";
 						}
 						break;
 					case 1:
@@ -751,7 +773,7 @@ int id=0;
 						if (jb1.isSelected())
 						{
 							d+= ",";
-							JSpinner jh = null; 
+							JSpinner jh = null;
 							jh = (JSpinner) Heater[a].getComponent(2);
 							d+= (int)((Double)jh.getValue() *10) + ",";
 							jh = (JSpinner) Heater[a].getComponent(4);
@@ -764,7 +786,7 @@ int id=0;
 						if (jb1.isSelected())
 						{
 							d+= ",";
-							JSpinner jc = null; 
+							JSpinner jc = null;
 							jc = (JSpinner) Chiller[a].getComponent(4);
 							d+= (int)((Double)jc.getValue() *10) + ",";
 							jc = (JSpinner) Chiller[a].getComponent(2);
@@ -774,7 +796,7 @@ int id=0;
 						break;
 					case 3:
 						JRadioButton jat = null;
-						JSpinner jats = null; 
+						JSpinner jats = null;
 
 						jat=(JRadioButton) ATO[a].getComponent(1);
 						if (jat.isSelected())
@@ -823,7 +845,7 @@ int id=0;
 						break;
 					case 4:
 						JRadioButton jwt = null;
-						JSpinner jwts = null; 
+						JSpinner jwts = null;
 
 						if (jb1.isSelected())
 						{
@@ -859,7 +881,7 @@ int id=0;
 						if (jb1.isSelected())
 						{
 							d+= ",";
-							JSpinner jh = null; 
+							JSpinner jh = null;
 							jh = (JSpinner) CO2Control[a].getComponent(2);
 							d+= (int)((Double)jh.getValue() *100) + ",";
 							jh = (JSpinner) CO2Control[a].getComponent(4);
@@ -872,7 +894,7 @@ int id=0;
 						if (jb1.isSelected())
 						{
 							d+= ",";
-							JSpinner jc = null; 
+							JSpinner jc = null;
 							jc = (JSpinner) pHControl[a].getComponent(4);
 							d+= (int)((Double)jc.getValue() *100) + ",";
 							jc = (JSpinner) pHControl[a].getComponent(2);
@@ -883,7 +905,7 @@ int id=0;
 					case 7:
 						if (jb1.isSelected())
 						{
-							JSpinner jdps = null; 
+							JSpinner jdps = null;
 							d+= "    ReefAngel.DosingPumpRepeat( " + sp + (a-poffset) + ",";
 							jdps = (JSpinner) Dosing[a].getComponent(6);
 							d+= jdps.getValue() + ",";
@@ -910,7 +932,7 @@ int id=0;
 						d+= "    ReefAngel.Relay.DelayedOn( " + sp + (a-poffset);
 						if (jb1.isSelected())
 						{
-							JSpinner jdss = null; 
+							JSpinner jdss = null;
 							d+= ",";
 							jdss = (JSpinner) Delayed[a].getComponent(2);
 							d+= jdss.getValue();
@@ -928,18 +950,18 @@ int id=0;
 			}
 		}
 
-		// daylight 
+		// daylight
 
 		JRadioButton jpd= (JRadioButton) daylightpwm.getComponent(0);
 		if (jpd.isSelected())
 		{
 			displayPWM=1;
 			if (jb1.isSelected())
-			{			
+			{
 				d+= "    ReefAngel.PWM.SetDaylight( PWMSlope(";
 				Calendar toh= Calendar.getInstance();
-				JSpinner j = null; 
-				java.util.Date dt=null; 
+				JSpinner j = null;
+				java.util.Date dt=null;
 				j = (JSpinner) daylightpwmsettings.getComponent(2);
 				dt = (java.util.Date)j.getValue();
 				toh.setTime(dt);
@@ -970,11 +992,11 @@ int id=0;
 		{
 			displayPWM=1;
 			if (jb1.isSelected())
-			{			
+			{
 				d+= "    ReefAngel.PWM.SetDaylight( PWMParabola(";
 				Calendar toh= Calendar.getInstance();
-				JSpinner j = null; 
-				java.util.Date dt=null; 
+				JSpinner j = null;
+				java.util.Date dt=null;
 				j = (JSpinner) daylightpwmsettings.getComponent(2);
 				dt = (java.util.Date)j.getValue();
 				toh.setTime(dt);
@@ -1009,7 +1031,7 @@ int id=0;
 		if (jpd.isSelected())
 		{
 			displayPWM=1;
-		}		
+		}
 		// actinic
 
 		jpd= (JRadioButton) actinicpwm.getComponent(0);
@@ -1017,11 +1039,11 @@ int id=0;
 		{
 			displayPWM=1;
 			if (jb1.isSelected())
-			{			
+			{
 				d+= "    ReefAngel.PWM.SetActinic( PWMSlope(";
 				Calendar toh= Calendar.getInstance();
-				JSpinner j = null; 
-				java.util.Date dt=null; 
+				JSpinner j = null;
+				java.util.Date dt=null;
 				j = (JSpinner) actinicpwmsettings.getComponent(2);
 				dt = (java.util.Date)j.getValue();
 				toh.setTime(dt);
@@ -1052,11 +1074,11 @@ int id=0;
 		{
 			displayPWM=1;
 			if (jb1.isSelected())
-			{			
+			{
 				d+= "    ReefAngel.PWM.SetActinic( PWMParabola(";
 				Calendar toh= Calendar.getInstance();
-				JSpinner j = null; 
-				java.util.Date dt=null; 
+				JSpinner j = null;
+				java.util.Date dt=null;
 				j = (JSpinner) actinicpwmsettings.getComponent(2);
 				dt = (java.util.Date)j.getValue();
 				toh.setTime(dt);
@@ -1102,11 +1124,11 @@ int id=0;
 				{
 					displayPWM=1;
 					if (jb1.isSelected())
-					{			
+					{
 						d+= "    ReefAngel.PWM.SetChannel( " + i + ", PWMSlope(";
 						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
+						JSpinner j = null;
+						java.util.Date dt=null;
 						j = (JSpinner) exppwmsettings[i].getComponent(2);
 						dt = (java.util.Date)j.getValue();
 						toh.setTime(dt);
@@ -1137,11 +1159,11 @@ int id=0;
 				{
 					displayPWM=1;
 					if (jb1.isSelected())
-					{			
+					{
 						d+= "    ReefAngel.PWM.SetChannel( " + i + ", PWMParabola(";
 						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
+						JSpinner j = null;
+						java.util.Date dt=null;
 						j = (JSpinner) exppwmsettings[i].getComponent(2);
 						dt = (java.util.Date)j.getValue();
 						toh.setTime(dt);
@@ -1188,11 +1210,11 @@ int id=0;
 				if (jpd.isSelected())
 				{
 					if (jb1.isSelected())
-					{			
+					{
 						d+= "    ReefAngel.AI.SetChannel( " + AIChannels[i].replace(" ","") + ", PWMSlope(";
 						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
+						JSpinner j = null;
+						java.util.Date dt=null;
 						j = (JSpinner) aipwmsettings[i].getComponent(2);
 						dt = (java.util.Date)j.getValue();
 						toh.setTime(dt);
@@ -1222,11 +1244,11 @@ int id=0;
 				if (jpd.isSelected())
 				{
 					if (jb1.isSelected())
-					{			
+					{
 						d+= "    ReefAngel.AI.SetChannel( " + AIChannels[i].replace(" ","") + ", PWMParabola(";
 						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
+						JSpinner j = null;
+						java.util.Date dt=null;
 						j = (JSpinner) aipwmsettings[i].getComponent(2);
 						dt = (java.util.Date)j.getValue();
 						toh.setTime(dt);
@@ -1264,11 +1286,11 @@ int id=0;
 		if (rfexpansion==1)
 		{
 			if (jb1.isSelected())
-			{			
+			{
 				JComboBox jc = (JComboBox) RFmods.getComponent(1);
 				JSpinner js = (JSpinner) RFmods.getComponent(3);
 				JSpinner jd = (JSpinner) RFmods.getComponent(5);
-				d+="    ReefAngel.RF.UseMemory = false;\n" + 
+				d+="    ReefAngel.RF.UseMemory = false;\n" +
 						"    ReefAngel.RF.SetMode( " + jc.getSelectedItem().toString().replace(" ","") + "," + js.getValue() + "," + jd.getValue() + " );\n";
 			}
 			else
@@ -1283,11 +1305,11 @@ int id=0;
 				{
 					radionset=true;
 					if (jb1.isSelected())
-					{			
+					{
 						d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", PWMSlope(";
 						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
+						JSpinner j = null;
+						java.util.Date dt=null;
 						j = (JSpinner) rfpwmsettings[i].getComponent(2);
 						dt = (java.util.Date)j.getValue();
 						toh.setTime(dt);
@@ -1318,11 +1340,11 @@ int id=0;
 				{
 					radionset=true;
 					if (jb1.isSelected())
-					{			
+					{
 						d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", PWMParabola(";
 						Calendar toh= Calendar.getInstance();
-						JSpinner j = null; 
-						java.util.Date dt=null; 
+						JSpinner j = null;
+						java.util.Date dt=null;
 						j = (JSpinner) rfpwmsettings[i].getComponent(2);
 						dt = (java.util.Date)j.getValue();
 						toh.setTime(dt);
@@ -1402,16 +1424,16 @@ int id=0;
 				{
 					jpwmb = (JRadioButton) exppwm[i].getComponent(3);
 					if (jpwmb.isSelected()) d+="    ReefAngel.PWM.SetChannel( " + i + ", buzzer );\n";
-				}				
+				}
 			}
 			d+="\n";
 		}
 
-		d+="    ////// Place your custom code below here\n" + 
-				"    \n" + 
-				"\n" + 
-				"    ////// Place your custom code above here\n" + 
-				"\n" + 
+		d+="    ////// Place your custom code below here\n" +
+				"    \n" +
+				"\n" +
+				"    ////// Place your custom code above here\n" +
+				"\n" +
 				"    // This should always be the last line\n";
 		if (wifi==1)
 		{
@@ -1422,10 +1444,10 @@ int id=0;
 			else
 				d+="    ReefAngel.AddWifi();\n";
 		}
-		d+="    ReefAngel.ShowInterface();\n" + 
+		d+="    ReefAngel.ShowInterface();\n" +
 				"}\n\n";
 
-		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1 || phexpansion==1 || waterlevelexpansion==1) 
+		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1 || phexpansion==1 || waterlevelexpansion==1)
 		{
 			int h=83;
 			int y=2;
@@ -1442,58 +1464,58 @@ int id=0;
 //			System.out.println(h);
 
 
-			d+="void DrawCustomMain()\n" + 
-					"{\n" + 
-					"    int x,y;\n" + 
+			d+="void DrawCustomMain()\n" +
+					"{\n" +
+					"    int x,y;\n" +
 					"    char text[10];\n";
 
 			if (dimmingexpansion==1 && displayPWM==1)
-			{	
-				d+="    // Dimming Expansion\n" + 
-						"    x = 15;\n" + 
-						"    y = " + y + ";\n" + 
-						"    for ( int a=0;a<6;a++ )\n" + 
-						"    {\n" + 
-						"      if ( a>2 ) x = 75;\n" + 
-						"      if ( a==3 ) y = " + y + ";\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x,y,\"Ch :\" );\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+12,y,a );\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+24,y,ReefAngel.PWM.GetChannelValue(a) );\n" + 
-						"      y += 10;\n" + 
-						"    }\n" + 
+			{
+				d+="    // Dimming Expansion\n" +
+						"    x = 15;\n" +
+						"    y = " + y + ";\n" +
+						"    for ( int a=0;a<6;a++ )\n" +
+						"    {\n" +
+						"      if ( a>2 ) x = 75;\n" +
+						"      if ( a==3 ) y = " + y + ";\n" +
+						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x,y,\"Ch :\" );\n" +
+						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+12,y,a );\n" +
+						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+24,y,ReefAngel.PWM.GetChannelValue(a) );\n" +
+						"      y += 10;\n" +
+						"    }\n" +
 						"    pingSerial();\n\n";
 				y+=28;
 			}
 			if ( ailed==1 )
 			{
 				y+=h;
-				d+="    // Aqua Illumination\n" + 
-						"    x = 10;\n" + 
-						"    y = " + y + ";\n" + 
-						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x,y,\"WH:\" );\n" + 
-						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+38,y,\"BL:\" );\n" + 
-						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+76,y,\"RB:\" );\n" + 
-						"    for ( int a=0;a<3;a++ )\n" + 
-						"    {\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+18,y,ReefAngel.AI.GetChannel(a) );\n" + 
-						"      x += 38;\n" + 
-						"    }\n" + 
+				d+="    // Aqua Illumination\n" +
+						"    x = 10;\n" +
+						"    y = " + y + ";\n" +
+						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x,y,\"WH:\" );\n" +
+						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+38,y,\"BL:\" );\n" +
+						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+76,y,\"RB:\" );\n" +
+						"    for ( int a=0;a<3;a++ )\n" +
+						"    {\n" +
+						"      ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+18,y,ReefAngel.AI.GetChannel(a) );\n" +
+						"      x += 38;\n" +
+						"    }\n" +
 						"    pingSerial();\n\n";
 				y+=10;
 			}
 			if (ioexpansion==1)
 			{
 				y+=h;
-				d+="    // I/O Expansion\n" + 
-						"    byte bkcolor;\n" + 
-						"    x = 14;\n" + 
-						"    y = " + y + ";\n" + 
-						"    for ( int a=0;a<6;a++ )\n" + 
-						"    {\n" + 
-						"      ReefAngel.LCD.DrawCircleOutline( x+(a*20),y,4,COLOR_MEDIUMORCHID );\n" + 
-						"      if ( ReefAngel.IO.GetChannel(a) ) bkcolor=COLOR_WHITE; else bkcolor=COLOR_GRAY;\n" + 
-						"      ReefAngel.LCD.FillCircle( x+(a*20),y,2,bkcolor );\n" + 
-						"    }\n" + 
+				d+="    // I/O Expansion\n" +
+						"    byte bkcolor;\n" +
+						"    x = 14;\n" +
+						"    y = " + y + ";\n" +
+						"    for ( int a=0;a<6;a++ )\n" +
+						"    {\n" +
+						"      ReefAngel.LCD.DrawCircleOutline( x+(a*20),y,4,COLOR_MEDIUMORCHID );\n" +
+						"      if ( ReefAngel.IO.GetChannel(a) ) bkcolor=COLOR_WHITE; else bkcolor=COLOR_GRAY;\n" +
+						"      ReefAngel.LCD.FillCircle( x+(a*20),y,2,bkcolor );\n" +
+						"    }\n" +
 						"    pingSerial();\n\n";
 				y+=5;
 			}
@@ -1504,13 +1526,13 @@ int id=0;
 				y=62;
 				h=3;
 			}
-			d+="    // Parameters\n" + 
-					"#if defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
-					"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params,\n" + 
-					"    ReefAngel.PWM.GetDaylightValue(), ReefAngel.PWM.GetActinicValue() );\n" + 
-					"#else // defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
-					"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params );\n" + 
-					"#endif // defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
+			d+="    // Parameters\n" +
+					"#if defined DisplayLEDPWM && ! defined RemoveAllLights\n" +
+					"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params,\n" +
+					"    ReefAngel.PWM.GetDaylightValue(), ReefAngel.PWM.GetActinicValue() );\n" +
+					"#else // defined DisplayLEDPWM && ! defined RemoveAllLights\n" +
+					"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params );\n" +
+					"#endif // defined DisplayLEDPWM && ! defined RemoveAllLights\n" +
 					"    pingSerial();\n\n";
 			y+=28;
 
@@ -1521,16 +1543,16 @@ int id=0;
 
 				if (salinityexpansion==1)
 				{
-					d+="    // Salinity\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,15," + y + ", \"SAL:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,39," + y + ", ReefAngel.Params.Salinity );\n" + 
+					d+="    // Salinity\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,15," + y + ", \"SAL:\" );\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,39," + y + ", ReefAngel.Params.Salinity );\n" +
 							"    pingSerial();\n\n";
 				}
 				if (orpexpansion==1)
 				{
-					d+="    // ORP\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor,75," + y + ", \"ORP:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor,99," + y + ", ReefAngel.Params.ORP );\n" + 
+					d+="    // ORP\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor,75," + y + ", \"ORP:\" );\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor,99," + y + ", ReefAngel.Params.ORP );\n" +
 							"    pingSerial();\n\n";
 				}
 
@@ -1543,16 +1565,16 @@ int id=0;
 
 				if (phexpansion==1)
 				{
-					d+="    // pH Expansion\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,15," + y + ", \"PHE:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,39," + y + ", ReefAngel.Params.PHExp );\n" + 
+					d+="    // pH Expansion\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,15," + y + ", \"PHE:\" );\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,39," + y + ", ReefAngel.Params.PHExp );\n" +
 							"    pingSerial();\n\n";
 				}
 				if (waterlevelexpansion==1)
 				{
-					d+="    // Water Level\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,75," + y + ", \"WL:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,99," + y + ", ReefAngel.WaterLevel.GetLevel() );\n" + 
+					d+="    // Water Level\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,75," + y + ", \"WL:\" );\n" +
+							"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,99," + y + ", ReefAngel.WaterLevel.GetLevel() );\n" +
 							"    pingSerial();\n\n";
 				}
 
@@ -1561,20 +1583,20 @@ int id=0;
 
 			y+=h;
 
-			d+="    // Main Relay Box\n" + 
-					"    byte TempRelay = ReefAngel.Relay.RelayData;\n" + 
-					"    TempRelay &= ReefAngel.Relay.RelayMaskOff;\n" + 
-					"    TempRelay |= ReefAngel.Relay.RelayMaskOn;\n" + 
-					"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" + 
+			d+="    // Main Relay Box\n" +
+					"    byte TempRelay = ReefAngel.Relay.RelayData;\n" +
+					"    TempRelay &= ReefAngel.Relay.RelayMaskOff;\n" +
+					"    TempRelay |= ReefAngel.Relay.RelayMaskOn;\n" +
+					"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" +
 					"    pingSerial();\n\n";
 			y+=11;
 			if (relayexpansion==1)
 			{
 				y+=h;
-				d+="    // Relay Expansion\n" + 
-						"    TempRelay = ReefAngel.Relay.RelayDataE[0];\n" + 
-						"    TempRelay &= ReefAngel.Relay.RelayMaskOffE[0];\n" + 
-						"    TempRelay |= ReefAngel.Relay.RelayMaskOnE[0];\n" + 
+				d+="    // Relay Expansion\n" +
+						"    TempRelay = ReefAngel.Relay.RelayDataE[0];\n" +
+						"    TempRelay &= ReefAngel.Relay.RelayMaskOffE[0];\n" +
+						"    TempRelay |= ReefAngel.Relay.RelayMaskOnE[0];\n" +
 						"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" +
 						"    pingSerial();\n\n";
 				y+=10;
@@ -1583,54 +1605,54 @@ int id=0;
 
 			y+=h;
 
-			d+="    // Date and Time\n" + 
-					"    ReefAngel.LCD.DrawDate( 6, 122 );\n" + 
+			d+="    // Date and Time\n" +
+					"    ReefAngel.LCD.DrawDate( 6, 122 );\n" +
 					"    pingSerial();\n";
 
-			d+="}\n" + 
-					"\n" + 
-					"void DrawCustomGraph()\n" + 
-					"{\n";  
+			d+="}\n" +
+					"\n" +
+					"void DrawCustomGraph()\n" +
+					"{\n";
 			if (salinityexpansion==0 && orpexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
 				d+="    ReefAngel.LCD.DrawGraph( 5, 5 );\n";
 			d+="}\n";
 		}
-//		editor.getBase().handleNewReplace();
+//		Base.handleNewReplace();
 		editor.handleSelectAll();
 		editor.setSelectedText(d);
-//		if (upload) 
+//		if (upload)
 //		{
 //			editor.handleExport(false);
 //			ShowUploading();
 //		}
 	}
-	
-	
+
+
 	private void ConstructMemCode()
 	{
 		String s="";
 		boolean bfunction=false;
-		
-		s="#include <ReefAngel_Features.h>\r\n" + 
-				"#include <Globals.h>\r\n" + 
-				"#include <Time.h>\r\n" + 
-				"#include <OneWire.h>\r\n" + 
-				"#include <RA_NokiaLCD.h>\r\n" + 
-				"#include <avr/pgmspace.h>\r\n" + 
-				"#include <InternalEEPROM.h>\r\n" + 
-				"#include <Wire.h>\r\n" + 
-				"#include <Memory.h>\r\n" + 
-				"\r\n" + 
-				"RA_NokiaLCD e;\r\n" + 
-				"\r\n" + 
-				"void setup()\r\n" + 
-				"{\r\n" + 
-				"    e.Init();\r\n" + 
-				"    e.Clear(COLOR_WHITE,0,0,132,132);\r\n" + 
-				"    e.BacklightOn();\r\n" + 
+
+		s="#include <ReefAngel_Features.h>\r\n" +
+				"#include <Globals.h>\r\n" +
+				"#include <Time.h>\r\n" +
+				"#include <OneWire.h>\r\n" +
+				"#include <RA_NokiaLCD.h>\r\n" +
+				"#include <avr/pgmspace.h>\r\n" +
+				"#include <InternalEEPROM.h>\r\n" +
+				"#include <Wire.h>\r\n" +
+				"#include <Memory.h>\r\n" +
+				"\r\n" +
+				"RA_NokiaLCD e;\r\n" +
+				"\r\n" +
+				"void setup()\r\n" +
+				"{\r\n" +
+				"    e.Init();\r\n" +
+				"    e.Clear(COLOR_WHITE,0,0,132,132);\r\n" +
+				"    e.BacklightOn();\r\n" +
 				"\r\n";
 		s+="    InternalMemory.OverheatTemp_write( " + (int)((Double)Overheat.getValue() *10) + " );\r\n";
-		
+
 		//Timed
 		bfunction=false;
 		for (int a=1;a<16;a++)
@@ -1640,16 +1662,16 @@ int id=0;
 		}
 		if (bfunction)
 		{
-			Calendar calendar = GregorianCalendar.getInstance();  
-			calendar.setTime((Date) ((JSpinner)TimedMemorySettings[1].getComponent(2)).getValue());  
+			Calendar calendar = GregorianCalendar.getInstance();
+			calendar.setTime((Date) ((JSpinner)TimedMemorySettings[1].getComponent(2)).getValue());
 			s+="    InternalMemory.StdLightsOnHour_write( " + calendar.get(Calendar.HOUR_OF_DAY) + " );\r\n";
 			s+="    InternalMemory.StdLightsOnMinute_write( " + calendar.get(Calendar.MINUTE) + " );\r\n";
-			calendar.setTime((Date) ((JSpinner)TimedMemorySettings[1].getComponent(4)).getValue());  
+			calendar.setTime((Date) ((JSpinner)TimedMemorySettings[1].getComponent(4)).getValue());
 			s+="    InternalMemory.StdLightsOffHour_write( " + calendar.get(Calendar.HOUR_OF_DAY) + " );\r\n";
 			s+="    InternalMemory.StdLightsOffMinute_write( " + calendar.get(Calendar.MINUTE) + " );\r\n";
 			if (((Integer) ((JSpinner)TimedMemorySettings[1].getComponent(6)).getValue()) >0)
 				s+="    InternalMemory.DelayedStart_write( " + ((JSpinner)TimedMemorySettings[1].getComponent(6)).getValue() + " );\r\n";
-				
+
 			s+="    InternalMemory.ActinicOffset_write( " + ((JSpinner)TimedMemorySettings[1].getComponent(8)).getValue() + " );\r\n";
 		}
 
@@ -1691,7 +1713,7 @@ int id=0;
 			s+="    InternalMemory.ATOExtendedTimeout_write( " + ((JSpinner)ATO[1].getComponent(5)).getValue()  + " );\r\n";
 			s+="    InternalMemory.ATOHourInterval_write( 0 );\r\n";
 		}
-		
+
 		//WM
 		bfunction=false;
 		for (int a=1;a<16;a++)
@@ -1704,7 +1726,7 @@ int id=0;
 			s+="    InternalMemory.WM1Timer_write( " + ((JSpinner)WM[1].getComponent(4)).getValue()  + " );\r\n";
 			s+="    InternalMemory.WM2Timer_write( " + ((JSpinner)WM[1].getComponent(4)).getValue()  + " );\r\n";
 		}
-		
+
 		//CO2Control
 		bfunction=false;
 		for (int a=1;a<16;a++)
@@ -1717,7 +1739,7 @@ int id=0;
 			s+="    InternalMemory.CO2ControlOn_write( " + ((JSpinner)CO2Control[1].getComponent(2)).getValue()  + " );\r\n";
 			s+="    InternalMemory.CO2ControlOff_write( " + ((JSpinner)CO2Control[1].getComponent(4)).getValue()  + " );\r\n";
 		}
-		
+
 		//PHControl
 		bfunction=false;
 		for (int a=1;a<16;a++)
@@ -1730,7 +1752,7 @@ int id=0;
 			s+="    InternalMemory.PHControlOn_write( " + ((JSpinner)pHControl[1].getComponent(2)).getValue()  + " );\r\n";
 			s+="    InternalMemory.PHControlOff_write( " + ((JSpinner)pHControl[1].getComponent(4)).getValue()  + " );\r\n";
 		}
-		
+
 		//Dosing
 		int numdosing=0;
 		for (int a=1;a<16;a++)
@@ -1762,7 +1784,7 @@ int id=0;
 		{
 			s+="    InternalMemory.DelayedStart_write( " + ((JSpinner)Delayed[1].getComponent(2)).getValue()  + " );\r\n";
 		}
-		
+
 		// Daylight PWM
 		if (((JRadioButton) daylightpwm.getComponent(0)).isSelected())
 		{
@@ -1775,7 +1797,7 @@ int id=0;
 			s+="    InternalMemory.PWMSlopeStartD_write( " + ((JSpinner)daylightpwmsettings.getComponent(8)).getValue()  + " );\r\n";
 			s+="    InternalMemory.PWMSlopeEndD_write( " + ((JSpinner)daylightpwmsettings.getComponent(10)).getValue()  + " );\r\n";
 		}
-		
+
 		// Actinic PWM
 		if (((JRadioButton) actinicpwm.getComponent(0)).isSelected())
 		{
@@ -1804,7 +1826,7 @@ int id=0;
 				s+="    InternalMemory.PWMSlopeEnd" + a + "_write( " + ((JSpinner)exppwmsettings[a].getComponent(10)).getValue()  + " );\r\n";
 			}
 		}
-		
+
 		// AI
 		String AIc[] = {"W","B","RB"};
 		for (int a=0;a<3;a++)
@@ -1838,26 +1860,26 @@ int id=0;
 				s+="    InternalMemory.RadionSlopeEnd" + RFc[a] + "_write( " + ((JSpinner)rfpwmsettings[a].getComponent(10)).getValue()  + " );\r\n";
 			}
 		}
-		
-		s+="    InternalMemory.IMCheck_write(0xCF06A31E);\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+20, MENU_START_ROW*3, \"Memory Updated\");\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*6, \"You can now\");\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*7, \"upload your\");\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+33, MENU_START_ROW*8, \"INO code\");\r\n" + 
-				"}\r\n" + 
-				"\r\n" + 
-				"void loop()\r\n" + 
-				"{\r\n" + 
+
+		s+="    InternalMemory.IMCheck_write(0xCF06A31E);\r\n" +
+				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+20, MENU_START_ROW*3, \"Memory Updated\");\r\n" +
+				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*6, \"You can now\");\r\n" +
+				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*7, \"upload your\");\r\n" +
+				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+33, MENU_START_ROW*8, \"INO code\");\r\n" +
+				"}\r\n" +
+				"\r\n" +
+				"void loop()\r\n" +
+				"{\r\n" +
 				"}\r\n";
-		
+
 		editor.getBase().handleNewReplace();
 		editor.setSelectedText(s);
 
 		}
-	
+
 	private void ShowWelcome()
 	{
-		insidePanel.add(new Inside("<HTML>Welcome to the Reef Angel Wizard.<br><br>I'm going to walk you through the whole process of generating a code for your Reef Angel Controller.<br><br>Version: ##tool.version##<br><br></HTML>"), Titles[0]);	
+		insidePanel.add(new Inside("<HTML>Welcome to the Reef Angel Wizard.<br><br>I'm going to walk you through the whole process of generating a code for your Reef Angel Controller.<br><br>Version: ##tool.version##<br><br></HTML>"), Titles[0]);
 	}
 
 	private void ShowMemorySettings()
@@ -1875,10 +1897,10 @@ int id=0;
 		j1.add(memsettings);
 		j1.setOpaque(false);
 //		j1.add(new JLabel("Test"));
-		
+
 		j.add(i);
 		j.add(j1);
-		insidePanel.add(j, Titles[1]);	
+		insidePanel.add(j, Titles[1]);
 	}
 
 	private void ShowTemperature()
@@ -1905,7 +1927,7 @@ int id=0;
 
 		insidePanel.add(j,Titles[2]);
 	}
-	
+
 	private void ShowExpansion()
 	{
 		JPanel j = new JPanel();
@@ -1916,9 +1938,9 @@ int id=0;
 		expansionmods.setOpaque(false);
 		j.add(expansionmods,"expansionmods");
 
-		insidePanel.add(j,Titles[3]);		
-	}	
-	
+		insidePanel.add(j,Titles[3]);
+	}
+
 	private void ShowAttachment()
 	{
 		JPanel j = new JPanel();
@@ -1929,8 +1951,8 @@ int id=0;
 		attachmentmods.setOpaque(false);
 		j.add(attachmentmods,"attachmentmods");
 
-		insidePanel.add(j,Titles[4]);		
-	}	
+		insidePanel.add(j,Titles[4]);
+	}
 
 	private void ShowRelays()
 	{
@@ -1944,7 +1966,7 @@ int id=0;
 		JLabel c = new JLabel(iconnection);
 		j.add(c,"icon");
 
-		insidePanel.add(j,Titles[5]);	
+		insidePanel.add(j,Titles[5]);
 
 		j = new JPanel();
 		j.setOpaque(false);
@@ -1956,7 +1978,7 @@ int id=0;
 		c = new JLabel(iconnection);
 		j.add(c,"icon");
 
-		insidePanel.add(j,Titles[14]);	
+		insidePanel.add(j,Titles[14]);
 	}
 
 	private void ShowRelaySetup()
@@ -1975,8 +1997,8 @@ int id=0;
 			ports[a].setOpaque(false);
 			j.add(ports[a],"ports");
 
-			insidePanel.add(j,Titles[a+5]);	
-		}		
+			insidePanel.add(j,Titles[a+5]);
+		}
 
 		for (int a=1;a<=8;a++)
 		{
@@ -1992,10 +2014,10 @@ int id=0;
 			ports[a+8].setOpaque(false);
 			j.add(ports[a+8],"ports");
 
-			insidePanel.add(j,Titles[a+14]);	
-		}			
+			insidePanel.add(j,Titles[a+14]);
+		}
 	}
-	
+
 	private void ShowPWM()
 	{
 		JPanel j = new JPanel();
@@ -2009,9 +2031,9 @@ int id=0;
 		j.add(c,"icon");
 		j.add(daylightpwm,"pwm");
 //		j.add(daylightpwm1,"pwm1");
-		
+
 		insidePanel.add(j,Titles[23]);
-		
+
 		j = new JPanel();
 		j.setOpaque(false);
 		j.setLayout(layoutConstraintsManager.createLayout("pwmpanel", j));
@@ -2023,9 +2045,9 @@ int id=0;
 		j.add(c,"icon");
 		j.add(actinicpwm,"pwm");
 //		j.add(actinicpwm1,"pwm1");
-		
+
 		insidePanel.add(j,Titles[25]);
-	}	
+	}
 
 	private void ShowPWMSettings()
 	{
@@ -2040,7 +2062,7 @@ int id=0;
 		daylightpwmsettingspanel.add(daylightpwmsettings,"pwmd");
 		daylightpwmsettingspanel.add(new JLabel(""),"memlabel");
 		insidePanel.add(daylightpwmsettingspanel,Titles[24]);
-		
+
 		actinicpwmsettingspanel = new JPanel();
 		actinicpwmsettingspanel.setOpaque(false);
 		actinicpwmsettingspanel.setLayout(layoutConstraintsManager.createLayout("pwmsettingspanela", actinicpwmsettingspanel));
@@ -2053,7 +2075,7 @@ int id=0;
 		actinicpwmsettingspanel.add(new JLabel(""),"memlabel");
 		insidePanel.add(actinicpwmsettingspanel,Titles[26]);
 	}
-	
+
 
 	private void ShowExpPWM()
 	{
@@ -2070,11 +2092,11 @@ int id=0;
 			j.add(c,"icon");
 			j.add(exppwm[a],"pwm");
 	//		j.add(daylightpwm1,"pwm1");
-			
+
 			insidePanel.add(j,Titles[27+(a*2)]);
 		}
-	}		
-	
+	}
+
 	private void ShowExpPWMSettings()
 	{
 		for(int a=0;a<6;a++)
@@ -2088,11 +2110,11 @@ int id=0;
 			JLabel cd = new JLabel(iconnectiond);
 			exppwmsettingspanel[a].add(cd,"icond");
 			exppwmsettingspanel[a].add(exppwmsettings[a],"pwmd");
-			exppwmsettingspanel[a].add(new JLabel(""),"memlabel");			
+			exppwmsettingspanel[a].add(new JLabel(""),"memlabel");
 			insidePanel.add(exppwmsettingspanel[a],Titles[28+(a*2)]);
-		}		
-	}	
-	
+		}
+	}
+
 	private void ShowAIPort()
 	{
 		JPanel j = new JPanel();
@@ -2107,9 +2129,9 @@ int id=0;
 		aiport.setOpaque(false);
 		j.add(aiport,"aiport");
 
-		insidePanel.add(j,Titles[39]);			
-	}		
-	
+		insidePanel.add(j,Titles[39]);
+	}
+
 	private void ShowAIPWM()
 	{
 		for(int a=0;a<3;a++)
@@ -2125,10 +2147,10 @@ int id=0;
 			j.add(c,"icon");
 			j.add(aipwm[a],"pwm");
 	//		j.add(daylightpwm1,"pwm1");
-			
+
 			insidePanel.add(j,Titles[40+(a*2)]);
-		}		
-	}		
+		}
+	}
 
 	private void ShowAIPWMSettings()
 	{
@@ -2143,11 +2165,11 @@ int id=0;
 			JLabel cd = new JLabel(iconnectiond);
 			aisettingspanel[a].add(cd,"icond");
 			aisettingspanel[a].add(aipwmsettings[a],"pwmd");
-			aisettingspanel[a].add(new JLabel(""),"memlabel");			
+			aisettingspanel[a].add(new JLabel(""),"memlabel");
 			insidePanel.add(aisettingspanel[a],Titles[41+(a*2)]);
-		}		
-	}		
-	
+		}
+	}
+
 
 	private void ShowVortech()
 	{
@@ -2159,9 +2181,9 @@ int id=0;
 		RFmods.setOpaque(false);
 		j.add(RFmods,"icon");
 
-		insidePanel.add(j,Titles[46]);	
-	}		
-	
+		insidePanel.add(j,Titles[46]);
+	}
+
 
 	private void ShowRFPWM()
 	{
@@ -2177,14 +2199,14 @@ int id=0;
 			JLabel c = new JLabel(iconnection);
 			j.add(c,"icon");
 			j.add(rfpwm[a],"pwm");
-			
+
 			insidePanel.add(j,Titles[47+(a*2)]);
-		}		
-	}		
+		}
+	}
 
 	private void ShowRFPWMSettings()
 	{
-		
+
 		for(int a=0;a<6;a++)
 		{
 			rfsettingspanel[a] = new JPanel();
@@ -2196,10 +2218,10 @@ int id=0;
 			JLabel cd = new JLabel(iconnectiond);
 			rfsettingspanel[a].add(cd,"icond");
 			rfsettingspanel[a].add(rfpwmsettings[a],"pwmd");
-			rfsettingspanel[a].add(new JLabel(""),"memlabel");			
+			rfsettingspanel[a].add(new JLabel(""),"memlabel");
 			insidePanel.add(rfsettingspanel[a],Titles[48+(a*2)]);
-		}		
-	}		
+		}
+	}
 
 	private void ShowWifi()
 	{
@@ -2211,9 +2233,9 @@ int id=0;
 		wifiportal.setOpaque(false);
 		j.add(wifiportal,"icon");
 
-		insidePanel.add(j,Titles[59]);	
-	}	
-	
+		insidePanel.add(j,Titles[59]);
+	}
+
 	private void ShowBuzzer()
 	{
 		JPanel j = new JPanel();
@@ -2224,11 +2246,11 @@ int id=0;
 		Buzzermods.setOpaque(false);
 		j.add(Buzzermods,"icon");
 
-		insidePanel.add(j,Titles[60]);	
-	}	
+		insidePanel.add(j,Titles[60]);
+	}
 	private void ShowGenerate()
 	{
-		
+
 		JPanel j = new JPanel();
 		j.setOpaque(false);
 		j.setLayout(new GridLayout(2,1));
@@ -2247,7 +2269,7 @@ int id=0;
 
 	private void ShowInitialMemory()
 	{
-		
+
 		JPanel j = new JPanel();
 		j.setOpaque(false);
 		j.setLayout(new GridLayout(2,1));
@@ -2263,7 +2285,7 @@ int id=0;
 
 		insidePanel.add(j,"Upload Memory Settings");
 	}
-	
+
 	private void ShowUploading()
 	{
 		JPanel panel = new JPanel();
@@ -2281,9 +2303,9 @@ int id=0;
 		panel.add(panel2);
 		JOptionPane.showMessageDialog(editor,
 				panel,
-				"Reef Angel Wizard",JOptionPane.DEFAULT_OPTION);		
-	}	
-	
+				"Reef Angel Wizard",JOptionPane.DEFAULT_OPTION);
+	}
+
 	private void ShowDone()
 	{
 		JPanel j = new JPanel();
@@ -2292,21 +2314,21 @@ int id=0;
 		Inside i = new Inside("<HTML>We are done. You code was uploaded successfully to your Reef Angel controller.<br><br>You can repeat these steps at any time if you want to change anything in the future.<br><br></HTML>");
 		j.add(i,"i");
 
-		insidePanel.add(j,"Done");	
+		insidePanel.add(j,"Done");
 	}
-	
-	private static boolean isBrowsingSupported() { 
-		if (!Desktop.isDesktopSupported()) { 
-			return false; 
-		} 
-		boolean result = false; 
-		Desktop desktop = java.awt.Desktop.getDesktop(); 
-		if (desktop.isSupported(Desktop.Action.BROWSE)) { 
-			result = true; 
-		} 
-		return result; 
 
-	} 
+	private static boolean isBrowsingSupported() {
+		if (!Desktop.isDesktopSupported()) {
+			return false;
+		}
+		boolean result = false;
+		Desktop desktop = java.awt.Desktop.getDesktop();
+		if (desktop.isSupported(Desktop.Action.BROWSE)) {
+			result = true;
+		}
+		return result;
+
+	}
 
 	public static void copy(String fromFileName, String toFileName)
 
@@ -2385,7 +2407,7 @@ int id=0;
 
 	private void AddPanel(JPanel container)
 	{
-    	JPanel panel1 = new JPanel(); 
+    	JPanel panel1 = new JPanel();
     	panel1.setLayout(new BoxLayout( panel1, BoxLayout.PAGE_AXIS));
     	ImageIcon icon=null;
 		icon = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_small.png");
@@ -2393,41 +2415,41 @@ int id=0;
 		panel1.add(logo);
 		logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-	    JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");   
-		RA_link.setEditable(false);   
-		RA_link.setOpaque(false);   
-		RA_link.setBorder(BorderFactory.createEmptyBorder()); 
-		RA_link.setBackground(new Color(0,0,0,0)); 
+	    JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");
+		RA_link.setEditable(false);
+		RA_link.setOpaque(false);
+		RA_link.setBorder(BorderFactory.createEmptyBorder());
+		RA_link.setBackground(new Color(0,0,0,0));
 	    ((HTMLDocument)RA_link.getDocument()).getStyleSheet().addRule(bodyRule);
 	    panel1.add(RA_link);
-	    RA_link.addHyperlinkListener(new HyperlinkListener() {   
+	    RA_link.addHyperlinkListener(new HyperlinkListener() {
 		public void hyperlinkUpdate(HyperlinkEvent hle)
-		{   
+		{
 			if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
-			{   
-				if (isBrowsingSupported()) { 
-				      try { 
-				          Desktop desktop = java.awt.Desktop.getDesktop(); 
-				          URI uri = new java.net.URI(hle.getURL().toString()); 
-				          desktop.browse(uri); 
-				      } catch (URISyntaxException use) { 
-				          throw new AssertionError(use); 
-				      } catch (IOException ioe) { 
-				          ioe.printStackTrace(); 
-				          JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE); 
-				      } 							       
-				} 
+			{
+				if (isBrowsingSupported()) {
+				      try {
+				          Desktop desktop = java.awt.Desktop.getDesktop();
+				          URI uri = new java.net.URI(hle.getURL().toString());
+				          desktop.browse(uri);
+				      } catch (URISyntaxException use) {
+				          throw new AssertionError(use);
+				      } catch (IOException ioe) {
+				          ioe.printStackTrace();
+				          JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE);
+				      }
+				}
 
-			}   
+			}
 		}
 		});
-		
+
 	    container.add(panel1);
 	}
 
 	private void AddPanelRelay(JPanel container)
 	{
-		JPanel panel1 = new JPanel(); 
+		JPanel panel1 = new JPanel();
 		panel1.setLayout(new BoxLayout( panel1, BoxLayout.PAGE_AXIS));
 		ImageIcon icon=null;
 		icon = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/ra_small.png");
@@ -2435,35 +2457,35 @@ int id=0;
 		panel1.add(logo);
 		logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-		JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");   
-		RA_link.setEditable(false);   
-		RA_link.setOpaque(false);   
-		RA_link.setBorder(BorderFactory.createEmptyBorder()); 
-		RA_link.setBackground(new Color(0,0,0,0)); 
+		JEditorPane RA_link = new JEditorPane("text/html","<html><center><a href='http://www.reefangel.com'>www.reefangel.com</a></center></html>");
+		RA_link.setEditable(false);
+		RA_link.setOpaque(false);
+		RA_link.setBorder(BorderFactory.createEmptyBorder());
+		RA_link.setBackground(new Color(0,0,0,0));
 		((HTMLDocument)RA_link.getDocument()).getStyleSheet().addRule(bodyRule);
 		panel1.add(RA_link);
-		RA_link.addHyperlinkListener(new HyperlinkListener() {   
+		RA_link.addHyperlinkListener(new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent hle)
-			{   
+			{
 				if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
-				{   
-					if (isBrowsingSupported()) { 
-						try { 
-							Desktop desktop = java.awt.Desktop.getDesktop(); 
-							URI uri = new java.net.URI(hle.getURL().toString()); 
-							desktop.browse(uri); 
-						} catch (URISyntaxException use) { 
-							throw new AssertionError(use); 
-						} catch (IOException ioe) { 
-							ioe.printStackTrace(); 
-							JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE); 
-						} 							       
-					} 
+				{
+					if (isBrowsingSupported()) {
+						try {
+							Desktop desktop = java.awt.Desktop.getDesktop();
+							URI uri = new java.net.URI(hle.getURL().toString());
+							desktop.browse(uri);
+						} catch (URISyntaxException use) {
+							throw new AssertionError(use);
+						} catch (IOException ioe) {
+							ioe.printStackTrace();
+							JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE);
+						}
+					}
 
-				}   
+				}
 			}
 		});
-		JLabel emptylabel = new JLabel("<html><br><html>"); 
+		JLabel emptylabel = new JLabel("<html><br><html>");
 
 		panel1.add(emptylabel);
 		emptylabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -2471,7 +2493,7 @@ int id=0;
 		ImageIcon iconnection = null;
 		iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/relay_small.png");
 		JLabel c = new JLabel(iconnection);
-		panel1.add(c);    	
+		panel1.add(c);
 		c.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		JPanel p = new JPanel();
@@ -2504,7 +2526,7 @@ int id=0;
 
 		}
 
-		panel1.add(p);    	
+		panel1.add(p);
 		p.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		container.add(panel1);
@@ -2533,7 +2555,7 @@ int id=0;
 					"Error Code: " + result,
 					"Error",JOptionPane.ERROR_MESSAGE);
 			return 100;
-		}		  
+		}
 	}
 
 	private int NextPrevButton(JPanel panel, String title)
@@ -2563,8 +2585,8 @@ int id=0;
 					"Error Code: " + result,
 					"Error",JOptionPane.ERROR_MESSAGE);
 			return 100;
-		}		  
-	}	  
+		}
+	}
 
 	private int GeneratePrevButton(JPanel panel, String title)
 	{
@@ -2597,8 +2619,8 @@ int id=0;
 					"Error Code: " + result,
 					"Error",JOptionPane.ERROR_MESSAGE);
 			return 100;
-		}		  
-	}	  
+		}
+	}
 
 	private void UpdateTimeLabels()
 	{
@@ -2609,7 +2631,7 @@ int id=0;
 		JSpinner TimerOff = (JSpinner)TimedMemorySettings[r].getComponent(4);
 		JSpinner TimerDelay = (JSpinner)TimedMemorySettings[r].getComponent(6);
 		JSpinner ActinicOffset = (JSpinner)TimedMemorySettings[r].getComponent(8);
-		
+
 		for (int a=1;a<=16;a++)
 		{
 			JSpinner TimerOn1 = (JSpinner)TimedMemorySettings[a].getComponent(2);
@@ -2621,14 +2643,14 @@ int id=0;
 			TimerOff1.setValue(TimerOff.getValue());
 			TimerDelay1.setValue(TimerDelay.getValue());
 			ActinicOffset1.setValue(ActinicOffset.getValue());
-			
+
 			JLabel lact = (JLabel)TimedMemorySettings[a].getComponent(9);
 			JLabel lmoon = (JLabel)TimedMemorySettings[a].getComponent(10);
 			JLabel ltd = (JLabel)TimedMemory[a].getComponent(2);
 			JLabel lta = (JLabel)TimedMemory[a].getComponent(4);
 			JLabel ltm = (JLabel)TimedMemory[a].getComponent(6);
 
-	    	Date dt=null; 
+	    	Date dt=null;
 			DateFormat formatter = new SimpleDateFormat("h:mm a");
 
 			String s="";
@@ -2638,7 +2660,7 @@ int id=0;
 			s1+=" and turns off at ";
 			dt = (Date) TimerOff.getValue();
 			s1+=formatter.format(dt);
-			
+
 			ltd.setText(s1);
 			s1=s1.replace("Turns on at ", "Start Time is ");
 			s1=s1.replace(" and turns off at ", " and End Time is");
@@ -2653,7 +2675,7 @@ int id=0;
 			{
 				((JLabel)aisettingspanel[b].getComponent(3)).setText(s1);
 			}
-			
+
 			s="Your Actinics will turn on at ";
 			s1="Turns on at ";
 			dt = (Date) TimerOn.getValue();
@@ -2666,7 +2688,7 @@ int id=0;
 			dt.setTime(dt.getTime()+((Integer) ActinicOffset.getValue() * 60 * 1000)) ;
 			s+=formatter.format(dt);
 			s1+=formatter.format(dt);
-			
+
 			lact.setText(s);
 			lta.setText(s1);
 			s1=s1.replace("Turns on at ", "Start Time is ");
@@ -2683,12 +2705,12 @@ int id=0;
 			dt = (Date) TimerOn.getValue();
 			s+=formatter.format(dt);
 			s1+=formatter.format(dt);
-			
+
 			lmoon.setText(s);
 			ltm.setText(s1);
 		}
 	}
-	
+
 	private void BuildSettings()
 	{
 
@@ -2734,30 +2756,27 @@ int id=0;
 						((JSpinner)pHControl[a].getComponent(2)).setValue(((JSpinner)pHControl[r].getComponent(2)).getValue());
 						((JSpinner)pHControl[a].getComponent(4)).setValue(((JSpinner)pHControl[r].getComponent(4)).getValue());
 						((JSpinner)Delayed[a].getComponent(2)).setValue(((JSpinner)Delayed[r].getComponent(2)).getValue());
-					}		
+					}
 		    	}
-			}			
+			}
 		};
 		ActionListener DisplayTempListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
 				AbstractButton aButton = (AbstractButton) actionEvent.getSource();
 				if (aButton.getText()=="Celsius")
 				{
-					tempunit=1;
-					JLabel j=(JLabel)OverheatSettings.getComponent(0);
-					j.setText("Overheat Temperature (\u00b0C): ");
+					tempunit=TempUnit.CELCIUS;
 				}
 				if (aButton.getText()=="Fahrenheit")
 				{
-					tempunit=0;
-					JLabel j=(JLabel)OverheatSettings.getComponent(0);
-					j.setText("Overheat Temperature (\u00b0F): ");
+					tempunit=TempUnit.FAHRENHEIT;
 				}
-
+    			JLabel j=(JLabel)OverheatSettings.getComponent(0);
+	     		j.setText(String.format("Overheat Temperature (%s): ",tempunit.DEGREES) );
 			}
-		};		  
+		};
 
-		// Temperature unit  
+		// Temperature unit
 		disptemp = new JPanel(new GridLayout(1,2));
 		ButtonGroup group = new ButtonGroup();
 		disptemp.setBorder(BorderFactory.createTitledBorder(null, "Temperature Unit",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
@@ -2769,7 +2788,7 @@ int id=0;
 		DisplayTemp = new JRadioButton("Fahrenheit");
 		DisplayTemp.addActionListener(DisplayTempListener);
 		DisplayTemp.setSelected(true);
-		group.add(DisplayTemp);        
+		group.add(DisplayTemp);
 		disptemp.add(DisplayTemp);
 
 		FlowLayout OverheatSettingsFlowLayout=new FlowLayout();
@@ -2798,15 +2817,15 @@ int id=0;
 				}
 				if (aButton.getText()=="In the internal memory")
 				{
-					ShowHardCodeSettings(false);            	  
+					ShowHardCodeSettings(false);
 				}
 			}
-		};		  
+		};
 
-		// Settings Storage  
+		// Settings Storage
 		memsettings = new JPanel(new GridLayout(1,2));
 		ButtonGroup group1 = new ButtonGroup();
-		memsettings.setBorder(BorderFactory.createTitledBorder(null, "Settings Storage",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));		
+		memsettings.setBorder(BorderFactory.createTitledBorder(null, "Settings Storage",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
 		JRadioButton DisplayMem = new JRadioButton();
 		DisplayMem = new JRadioButton("In the code (Recommended for new users) ");
 		DisplayMem.setSelected(true);
@@ -2852,7 +2871,7 @@ int id=0;
 
 			// Time Schedule
 			Timed[a] = new JPanel();
-			
+
 			SpringLayout Timedlayout=new SpringLayout();
 			Timed[a].setLayout(Timedlayout);
 
@@ -2865,9 +2884,9 @@ int id=0;
 			JLabel TimerOnLabel=new JLabel ("Turn on at: ",JLabel.TRAILING);
 			Timed[a].add(TimerOnLabel,"TimerOnLabel");
 
-			JSpinner TimerOn = new JSpinner( new SpinnerDateModel() ); 
-			JSpinner.DateEditor TimerOnEditor = new JSpinner.DateEditor(TimerOn, "hh:mm a"); 
-			TimerOn.setEditor(TimerOnEditor); 
+			JSpinner TimerOn = new JSpinner( new SpinnerDateModel() );
+			JSpinner.DateEditor TimerOnEditor = new JSpinner.DateEditor(TimerOn, "hh:mm a");
+			TimerOn.setEditor(TimerOnEditor);
 			TimerOn.setValue(calendar.getTime()); // will only show the current time
 			Timed[a].add(TimerOn,"TimerOn");
 
@@ -2875,23 +2894,23 @@ int id=0;
 			JLabel TimerOffLabel=new JLabel ("Turn off at: ",JLabel.TRAILING);
 			Timed[a].add(TimerOffLabel,"TimerOffLabel");
 
-			JSpinner TimerOff = new JSpinner( new SpinnerDateModel() ); 
-			JSpinner.DateEditor TimerOffEditor = new JSpinner.DateEditor(TimerOff, "hh:mm a"); 
-			TimerOff.setEditor(TimerOffEditor); 
+			JSpinner TimerOff = new JSpinner( new SpinnerDateModel() );
+			JSpinner.DateEditor TimerOffEditor = new JSpinner.DateEditor(TimerOff, "hh:mm a");
+			TimerOff.setEditor(TimerOffEditor);
 			TimerOff.setValue(calendar.getTime()); // will only show the current time
-			Timed[a].add(TimerOff,"TimerOff");	
+			Timed[a].add(TimerOff,"TimerOff");
 
 			JLabel DelayedTimerLabel=null;
 			JSpinner DelayedTimer;
 			DelayedTimer = new JSpinner( new SpinnerNumberModel(0,0,30,1) );
 			DelayedTimerLabel=new JLabel ("Delayed Start (m): ",JLabel.TRAILING);
 			Timed[a].add(DelayedTimerLabel,"DelayedTimerLabel");
-			Timed[a].add(DelayedTimer,"DelayedTimer");	
+			Timed[a].add(DelayedTimer,"DelayedTimer");
 
 			ApplyLayout(Timed[a],Timedlayout);
 
 			// Timed Memory Settings
-			
+
 			ActionListener ButtonActionListener = new ActionListener() {
 				public void actionPerformed(ActionEvent actionEvent)
 				{
@@ -2904,11 +2923,11 @@ int id=0;
 						cl.show(functionsettings[r], "Light Schedule Settings");
 					else
 						cl.show(functionsettings[r], "Light Schedule");
-						
+
 					RevalidateSettings();
 				}
 			};
-			
+
 			TimedMemorySettings[a] = new JPanel();
 			SpringLayout TimedSettingslayout=new SpringLayout();
 			TimedMemorySettings[a].setLayout(TimedSettingslayout);
@@ -2922,56 +2941,56 @@ int id=0;
 			TimerOnLabel=new JLabel ("Turn on Daylights at: ",JLabel.TRAILING);
 			TimedMemorySettings[a].add(TimerOnLabel,"TimerOnLabel");
 
-			TimerOn = new JSpinner( new SpinnerDateModel() ); 
-			TimerOnEditor = new JSpinner.DateEditor(TimerOn, "hh:mm a"); 
-			TimerOn.setEditor(TimerOnEditor); 
+			TimerOn = new JSpinner( new SpinnerDateModel() );
+			TimerOnEditor = new JSpinner.DateEditor(TimerOn, "hh:mm a");
+			TimerOn.setEditor(TimerOnEditor);
 			TimerOn.setValue(calendar.getTime()); // will only show the current time
 			TimedMemorySettings[a].add(TimerOn,"TimerOn");
 			TimerOn.addChangeListener(new ChangeListener(){
 			    public void stateChanged(ChangeEvent evt) {
 			    	UpdateTimeLabels();
-			    }			
+			    }
 			});
 
 			calendar.set(Calendar.HOUR_OF_DAY, 19);
 			TimerOffLabel=new JLabel ("Turn off Daylights at: ",JLabel.TRAILING);
 			TimedMemorySettings[a].add(TimerOffLabel,"TimerOffLabel");
 
-			TimerOff = new JSpinner( new SpinnerDateModel() ); 
-			TimerOffEditor = new JSpinner.DateEditor(TimerOff, "hh:mm a"); 
-			TimerOff.setEditor(TimerOffEditor); 
+			TimerOff = new JSpinner( new SpinnerDateModel() );
+			TimerOffEditor = new JSpinner.DateEditor(TimerOff, "hh:mm a");
+			TimerOff.setEditor(TimerOffEditor);
 			TimerOff.setValue(calendar.getTime()); // will only show the current time
-			TimedMemorySettings[a].add(TimerOff,"TimerOff");	
+			TimedMemorySettings[a].add(TimerOff,"TimerOff");
 			TimerOff.addChangeListener(new ChangeListener(){
 			    public void stateChanged(ChangeEvent evt) {
 			    	UpdateTimeLabels();
-			    }			
+			    }
 			});
-			
+
 			DelayedTimerLabel=null;
 			DelayedTimer = new JSpinner( new SpinnerNumberModel(0,0,255,1) );
 			DelayedTimerLabel=new JLabel ("Delayed Start (m): ",JLabel.TRAILING);
 			TimedMemorySettings[a].add(DelayedTimerLabel,"DelayedTimerLabel");
-			TimedMemorySettings[a].add(DelayedTimer,"DelayedTimer");	
+			TimedMemorySettings[a].add(DelayedTimer,"DelayedTimer");
 			DelayedTimer.addChangeListener(new ChangeListener(){
 			    public void stateChanged(ChangeEvent evt) {
 			    	UpdateTimeLabels();
-			    }			
+			    }
 			});
-			
+
 			JLabel ActinicLabel=null;
 			JSpinner ActinicOffset = new JSpinner( new SpinnerNumberModel(30,0,255,1) );
 			ActinicLabel=new JLabel ("Offset for Actinics (m): ",JLabel.TRAILING);
 			TimedMemorySettings[a].add(ActinicLabel,"ActinicLabel");
-			TimedMemorySettings[a].add(ActinicOffset,"ActinicOffset");	
+			TimedMemorySettings[a].add(ActinicOffset,"ActinicOffset");
 			ActinicOffset.addChangeListener(new ChangeListener(){
 			    public void stateChanged(ChangeEvent evt) {
 			    	UpdateTimeLabels();
-			    }			
+			    }
 			});
-			
+
 			String s="Your Actinics will turn on at ";
-	    	Date dt=null; 
+	    	Date dt=null;
 			dt = (Date) TimerOn.getValue();
 			dt.setTime(dt.getTime()-((Integer) ActinicOffset.getValue() * 60 * 1000)) ;
 			DateFormat formatter = new SimpleDateFormat("h:mm a");
@@ -2980,7 +2999,7 @@ int id=0;
 			dt = (Date) TimerOff.getValue();
 			dt.setTime(dt.getTime()+((Integer) ActinicOffset.getValue() * 60 * 1000)) ;
 			s+=formatter.format(dt);
-			
+
 			JLabel ActinicText=null;
 			ActinicText=new JLabel (s ,JLabel.TRAILING);
 			TimedMemorySettings[a].add(ActinicText,"ActinicText");
@@ -2991,7 +3010,7 @@ int id=0;
 			s1+=" and turn off at ";
 			dt = (Date) TimerOn.getValue();
 			s1+=formatter.format(dt);
-			
+
 			JLabel MoonlightText=null;
 			MoonlightText=new JLabel (s1 ,JLabel.TRAILING);
 			TimedMemorySettings[a].add(MoonlightText,"MoonlightText");
@@ -2999,7 +3018,7 @@ int id=0;
 			JButton b = new JButton("Change Time Schecule Function");
 			b.addActionListener(ButtonActionListener);
 			TimedMemorySettings[a].add(b);
-			
+
 			ApplyTimedMemorySettingsLayout(TimedMemorySettings[a],TimedSettingslayout);
 
 			// TimedMemory
@@ -3013,11 +3032,11 @@ int id=0;
 
 			ButtonGroup TMgroup = new ButtonGroup();
 			JRadioButton TMOption;
-			TMOption = new JRadioButton("Daylight");		
+			TMOption = new JRadioButton("Daylight");
 			TMgroup.add(TMOption);
 			TMOption.setSelected(true);
 			TimedMemory[a].add(TMOption);
-			
+
 			JSpinner TimerOn1 = (JSpinner)TimedMemorySettings[a].getComponent(2);
 			JSpinner TimerOff1 = (JSpinner)TimedMemorySettings[a].getComponent(4);
 			JSpinner ActinicOffset1 = (JSpinner)TimedMemorySettings[a].getComponent(8);
@@ -3025,16 +3044,16 @@ int id=0;
 //			DateFormat formatter = new SimpleDateFormat("h:mm a");
 
 			s="Turns on at ";
-//	    	Date dt=null; 
+//	    	Date dt=null;
 			dt = (Date) TimerOn1.getValue();
 			s+=formatter.format(dt);
 			s+=" and turns off at ";
 			dt = (Date) TimerOff1.getValue();
 			s+=formatter.format(dt);
-			
+
 			TimedMemory[a].add(new JLabel(s));
-			
-			TMOption = new JRadioButton("Actinic (Turn on/off x minutes before and after Daylights)");		
+
+			TMOption = new JRadioButton("Actinic (Turn on/off x minutes before and after Daylights)");
 			TMgroup.add(TMOption);
 			TimedMemory[a].add(TMOption);
 
@@ -3046,10 +3065,10 @@ int id=0;
 			dt = (Date) TimerOff1.getValue();
 			dt.setTime(dt.getTime()+((Integer) ActinicOffset1.getValue() * 60 * 1000)) ;
 			s+=formatter.format(dt);
-			
+
 			TimedMemory[a].add(new JLabel(s));
-			
-			TMOption = new JRadioButton("Moonlights/Refugium (Opposite cycle of Daylights)");		
+
+			TMOption = new JRadioButton("Moonlights/Refugium (Opposite cycle of Daylights)");
 			TMgroup.add(TMOption);
 			TimedMemory[a].add(TMOption);
 			s="Turns on at ";
@@ -3058,12 +3077,12 @@ int id=0;
 			s+=" and turn off at ";
 			dt = (Date) TimerOn1.getValue();
 			s+=formatter.format(dt);
-			
+
 			TimedMemory[a].add(new JLabel(s));
 
 			b = new JButton("Change Time Schedule Settings");
 			b.addActionListener(ButtonActionListener);
-			
+
 			TimedMemory[a].add(b);
 			TimedMemory[a].add(new JLabel(""));
 
@@ -3095,11 +3114,11 @@ int id=0;
 			HeaterOff.addChangeListener(MemSettingsListener);
 			HeaterOffLabel=new JLabel ("Turn off at (\u00b0F): ",JLabel.TRAILING);
 			Heater[a].add(HeaterOffLabel);
-			Heater[a].add(HeaterOff);	
+			Heater[a].add(HeaterOff);
 			Heaterlayout.getConstraints(HeaterOff).setWidth(Spring.constant(70));
 			jh = (JSpinner.NumberEditor )HeaterOff.getEditor();
 			jh.getTextField().setColumns(5);
-			jh.getFormat().applyPattern("###0.0");			
+			jh.getFormat().applyPattern("###0.0");
 			ApplyLayout(Heater[a],Heaterlayout);
 
 			// Chiller
@@ -3128,7 +3147,7 @@ int id=0;
 			ChillerOff = new JSpinner( new SpinnerNumberModel(77.1,10.0,150.0,0.1) );
 			ChillerOff.addChangeListener(MemSettingsListener);
 			Chiller[a].add(ChillerOffLabel);
-			Chiller[a].add(ChillerOff);		
+			Chiller[a].add(ChillerOff);
 			Chillerlayout.getConstraints(ChillerOff).setWidth(Spring.constant(70));
 			jc = (JSpinner.NumberEditor )ChillerOff.getEditor();
 			jc.getTextField().setColumns(5);
@@ -3147,14 +3166,14 @@ int id=0;
 
 			ButtonGroup ATOgroup = new ButtonGroup();
 			JRadioButton ATOOption;
-			ATOOption = new JRadioButton("Standard ATO");		
+			ATOOption = new JRadioButton("Standard ATO");
 			ATOgroup.add(ATOOption);
 			ATOOption.setSelected(true);
 			ATO[a].add(ATOOption);
-			ATOOption = new JRadioButton("Single ATO (Low Port)");		
+			ATOOption = new JRadioButton("Single ATO (Low Port)");
 			ATOgroup.add(ATOOption);
 			ATO[a].add(ATOOption);
-			ATOOption = new JRadioButton("Single ATO (High Port)");		
+			ATOOption = new JRadioButton("Single ATO (High Port)");
 			ATOgroup.add(ATOOption);
 			ATO[a].add(ATOOption);
 
@@ -3163,26 +3182,26 @@ int id=0;
 			ATOTimeout.addChangeListener(MemSettingsListener);
 			ATO[a].add(ATOTimeoutLabel);
 			ATO[a].add(ATOTimeout);
-			i.addHyperlinkListener(new HyperlinkListener() {   
+			i.addHyperlinkListener(new HyperlinkListener() {
 				public void hyperlinkUpdate(HyperlinkEvent hle)
-				{   
+				{
 					if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
-					{   
-						if (isBrowsingSupported()) { 
-							try { 
-								Desktop desktop = java.awt.Desktop.getDesktop(); 
-								URI uri = new java.net.URI(hle.getURL().toString()); 
-								desktop.browse(uri); 
-							} catch (URISyntaxException use) { 
-								throw new AssertionError(use); 
-							} catch (IOException ioe) { 
-								ioe.printStackTrace(); 
-								JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE); 
-							} 					               
-						} 
-					}   
+					{
+						if (isBrowsingSupported()) {
+							try {
+								Desktop desktop = java.awt.Desktop.getDesktop();
+								URI uri = new java.net.URI(hle.getURL().toString());
+								desktop.browse(uri);
+							} catch (URISyntaxException use) {
+								throw new AssertionError(use);
+							} catch (IOException ioe) {
+								ioe.printStackTrace();
+								JOptionPane.showMessageDialog(null, "Sorry, a problem occurred while trying to open this link in your system's standard browser.","A problem occured", JOptionPane.ERROR_MESSAGE);
+							}
+						}
+					}
 				}
-			});   
+			});
 
 			ApplyATOLayout(ATO[a],ATOlayout);
 
@@ -3227,12 +3246,12 @@ int id=0;
 
 			ButtonGroup WMgroup = new ButtonGroup();
 			JRadioButton WMOption;
-			WMOption = new JRadioButton("Constant");		
+			WMOption = new JRadioButton("Constant");
 			WMgroup.add(WMOption);
 			WMOption.setSelected(true);
 			WMOption.addActionListener(WMActionListener);
 			WM[a].add(WMOption);
-			WMOption = new JRadioButton("Random");		
+			WMOption = new JRadioButton("Random");
 			WMgroup.add(WMOption);
 			WMOption.addActionListener(WMActionListener);
 			WM[a].add(WMOption);
@@ -3280,13 +3299,13 @@ int id=0;
 			CO2ControlOff = new JSpinner( new SpinnerNumberModel(7.48,1.00,14.00,0.01) );
 			CO2ControlOffLabel=new JLabel ("Turn off at pH: ",JLabel.TRAILING);
 			CO2Control[a].add(CO2ControlOffLabel);
-			CO2Control[a].add(CO2ControlOff);	
+			CO2Control[a].add(CO2ControlOff);
 			CO2ControlOff.addChangeListener(MemSettingsListener);
 			CO2Controllayout.getConstraints(CO2ControlOff).setWidth(Spring.constant(70));
 			jco = (JSpinner.NumberEditor )CO2ControlOff.getEditor();
 			jco.getTextField().setColumns(5);
-			jco.getFormat().applyPattern("###0.00");			
-			ApplyLayout(CO2Control[a],CO2Controllayout);	        
+			jco.getFormat().applyPattern("###0.00");
+			ApplyLayout(CO2Control[a],CO2Controllayout);
 
 			// pH Control
 
@@ -3314,7 +3333,7 @@ int id=0;
 			pHControlOff = new JSpinner( new SpinnerNumberModel(8.22,1.00,14.00,0.01) );
 			pHControlOffLabel=new JLabel ("Turn off at pH: ",JLabel.TRAILING);
 			pHControl[a].add(pHControlOffLabel);
-			pHControl[a].add(pHControlOff);	
+			pHControl[a].add(pHControlOff);
 			pHControlOff.addChangeListener(MemSettingsListener);
 			pHControllayout.getConstraints(pHControlOff).setWidth(Spring.constant(70));
 			jcp = (JSpinner.NumberEditor )pHControlOff.getEditor();
@@ -3341,18 +3360,18 @@ int id=0;
 			JLabel DosingOffLabel=new JLabel ("for (s): ",JLabel.TRAILING);
 			Dosing[a].add(DosingOffLabel);
 			JSpinner DosingOff;
-			DosingOff = new JSpinner( new SpinnerNumberModel(10,0,255,1) ); 
+			DosingOff = new JSpinner( new SpinnerNumberModel(10,0,255,1) );
 			Dosing[a].add(DosingOff);
 			DosingOff.addChangeListener(MemSettingsListener);
 
 			JLabel DosingOffsetLabel=new JLabel ("Offset (m): ",JLabel.TRAILING);
 			Dosing[a].add(DosingOffsetLabel);
 			JSpinner DosingOffset;
-			DosingOffset = new JSpinner( new SpinnerNumberModel(0,0,1440,1) ); 
+			DosingOffset = new JSpinner( new SpinnerNumberModel(0,0,1440,1) );
 			Dosing[a].add(DosingOffset);
 			DosingOffset.addChangeListener(MemSettingsListener);
 
-			ApplyDosingLayout(Dosing[a],Dosinglayout);	   
+			ApplyDosingLayout(Dosing[a],Dosinglayout);
 
 			// Delayed On
 
@@ -3382,8 +3401,7 @@ int id=0;
 			Opposite[a].add(i,"i");
 			JLabel OppositeLabelOn=new JLabel ("Opposite of Port: ",JLabel.TRAILING);
 			Opposite[a].add(OppositeLabelOn);
-			JComboBox OppositeOn;
-			OppositeOn = new JComboBox();
+			JComboBox<String> OppositeOn = new JComboBox<String>();
 			for (int j=1;j<=8;j++)
 				OppositeOn.addItem("Main Box Port "+j);
 			for (int j=1;j<=8;j++)
@@ -3391,7 +3409,7 @@ int id=0;
 			OppositeOn.setSelectedIndex(0);
 			Opposite[a].add(OppositeOn);
 
-			ApplyLayout(Opposite[a],Oppositelayout);	        
+			ApplyLayout(Opposite[a],Oppositelayout);
 
 			// Always On
 
@@ -3405,7 +3423,7 @@ int id=0;
 			AlwaysOn[a].add(new JLabel(""));
 			AlwaysOn[a].add(new JLabel(""));
 
-			ApplyLayout(AlwaysOn[a],AlwaysOnlayout);	
+			ApplyLayout(AlwaysOn[a],AlwaysOnlayout);
 
 			// Not Used
 
@@ -3419,7 +3437,7 @@ int id=0;
 			NotUsed[a].add(new JLabel(""));
 			NotUsed[a].add(new JLabel(""));
 
-			ApplyLayout(NotUsed[a],NotUsedlayout);	
+			ApplyLayout(NotUsed[a],NotUsedlayout);
 
 			CardLayout cl = new CardLayout();
 			functionsettings[a]=new JPanel(cl);
@@ -3442,11 +3460,11 @@ int id=0;
 
 			cl.show(functionsettings[a], "Not Used");
 
-			feeding[a] = new JCheckBox ("Turn off this port on \"Feeding\" Mode");
-			waterchange[a] = new JCheckBox ("Turn off this port on \"Water Change\" Mode");
-			lightson[a] = new JCheckBox ("Turn on this port on \"Lights On\" mode");
-			overheat[a] = new JCheckBox ("Turn off this port on \"Overheat\"");
-			ports[a] = new JPanel(); 
+			feeding[a] = new JCheckBox ("Turn off this port in \"Feeding\" mode");
+			waterchange[a] = new JCheckBox ("Turn off this port in \"Water Change\" mode");
+			lightson[a] = new JCheckBox ("Turn on this port in \"Lights On\" mode");
+			overheat[a] = new JCheckBox ("Turn off this port in \"Overheat\" mode");
+			ports[a] = new JPanel();
 			ports[a].setLayout(new BoxLayout( ports[a], BoxLayout.PAGE_AXIS));
 			ports[a].setBorder(BorderFactory.createTitledBorder(null, "Port Mode",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
 			ports[a].add(feeding[a]);
@@ -3509,7 +3527,7 @@ int id=0;
 		ic = new JLabel(iconnection, JLabel.CENTER);
 		daylightpwm.add(ic);
 		daylightpwm.add(new JLabel(new ImageIcon()));
-		daylightpwm.add(new JLabel(new ImageIcon()));		
+		daylightpwm.add(new JLabel(new ImageIcon()));
 
 		actinicpwm=new JPanel();
 		actinicpwm.setLayout(new GridLayout(2,5));
@@ -3543,8 +3561,8 @@ int id=0;
 		ic = new JLabel(iconnection, JLabel.CENTER);
 		actinicpwm.add(ic);
 		actinicpwm.add(new JLabel(new ImageIcon()));
-		actinicpwm.add(new JLabel(new ImageIcon()));	
-		
+		actinicpwm.add(new JLabel(new ImageIcon()));
+
 		for (int i=0;i<6;i++)
 		{
 			exppwm[i]=new JPanel();
@@ -3567,7 +3585,7 @@ int id=0;
 			jAct=new JRadioButton("None");
 			jAct.setSelected(true);
 			jga.add(jAct);
-			exppwm[i].add(jAct);	 
+			exppwm[i].add(jAct);
 			iconnection=null;
 			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
 			ic = new JLabel(iconnection, JLabel.LEFT);
@@ -3579,7 +3597,7 @@ int id=0;
 			ic = new JLabel(iconnection, JLabel.CENTER);
 			exppwm[i].add(ic);
 			exppwm[i].add(new JLabel(new ImageIcon()));
-			exppwm[i].add(new JLabel(new ImageIcon()));				
+			exppwm[i].add(new JLabel(new ImageIcon()));
 		}
 
 		for (int i=0;i<AIChannels.length;i++)
@@ -3601,7 +3619,7 @@ int id=0;
 			jAct=new JRadioButton("None");
 			jAct.setSelected(true);
 			jga.add(jAct);
-			aipwm[i].add(jAct);	    		
+			aipwm[i].add(jAct);
 			iconnection=null;
 			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
 			ic = new JLabel(iconnection, JLabel.LEFT);
@@ -3634,7 +3652,7 @@ int id=0;
 			jAct=new JRadioButton("None");
 			jAct.setSelected(true);
 			jga.add(jAct);
-			rfpwm[i].add(jAct);	    		
+			rfpwm[i].add(jAct);
 			iconnection=null;
 			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/slope.png");
 			ic = new JLabel(iconnection, JLabel.LEFT);
@@ -3648,7 +3666,7 @@ int id=0;
 			rfpwm[i].add(new JLabel(new ImageIcon()));
 		}
 
-		// daylight 
+		// daylight
 		daylightpwmsettings=new JPanel();
 		daylightpwmsettings.setLayout(new GridLayout(3,6));
 		daylightpwmsettings.setOpaque(false);
@@ -3660,9 +3678,9 @@ int id=0;
 		calendar.set(Calendar.MINUTE, 0);
 		JLabel PWMOnLabel=new JLabel ("Start Time: ",JLabel.TRAILING);
 		daylightpwmsettings.add(PWMOnLabel);
-		JSpinner PWMOn = new JSpinner( new SpinnerDateModel() ); 
-		JSpinner.DateEditor PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm"); 
-		PWMOn.setEditor(PWMOnEditor); 
+		JSpinner PWMOn = new JSpinner( new SpinnerDateModel() );
+		JSpinner.DateEditor PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm");
+		PWMOn.setEditor(PWMOnEditor);
 		PWMOn.setValue(calendar.getTime()); // will only show the current time
 		daylightpwmsettings.add(PWMOn);
 
@@ -3670,9 +3688,9 @@ int id=0;
 		calendar.set(Calendar.MINUTE, 0);
 		JLabel PWMOffLabel=new JLabel ("End Time: ",JLabel.TRAILING);
 		daylightpwmsettings.add(PWMOffLabel);
-		JSpinner PWMOff = new JSpinner( new SpinnerDateModel() ); 
-		JSpinner.DateEditor PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm"); 
-		PWMOff.setEditor(PWMOffEditor); 
+		JSpinner PWMOff = new JSpinner( new SpinnerDateModel() );
+		JSpinner.DateEditor PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm");
+		PWMOff.setEditor(PWMOffEditor);
 		PWMOff.setValue(calendar.getTime()); // will only show the current time
 		daylightpwmsettings.add(PWMOff);
 
@@ -3723,9 +3741,9 @@ int id=0;
 		calendar.set(Calendar.MINUTE, 0);
 		PWMOnLabel=new JLabel ("Start Time: ",JLabel.TRAILING);
 		actinicpwmsettings.add(PWMOnLabel);
-		PWMOn = new JSpinner( new SpinnerDateModel() ); 
-		PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm"); 
-		PWMOn.setEditor(PWMOnEditor); 
+		PWMOn = new JSpinner( new SpinnerDateModel() );
+		PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm");
+		PWMOn.setEditor(PWMOnEditor);
 		PWMOn.setValue(calendar.getTime()); // will only show the current time
 		actinicpwmsettings.add(PWMOn);
 
@@ -3733,9 +3751,9 @@ int id=0;
 		calendar.set(Calendar.MINUTE, 0);
 		PWMOffLabel=new JLabel ("End Time: ",JLabel.TRAILING);
 		actinicpwmsettings.add(PWMOffLabel);
-		PWMOff = new JSpinner( new SpinnerDateModel() ); 
-		PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm"); 
-		PWMOff.setEditor(PWMOffEditor); 
+		PWMOff = new JSpinner( new SpinnerDateModel() );
+		PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm");
+		PWMOff.setEditor(PWMOffEditor);
 		PWMOff.setValue(calendar.getTime()); // will only show the current time
 		actinicpwmsettings.add(PWMOff);
 
@@ -3766,24 +3784,24 @@ int id=0;
 
 		actinicpwmsettings.add(new JLabel(""));
 		actinicpwmsettings.add(new JLabel(""));
-		actinicpwmsettings.add(new JLabel(""));	    	
+		actinicpwmsettings.add(new JLabel(""));
 
-		// pwm expansion 
+		// pwm expansion
 		for (int i=0;i<6;i++)
 		{
 			exppwmsettings[i]=new JPanel();
 			exppwmsettings[i].setLayout(new GridLayout(3,6));
 			exppwmsettings[i].setOpaque(false);
-			
+
 			exppwmsettings[i].add(new JLabel(""));
 
 			calendar.set(Calendar.HOUR_OF_DAY, 9);
 			calendar.set(Calendar.MINUTE, 0);
 			PWMOnLabel=new JLabel ("Start Time: ",JLabel.TRAILING);
 			exppwmsettings[i].add(PWMOnLabel);
-			PWMOn = new JSpinner( new SpinnerDateModel() ); 
-			PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm"); 
-			PWMOn.setEditor(PWMOnEditor); 
+			PWMOn = new JSpinner( new SpinnerDateModel() );
+			PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm");
+			PWMOn.setEditor(PWMOnEditor);
 			PWMOn.setValue(calendar.getTime()); // will only show the current time
 			exppwmsettings[i].add(PWMOn);
 
@@ -3791,9 +3809,9 @@ int id=0;
 			calendar.set(Calendar.MINUTE, 0);
 			PWMOffLabel=new JLabel ("End Time: ",JLabel.TRAILING);
 			exppwmsettings[i].add(PWMOffLabel);
-			PWMOff = new JSpinner( new SpinnerDateModel() ); 
-			PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm"); 
-			PWMOff.setEditor(PWMOffEditor); 
+			PWMOff = new JSpinner( new SpinnerDateModel() );
+			PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm");
+			PWMOff.setEditor(PWMOffEditor);
 			PWMOff.setValue(calendar.getTime()); // will only show the current time
 			exppwmsettings[i].add(PWMOff);
 
@@ -3824,26 +3842,26 @@ int id=0;
 
 			exppwmsettings[i].add(new JLabel(""));
 			exppwmsettings[i].add(new JLabel(""));
-			exppwmsettings[i].add(new JLabel(""));		
+			exppwmsettings[i].add(new JLabel(""));
 
 		}
 
-		// AI 
+		// AI
 		for (int i=0;i<AIChannels.length;i++)
 		{
 			aipwmsettings[i]=new JPanel();
 			aipwmsettings[i].setLayout(new GridLayout(3,6));
 			aipwmsettings[i].setOpaque(false);
-			
+
 			aipwmsettings[i].add(new JLabel(""));
 
 			calendar.set(Calendar.HOUR_OF_DAY, 9);
 			calendar.set(Calendar.MINUTE, 0);
 			PWMOnLabel=new JLabel ("Start Time: ",JLabel.TRAILING);
 			aipwmsettings[i].add(PWMOnLabel);
-			PWMOn = new JSpinner( new SpinnerDateModel() ); 
-			PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm"); 
-			PWMOn.setEditor(PWMOnEditor); 
+			PWMOn = new JSpinner( new SpinnerDateModel() );
+			PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm");
+			PWMOn.setEditor(PWMOnEditor);
 			PWMOn.setValue(calendar.getTime()); // will only show the current time
 			aipwmsettings[i].add(PWMOn);
 
@@ -3851,9 +3869,9 @@ int id=0;
 			calendar.set(Calendar.MINUTE, 0);
 			PWMOffLabel=new JLabel ("End Time: ",JLabel.TRAILING);
 			aipwmsettings[i].add(PWMOffLabel);
-			PWMOff = new JSpinner( new SpinnerDateModel() ); 
-			PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm"); 
-			PWMOff.setEditor(PWMOffEditor); 
+			PWMOff = new JSpinner( new SpinnerDateModel() );
+			PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm");
+			PWMOff.setEditor(PWMOffEditor);
 			PWMOff.setValue(calendar.getTime()); // will only show the current time
 			aipwmsettings[i].add(PWMOff);
 
@@ -3884,8 +3902,8 @@ int id=0;
 
 			aipwmsettings[i].add(new JLabel(""));
 			aipwmsettings[i].add(new JLabel(""));
-			aipwmsettings[i].add(new JLabel(""));		
-		}	        		
+			aipwmsettings[i].add(new JLabel(""));
+		}
 
 		// Auto Top Off
 
@@ -3893,10 +3911,10 @@ int id=0;
 
 		ButtonGroup AIgroup = new ButtonGroup();
 		JRadioButton AIOption;
-		AIOption = new JRadioButton("Low ATO Port");		
+		AIOption = new JRadioButton("Low ATO Port");
 		AIgroup.add(AIOption);
 		aiport.add(AIOption);
-		AIOption = new JRadioButton("High ATO Port");		
+		AIOption = new JRadioButton("High ATO Port");
 		AIgroup.add(AIOption);
 		aiport.add(AIOption);
 
@@ -3910,7 +3928,8 @@ int id=0;
 
 		ActionListener RFListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
-				JComboBox cb = (JComboBox)actionEvent.getSource();
+				@SuppressWarnings("unchecked")
+				JComboBox<String> cb = (JComboBox<String>)actionEvent.getSource();
 				String vm = (String)cb.getSelectedItem();
 
 				if (vm=="Constant" || vm=="Lagoon" || vm=="ReefCrest" || vm=="Tidal Swell")
@@ -3938,11 +3957,11 @@ int id=0;
 					jS.setModel(new SpinnerNumberModel(10,1,10000,1));
 				}
 			}
-		};		
+		};
 
 		RFmods= new JPanel(new GridLayout(3,2));
 		RFmods.add(new JLabel("Vortech Mode:"));
-		JComboBox vm=new JComboBox(VortechModes);
+		JComboBox<String> vm=new JComboBox<String>(VortechModes);
 		vm.addActionListener(RFListener);
 		RFmods.add(vm);
 
@@ -3969,9 +3988,9 @@ int id=0;
 			calendar.set(Calendar.MINUTE, 0);
 			PWMOnLabel=new JLabel ("Start Time: ",JLabel.TRAILING);
 			rfpwmsettings[i].add(PWMOnLabel);
-			PWMOn = new JSpinner( new SpinnerDateModel() ); 
-			PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm"); 
-			PWMOn.setEditor(PWMOnEditor); 
+			PWMOn = new JSpinner( new SpinnerDateModel() );
+			PWMOnEditor = new JSpinner.DateEditor(PWMOn, "HH:mm");
+			PWMOn.setEditor(PWMOnEditor);
 			PWMOn.setValue(calendar.getTime()); // will only show the current time
 			rfpwmsettings[i].add(PWMOn);
 
@@ -3979,9 +3998,9 @@ int id=0;
 			calendar.set(Calendar.MINUTE, 0);
 			PWMOffLabel=new JLabel ("End Time: ",JLabel.TRAILING);
 			rfpwmsettings[i].add(PWMOffLabel);
-			PWMOff = new JSpinner( new SpinnerDateModel() ); 
-			PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm"); 
-			PWMOff.setEditor(PWMOffEditor); 
+			PWMOff = new JSpinner( new SpinnerDateModel() );
+			PWMOffEditor = new JSpinner.DateEditor(PWMOff, "HH:mm");
+			PWMOff.setEditor(PWMOffEditor);
 			PWMOff.setValue(calendar.getTime()); // will only show the current time
 			rfpwmsettings[i].add(PWMOff);
 
@@ -4012,8 +4031,8 @@ int id=0;
 
 			rfpwmsettings[i].add(new JLabel(""));
 			rfpwmsettings[i].add(new JLabel(""));
-			rfpwmsettings[i].add(new JLabel(""));		
-		}	   		
+			rfpwmsettings[i].add(new JLabel(""));
+		}
 
 		Buzzermods= new JPanel();
 		Buzzermods.setLayout(new BoxLayout( Buzzermods, BoxLayout.PAGE_AXIS));
@@ -4051,8 +4070,8 @@ int id=0;
 			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-5)));
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
 			//			y=Spring.sum(y, Spring.constant(5));
-		}		
-	}	
+		}
+	}
 
 	private void ApplyTimedMemoryLayout(JPanel panel, SpringLayout layout)
 	{
@@ -4074,7 +4093,7 @@ int id=0;
 			layout.getConstraints(panel.getComponent(c+1)).setY(y);
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c)).getHeight());
 			y=Spring.sum(y, Spring.constant(10));
-		}	
+		}
 
 		//		for (int c=1;c<panel.getComponentCount();c+=2)
 		//		{
@@ -4083,8 +4102,8 @@ int id=0;
 		//			layout.getConstraints(panel.getComponent(c+1)).setX(Spring.constant(150));
 		//			layout.getConstraints(panel.getComponent(c+1)).setY(y);
 		//			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
-		//		}		
-	}	
+		//		}
+	}
 
 	private void ApplyTimedMemorySettingsLayout(JPanel panel, SpringLayout layout)
 	{
@@ -4109,7 +4128,7 @@ int id=0;
 			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-5)));
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
 			//			y=Spring.sum(y, Spring.constant(5));
-		}		
+		}
 		y=Spring.sum(y, Spring.constant(5));
 		int c=panel.getComponentCount()-3;
 		layout.getConstraints(panel.getComponent(c)).setX(Spring.constant(5));
@@ -4132,7 +4151,7 @@ int id=0;
 		//			layout.getConstraints(panel.getComponent(c+1)).setX(Spring.constant(150));
 		//			layout.getConstraints(panel.getComponent(c+1)).setY(y);
 		//			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
-		//		}		
+		//		}
 	}
 
 	private void ApplyDosingLayout(JPanel panel, SpringLayout layout)
@@ -4271,7 +4290,7 @@ int id=0;
 			layout.getConstraints(panel.getComponent(c+1)).setY(Spring.sum(y, Spring.constant(-5)));
 			y=Spring.sum(y, layout.getConstraints(panel.getComponent(c+1)).getHeight());
 			y=Spring.sum(y, Spring.constant(5));
-		}			
+		}
 	}
 
 	private void RevalidateSettings()
@@ -4297,7 +4316,7 @@ int id=0;
 				layout.getConstraints(TimedMemorySettings[a].getComponent(0)).setWidth(Spring.constant(settingswidth-30));
 				SwingUtilities.updateComponentTreeUI(TimedMemorySettings[a]);
 				TimedMemorySettings[a].revalidate();
-				
+
 				layout=(SpringLayout) Heater[a].getLayout();
 				layout.getConstraints(Heater[a].getComponent(0)).setWidth(Spring.constant(settingswidth-30));
 				SwingUtilities.updateComponentTreeUI(Heater[a]);
@@ -4364,35 +4383,15 @@ int id=0;
 			JLabel jL = null;
 			JSpinner jS = null;
 			j=(JPanel)functionsettings[a].getComponent(2);
-			if (tempunit==0)
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0F): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0F): ");
-			}
-			else
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0C): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0C): ");
-			}
+            jL=(JLabel)j.getComponent(1);
+            jL.setText(String.format("Turn on below (%s): ",tempunit.DEGREES));
+            jL=(JLabel)j.getComponent(3);
+            jL.setText(String.format("Turn off above (%s): ",tempunit.DEGREES));
 			j=(JPanel)functionsettings[a].getComponent(3);
-			if (tempunit==0)
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0F): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0F): ");
-			}
-			else
-			{
-				jL=(JLabel)j.getComponent(1);
-				jL.setText("Turn on at (\u00b0C): ");
-				jL=(JLabel)j.getComponent(3);
-				jL.setText("Turn off at (\u00b0C): ");
-			}
+            jL=(JLabel)j.getComponent(1);
+            jL.setText(String.format("Turn on above (%s): ",tempunit.DEGREES));
+            jL=(JLabel)j.getComponent(3);
+            jL.setText(String.format("Turn off below (%s): ",tempunit.DEGREES));
 		}
 	}
 
@@ -4417,7 +4416,7 @@ int id=0;
 				((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 0 minutes offset.");
 				if (((JRadioButton) functions[a].getComponent(7)).isSelected())
 					numdosing++;
-				
+
 				if (numdosing>2)
 				{
 					((JRadioButton) functions[a].getComponent(7)).setSelected(false);
@@ -4432,7 +4431,7 @@ int id=0;
 			{
 				((JLabel) Dosing[a].getComponent(5)).setText("Offset (m):");
 			}
-			Dosing[a].getComponent(6).setVisible(bVisible); 
+			Dosing[a].getComponent(6).setVisible(bVisible);
 		}
 		daylightpwmsettings.getComponent(1).setVisible(bVisible);
 		daylightpwmsettings.getComponent(2).setVisible(bVisible);
@@ -4464,9 +4463,9 @@ int id=0;
 			aipwmsettings[b].getComponent(3).setVisible(bVisible);
 			aipwmsettings[b].getComponent(4).setVisible(bVisible);
 			aisettingspanel[b].getComponent(3).setVisible(!bVisible);
-		}		
+		}
 	}
-	
+
 	private void CheckDaylightPWM()
 	{
 		JRadioButton jm = (JRadioButton) memsettings.getComponent(0);
@@ -4496,7 +4495,7 @@ int id=0;
 				i.SetText("<HTML>Please enter the start % and end % of the parabola.<br><br></HTML>");
 			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
 		}
-		c.setIcon(iconnection);		
+		c.setIcon(iconnection);
 	}
 
 	private void CheckActinicPWM()
@@ -4528,9 +4527,9 @@ int id=0;
 				i.SetText("<HTML>Please enter the start % and end % of the parabola.<br><br></HTML>");
 			iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
 		}
-		c.setIcon(iconnection);		
+		c.setIcon(iconnection);
 	}
-	
+
 	private void CheckExpPWM()
 	{
 		for (int a=0;a<6;a++)
@@ -4562,10 +4561,10 @@ int id=0;
 					i.SetText("<HTML>Please enter the start % and end % of the parabola.<br><br></HTML>");
 				iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
 			}
-			c.setIcon(iconnection);				
+			c.setIcon(iconnection);
 		}
 	}
-	
+
 	private void CheckAIPWM()
 	{
 		for (int a=0;a<3;a++)
@@ -4597,9 +4596,9 @@ int id=0;
 					i.SetText("<HTML>Please enter the start % and end % of the parabola.<br><br></HTML>");
 				iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
 			}
-			c.setIcon(iconnection);				
+			c.setIcon(iconnection);
 		}
-	}	
+	}
 
 	private void CheckRFPWM()
 	{
@@ -4632,9 +4631,9 @@ int id=0;
 					i.SetText("<HTML>Please enter the start % and end % of the parabola.<br><br></HTML>");
 				iconnection = new ImageIcon(Base.getSketchbookFolder().getPath() + "/tools/Wizard/data/parabolasettings.png");
 			}
-			c.setIcon(iconnection);				
+			c.setIcon(iconnection);
 		}
-	}	
+	}
 	private void ShowHideComponent(JPanel c, boolean bVisible)
 	{
 		for (int a=1; a<c.getComponentCount();a++)
@@ -4686,7 +4685,7 @@ int id=0;
 	}
 
 	public void message(final String s) {
-		SwingUtilities.invokeLater(new Runnable() 
+		SwingUtilities.invokeLater(new Runnable()
 		{
 			public void run() {
 				System.out.print(s);
@@ -4706,20 +4705,22 @@ int id=0;
 
 		}
 	}
+	@SuppressWarnings("serial")
 	public class JCustomEditorPane extends JEditorPane {
-		public JCustomEditorPane(String s) 
+		public JCustomEditorPane(String s)
 		{
 			this.setContentType("text/html");
 			this.setText(s);
-			this.setEditable(false);   
+			this.setEditable(false);
 			this.setOpaque(false);
-			this.setBorder(BorderFactory.createEmptyBorder()); 
-			this.setBackground(new Color(0,0,0,0)); 	
+			this.setBorder(BorderFactory.createEmptyBorder());
+			this.setBackground(new Color(0,0,0,0));
 			((HTMLDocument)this.getDocument()).getStyleSheet().addRule(bodyRule);
 		}
-	
+
 	}
 
+	@SuppressWarnings("serial")
 	public class Header extends JPanel {
 		public Header()
 		{
@@ -4733,6 +4734,7 @@ int id=0;
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class Footer extends JPanel {
 		public Footer()
 		{
@@ -4757,7 +4759,7 @@ int id=0;
 						loadInitialValues();
 						CheckNav();
 					}
-					
+
 					if (swindow.indexOf("Memory Settings")==0)
 					{
 						prevwindow="Welcome";
@@ -4782,7 +4784,7 @@ int id=0;
 							Title.SetText ("Memory Settings");
 						}
 					}
-					
+
 					if (swindow.indexOf("Temperature Settings")==0)
 					{
 						prevwindow="Memory Settings";
@@ -4801,7 +4803,8 @@ int id=0;
 							relayexpansion=1;
 							for (int a=1;a<=16;a++)
 							{
-								JComboBox c=(JComboBox) Opposite[a].getComponent(2);
+								@SuppressWarnings("unchecked")
+								JComboBox<String> c=(JComboBox<String>) Opposite[a].getComponent(2);
 								int oldindex = c.getSelectedIndex();
 								if (oldindex==-1) oldindex=0;
 								if (c.getItemCount()!=16)
@@ -4818,13 +4821,14 @@ int id=0;
 									c.setSelectedIndex(oldindex);
 								}
 							}
-						}	
+						}
 						else
 						{
 							relayexpansion=0;
 							for (int a=1;a<=8;a++)
 							{
-								JComboBox c=(JComboBox) Opposite[a].getComponent(2);
+								@SuppressWarnings("unchecked")
+								JComboBox<String> c=(JComboBox<String>) Opposite[a].getComponent(2);
 								if (c.getItemCount()!=8)
 								{
 									int oldindex = c.getSelectedIndex();
@@ -4865,7 +4869,7 @@ int id=0;
 								Buzzermods.getComponent(a).setVisible(true);
 							for (int a=3;a<9;a++)
 								Buzzermods.getComponent(a).setVisible(false);
-						}	
+						}
 					}
 
 					if (swindow.indexOf("Attachments")==0)
@@ -4876,7 +4880,7 @@ int id=0;
 						jc=(JCheckBox) attachmentmods.getComponent(0);
 						if (jc.isSelected()) wifi=1; else wifi=0;
 						jc=(JCheckBox) attachmentmods.getComponent(1);
-						if (jc.isSelected()) ailed=1; else ailed=0;		
+						if (jc.isSelected()) ailed=1; else ailed=0;
 					}
 
 					if (swindow.indexOf("Main Relay Box")==0)
@@ -4884,50 +4888,50 @@ int id=0;
 						prevwindow="Attachments";
 						nextwindow="Main Relay Box - Port 1";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 1")==0)
 					{
 						prevwindow="Main Relay Box";
 						nextwindow="Main Relay Box - Port 2";
 						UpdateTimeLabels();
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 2")==0)
 					{
 						prevwindow="Main Relay Box - Port 1";
 						nextwindow="Main Relay Box - Port 3";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 3")==0)
 					{
 						prevwindow="Main Relay Box - Port 2";
 						nextwindow="Main Relay Box - Port 4";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 4")==0)
 					{
 						prevwindow="Main Relay Box - Port 3";
 						nextwindow="Main Relay Box - Port 5";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 5")==0)
 					{
 						prevwindow="Main Relay Box - Port 4";
 						nextwindow="Main Relay Box - Port 6";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 6")==0)
 					{
 						prevwindow="Main Relay Box - Port 5";
 						nextwindow="Main Relay Box - Port 7";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 7")==0)
 					{
 						prevwindow="Main Relay Box - Port 6";
 						nextwindow="Main Relay Box - Port 8";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port 8")==0)
 					{
 						prevwindow="Main Relay Box - Port 7";
@@ -4936,61 +4940,61 @@ int id=0;
 						else
 							nextwindow="Daylight Dimming Channel";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box")==0)
 					{
 						prevwindow="Main Relay Box - Port 8";
 						nextwindow="Expansion Relay Box - Port 1";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 1")==0)
 					{
 						prevwindow="Expansion Relay Box";
 						nextwindow="Expansion Relay Box - Port 2";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 2")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 1";
 						nextwindow="Expansion Relay Box - Port 3";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 3")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 2";
 						nextwindow="Expansion Relay Box - Port 4";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 4")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 3";
 						nextwindow="Expansion Relay Box - Port 5";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 5")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 4";
 						nextwindow="Expansion Relay Box - Port 6";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 6")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 5";
 						nextwindow="Expansion Relay Box - Port 7";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 7")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 6";
 						nextwindow="Expansion Relay Box - Port 8";
 					}
-					
+
 					if (swindow.indexOf("Expansion Relay Box - Port 8")==0)
 					{
 						prevwindow="Expansion Relay Box - Port 7";
 						nextwindow="Daylight Dimming Channel";
 					}
-					
+
 					if (swindow.indexOf("Main Relay Box - Port")==0 || swindow.indexOf("Expansion Relay Box - Port")==0)
 					{
 						int numdosing=0;
@@ -5002,7 +5006,7 @@ int id=0;
 							ATO[a].getComponent(2).setEnabled(true);
 							ATO[a].getComponent(3).setEnabled(true);
 							functions[a].getComponent(3).setEnabled(true);
-						}				
+						}
 
 						for (int a=1;a<=16;a++)
 						{
@@ -5033,7 +5037,7 @@ int id=0;
 						{
 							for (int a=1;a<=16;a++)
 								((JRadioButton) functions[a].getComponent(7)).setEnabled(((JRadioButton) functions[a].getComponent(7)).isSelected());
-							
+
 						}
 						else
 						{
@@ -5051,7 +5055,7 @@ int id=0;
 								}
 							}
 						}
-						
+
 						atolow=false;
 						atohigh=false;
 						for (int a=1;a<=16;a++)
@@ -5084,7 +5088,7 @@ int id=0;
 							jatc.setSelected(true);
 						}
 						Buzzermods.getComponent(2).setEnabled(!atohigh);
-						
+
 					}
 
 					if (swindow.indexOf("Daylight Dimming Channel")==0)
@@ -5109,9 +5113,9 @@ int id=0;
 						prevwindow="Daylight Dimming Channel";
 						nextwindow="Actinic Dimming Channel";
 					}
-					
+
 					boolean actinicsettingsnext=false;
-					
+
 					if (swindow.indexOf("Actinic Dimming Channel")==0)
 					{
 						if (((JRadioButton) daylightpwm.getComponent(2)).isSelected() || ((JRadioButton) daylightpwm.getComponent(3)).isSelected() || ((JRadioButton) daylightpwm.getComponent(4)).isSelected())
@@ -5133,8 +5137,8 @@ int id=0;
 							CheckActinicPWM();
 							nextwindow="Actinic Dimming Settings";
 						}
-					}	
-					
+					}
+
 					if (swindow.indexOf("Actinic Dimming Settings")==0)
 					{
 						prevwindow="Actinic Dimming Channel";
@@ -5150,7 +5154,7 @@ int id=0;
 						if (dimmingexpansion==0)
 							CheckNextAI();
 					}
-					
+
 					if (swindow.indexOf("Dimming Expansion Channel 0")==0)
 					{
 						if (((JRadioButton) actinicpwm.getComponent(2)).isSelected() || ((JRadioButton) actinicpwm.getComponent(3)).isSelected() || ((JRadioButton) actinicpwm.getComponent(4)).isSelected())
@@ -5178,7 +5182,7 @@ int id=0;
 						prevwindow="Dimming Expansion Channel 0";
 						nextwindow="Dimming Expansion Channel 1";
 					}
-					
+
 					if (swindow.indexOf("Dimming Expansion Channel 1")==0)
 					{
 						if (((JRadioButton) exppwm[0].getComponent(2)).isSelected() || ((JRadioButton) exppwm[0].getComponent(3)).isSelected() || ((JRadioButton) exppwm[0].getComponent(4)).isSelected())
@@ -5199,14 +5203,14 @@ int id=0;
 							CheckExpPWM();
 							nextwindow="Dimming Channel 1 Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Dimming Channel 1 Settings")==0)
 					{
 						prevwindow="Dimming Expansion Channel 1";
 						nextwindow="Dimming Expansion Channel 2";
 					}
-					
+
 					if (swindow.indexOf("Dimming Expansion Channel 2")==0)
 					{
 						if (((JRadioButton) exppwm[1].getComponent(2)).isSelected() || ((JRadioButton) exppwm[1].getComponent(3)).isSelected() || ((JRadioButton) exppwm[1].getComponent(4)).isSelected())
@@ -5227,14 +5231,14 @@ int id=0;
 							CheckExpPWM();
 							nextwindow="Dimming Channel 2 Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Dimming Channel 2 Settings")==0)
 					{
 						prevwindow="Dimming Expansion Channel 2";
 						nextwindow="Dimming Expansion Channel 3";
 					}
-					
+
 					if (swindow.indexOf("Dimming Expansion Channel 3")==0)
 					{
 						if (((JRadioButton) exppwm[2].getComponent(2)).isSelected() || ((JRadioButton) exppwm[2].getComponent(3)).isSelected() || ((JRadioButton) exppwm[2].getComponent(4)).isSelected())
@@ -5255,14 +5259,14 @@ int id=0;
 							CheckExpPWM();
 							nextwindow="Dimming Channel 3 Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Dimming Channel 3 Settings")==0)
 					{
 						prevwindow="Dimming Expansion Channel 3";
 						nextwindow="Dimming Expansion Channel 4";
 					}
-										
+
 					if (swindow.indexOf("Dimming Expansion Channel 4")==0)
 					{
 						if (((JRadioButton) exppwm[3].getComponent(2)).isSelected() || ((JRadioButton) exppwm[3].getComponent(3)).isSelected() || ((JRadioButton) exppwm[3].getComponent(4)).isSelected())
@@ -5283,14 +5287,14 @@ int id=0;
 							CheckExpPWM();
 							nextwindow="Dimming Channel 4 Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Dimming Channel 4 Settings")==0)
 					{
 						prevwindow="Dimming Expansion Channel 4";
 						nextwindow="Dimming Expansion Channel 5";
 					}
-					
+
 					if (swindow.indexOf("Dimming Expansion Channel 5")==0)
 					{
 						if (((JRadioButton) exppwm[4].getComponent(2)).isSelected() || ((JRadioButton) exppwm[4].getComponent(3)).isSelected() || ((JRadioButton) exppwm[4].getComponent(4)).isSelected())
@@ -5320,7 +5324,7 @@ int id=0;
 							CheckExpPWM();
 							nextwindow="Dimming Channel 5 Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Dimming Channel 5 Settings")==0)
 					{
@@ -5345,7 +5349,7 @@ int id=0;
 						CheckPrevDimming();
 						nextwindow="AI - White Channel";
 					}
-					
+
 					if (swindow.indexOf("AI - White Channel")==0)
 					{
 						prevwindow="Aqua Illumination Port";
@@ -5359,7 +5363,7 @@ int id=0;
 							CheckAIPWM();
 							nextwindow="AI - White Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("AI - White Settings")==0)
 					{
@@ -5387,14 +5391,14 @@ int id=0;
 							CheckAIPWM();
 							nextwindow="AI - Blue Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("AI - Blue Settings")==0)
 					{
 						prevwindow="AI - Blue Channel";
 						nextwindow="AI - Royal Blue Channel";
 					}
-					
+
 
 					if (swindow.indexOf("AI - Royal Blue Channel")==0)
 					{
@@ -5416,21 +5420,21 @@ int id=0;
 							CheckAIPWM();
 							nextwindow="AI - Royal Blue Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("AI - Royal Blue Settings")==0)
 					{
 						prevwindow="AI - Royal Blue Channel";
 						CheckNextRF();
 					}
-					
+
 					if (swindow.indexOf("Vortech Mode")==0)
 					{
-						
+
 						CheckPrevAI();
 						nextwindow="Radion White Channel";
 					}
-					
+
 					if (swindow.indexOf("Radion White Channel")==0)
 					{
 						prevwindow="Vortech Mode";
@@ -5450,7 +5454,7 @@ int id=0;
 						prevwindow="Radion White Channel";
 						nextwindow="Radion Royal Blue Channel";
 					}
-					
+
 					if (swindow.indexOf("Radion Royal Blue Channel")==0)
 					{
 						if (((JRadioButton) rfpwm[0].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[0].getComponent(3)).isSelected())
@@ -5471,14 +5475,14 @@ int id=0;
 							CheckRFPWM();
 							nextwindow="Radion Royal Blue Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Radion Royal Blue Settings")==0)
 					{
 						prevwindow="Radion Royal Blue Channel";
 						nextwindow="Radion Red Channel";
 					}
-					
+
 					if (swindow.indexOf("Radion Red Channel")==0)
 					{
 						if (((JRadioButton) rfpwm[1].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[1].getComponent(3)).isSelected())
@@ -5499,14 +5503,14 @@ int id=0;
 							CheckRFPWM();
 							nextwindow="Radion Red Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Radion Red Settings")==0)
 					{
 						prevwindow="Radion Red Channel";
 						nextwindow="Radion Green Channel";
 					}
-					
+
 					if (swindow.indexOf("Radion Green Channel")==0)
 					{
 						if (((JRadioButton) rfpwm[2].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[2].getComponent(3)).isSelected())
@@ -5527,14 +5531,14 @@ int id=0;
 							CheckRFPWM();
 							nextwindow="Radion Green Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Radion Green Settings")==0)
 					{
 						prevwindow="Radion Green Channel";
 						nextwindow="Radion Blue Channel";
 					}
-										
+
 					if (swindow.indexOf("Radion Blue Channel")==0)
 					{
 						if (((JRadioButton) rfpwm[3].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[3].getComponent(3)).isSelected())
@@ -5555,14 +5559,14 @@ int id=0;
 							CheckRFPWM();
 							nextwindow="Radion Blue Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Radion Blue Settings")==0)
 					{
 						prevwindow="Radion Blue Channel";
 						nextwindow="Radion Intensity Channel";
 					}
-					
+
 					if (swindow.indexOf("Radion Intensity Channel")==0)
 					{
 						if (((JRadioButton) rfpwm[4].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[4].getComponent(3)).isSelected())
@@ -5583,20 +5587,20 @@ int id=0;
 							CheckRFPWM();
 							nextwindow="Radion Intensity Settings";
 						}
-					}					
+					}
 
 					if (swindow.indexOf("Radion Intensity Settings")==0)
 					{
 						prevwindow="Radion Intensity Channel";
 						CheckNextWifi();
 					}
-					
+
 					if (swindow.indexOf("Wifi Attachment")==0)
 					{
 						CheckPrevRF();
 						CheckNextBuzzer();
-					}					
-					
+					}
+
 					if (swindow.indexOf("Buzzer")==0)
 					{
 						CheckPrevWifi();
@@ -5605,23 +5609,23 @@ int id=0;
 						if (j.isSelected()) nextwindow="Upload Memory Settings";
 
 					}
-					
+
 					if (swindow.indexOf("Upload Memory Settings")==0)
 					{
 						CheckPrevBuzzer();
 						nextwindow="Uploading Memory Settings";
 					}
-	
+
 					if (swindow.indexOf("Ready to Generate")==0)
 					{
 						JRadioButton j = (JRadioButton) memsettings.getComponent(0);
 						if (j.isSelected())
-							CheckPrevBuzzer();						
+							CheckPrevBuzzer();
 						else
 							prevwindow="Upload Memory Settings";
 						nextwindow="Uploading Code";
 					}
-					
+
 					if (aButton.getText()=="Cancel" || aButton.getText()=="Exit")
 					{
 						ReturnLF();
@@ -5649,7 +5653,7 @@ int id=0;
 						ConstructCode();
 						ReturnLF();
 						saveInitialValues();
-						frame.setVisible(false);						
+						frame.setVisible(false);
 					}
 					else if (aButton.getText()=="Generate and Upload")
 					{
@@ -5662,11 +5666,11 @@ int id=0;
 									editor.RAhandleExport();
 									Thread t = new Thread(editor.RAexportHandler);
 									t.start();
-									try { 
-										t.join(); 
-									} catch (InterruptedException e) { 
-										e.printStackTrace(); 
-									} 
+									try {
+										t.join();
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
 									return "";
 								}
 
@@ -5682,7 +5686,7 @@ int id=0;
 							(new RAUploader()).execute();
 
 							ShowStep2();
-							
+
 							if (editor.status.message == "Done uploading.")
 							{
 								nextwindow="Ready to Generate";
@@ -5690,7 +5694,7 @@ int id=0;
 								Title.SetText(nextwindow);
 							}
 							else
-								JOptionPane.showMessageDialog(null,new JLabel("<html>An error has occured.<br>Please try again.</html>") , "Error", JOptionPane.ERROR_MESSAGE);							
+								JOptionPane.showMessageDialog(null,new JLabel("<html>An error has occured.<br>Please try again.</html>") , "Error", JOptionPane.ERROR_MESSAGE);
 						}
 						else if (nextwindow=="Uploading Code")
 						{
@@ -5701,11 +5705,11 @@ int id=0;
 									editor.RAhandleExport();
 									Thread t = new Thread(editor.RAexportHandler);
 									t.start();
-									try { 
-										t.join(); 
-									} catch (InterruptedException e) { 
-										e.printStackTrace(); 
-									} 
+									try {
+										t.join();
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
 									return "";
 								}
 
@@ -5721,7 +5725,7 @@ int id=0;
 							(new RAUploader()).execute();
 
 							ShowStep2();
-							
+
 							if (editor.status.message == "Done uploading.")
 							{
 								nextwindow="Done";
@@ -5729,17 +5733,17 @@ int id=0;
 								Title.SetText(nextwindow);
 							}
 							else
-								JOptionPane.showMessageDialog(null,new JLabel("<html>An error has occured.<br>Please try again.</html>") , "Error", JOptionPane.ERROR_MESSAGE);							
-							
+								JOptionPane.showMessageDialog(null,new JLabel("<html>An error has occured.<br>Please try again.</html>") , "Error", JOptionPane.ERROR_MESSAGE);
+
 						}
 						else
 						{
 							cl.show(insidePanel, nextwindow);
 							Title.SetText(nextwindow);
-						}						
+						}
 					}
 					Title.repaint();
-					
+
 					if (Title.GetText().indexOf("Upload Memory Settings")==0 || Title.GetText().indexOf("Ready to Generate")==0)
 					{
 						JPanel j = (JPanel) Footer.getComponent(0);
@@ -5767,7 +5771,7 @@ int id=0;
 						j1.setText("Next");
 						j.getComponent(3).setVisible(false);
 					}
-					
+
 					CheckNav();
 				}
 			};
@@ -5789,12 +5793,12 @@ int id=0;
 
 			footer.add(Cancel,"Cancel");
 			footer.add(Prev,"Prev");
-			footer.add(Next,"Next");			
-			footer.add(Generate,"Generate");			
+			footer.add(Next,"Next");
+			footer.add(Generate,"Generate");
 		}
 	}
 
-	
+
 	public void CheckPrevDimming()
 	{
 		if (dimmingexpansion==0)
@@ -5821,9 +5825,9 @@ int id=0;
 				CheckExpPWM();
 				prevwindow="Dimming Channel 5 Settings";
 			}
-		}		
+		}
 	}
-	
+
 	public void CheckPrevAI()
 	{
 		if (ailed==0)
@@ -5835,30 +5839,30 @@ int id=0;
 			if (((JRadioButton) aipwm[2].getComponent(2)).isSelected() || ((JRadioButton) aipwm[2].getComponent(3)).isSelected())
 			{
 				prevwindow="AI - Royal Blue Channel";
-			}		
+			}
 			else
 			{
 				CheckAIPWM();
 				prevwindow="AI - Royal Blue Settings";
 			}
 		}
-		
+
 	}
-	
+
 	public void CheckNextAI()
 	{
 		nextwindow="Aqua Illumination Port";
 		if (ailed==0)
 			CheckNextRF();
 	}
-	
+
 	public void CheckNextRF()
 	{
 		nextwindow="Vortech Mode";
 		if (rfexpansion==0)
 			CheckNextWifi();
 	}
-	
+
 	public void CheckPrevRF()
 	{
 		if (rfexpansion==0)
@@ -5870,34 +5874,34 @@ int id=0;
 			if (((JRadioButton) rfpwm[5].getComponent(2)).isSelected() || ((JRadioButton) rfpwm[5].getComponent(3)).isSelected())
 			{
 				prevwindow="Radion Intensity Channel";
-			}		
+			}
 			else
 			{
 				CheckRFPWM();
 				prevwindow="Radion Intensity Settings";
-			}							
-		}		
+			}
+		}
 	}
-	
+
 	public void CheckNextWifi()
 	{
 		nextwindow="Wifi Attachment";
-		if (wifi==0) 
-			CheckNextBuzzer();		
+		if (wifi==0)
+			CheckNextBuzzer();
 	}
-	
+
 	public void CheckPrevWifi()
 	{
 		if (wifi==0)
 		{
 			CheckPrevRF();
-		}		
+		}
 		else
 		{
 			prevwindow="Wifi Attachment";
-		}		
+		}
 	}
-	
+
 	public void CheckNextBuzzer()
 	{
 		nextwindow="Buzzer";
@@ -5908,18 +5912,19 @@ int id=0;
 			if (j.isSelected()) nextwindow="Upload Memory Settings";
 		}
 	}
-	
+
 	public void CheckPrevBuzzer()
 	{
 		if (buzzer==false)
-			CheckPrevWifi();											
+			CheckPrevWifi();
 		else
 			prevwindow="Buzzer";
 	}
-	
+
+	@SuppressWarnings("serial")
 	public class Inside extends JPanel {
 		JCustomEditorPane t;
-		
+
 		public Inside(String s)
 		{
 			super();
@@ -5936,8 +5941,9 @@ int id=0;
 		{
 			return t.getText();
 		}
-	}	
+	}
 
+	@SuppressWarnings("serial")
 	public class TitleLabel extends JPanel {
 
 		JLabel t;
@@ -5986,9 +5992,9 @@ int id=0;
 
 	public static class Preferences {
 
-		  static Hashtable table = new Hashtable();
-		  static File preferencesFile=new File (Base.getSketchbookFolder().getPath() +"/tools/Wizard/data/wizard.ini");
-		  
+		  static Map<String,String> table = new HashMap<String,String>();
+		  static File preferencesFile=new File (Base.getSketchbookFolder(), "tools/Wizard/data/wizard.ini");
+
 		  static protected void init(String commandLinePrefs) {
 
 			  try {
@@ -5998,9 +6004,8 @@ int id=0;
 
 			  String platformExt = "." + PConstants.platformNames[PApplet.platform];
 			  int platformExtLength = platformExt.length();
-			  Enumeration e = table.keys();
-			  while (e.hasMoreElements()) {
-				  String key = (String) e.nextElement();
+
+			  for (String key : table.keySet()) {
 				  if (key.endsWith(platformExt)) {
 					  // this is a key specific to a particular platform
 					  String actualKey = key.substring(0, key.length() - platformExtLength);
@@ -6008,20 +6013,20 @@ int id=0;
 					  table.put(actualKey, value);
 				  }
 			  }
-		  }    
-			  
-		  
+		  }
+
+
 		  static protected void load(InputStream input) throws IOException {
 			  load(input, table);
 		  }
 
-		  static public void load(InputStream input, Map table) throws IOException {  
+		  static public void load(InputStream input, Map<String,String> table) throws IOException {
 			  String[] lines = PApplet.loadStrings(input);  // Reads as UTF-8
 			  for (String line : lines) {
 				  if ((line.length() == 0) ||
 						  (line.charAt(0) == '#')) continue;
 
-				  // this won't properly handle = signs being in the text
+				  // this won't properly handle = signs in the key
 				  int equals = line.indexOf('=');
 				  if (equals != -1) {
 					  String key = line.substring(0, equals).trim();
@@ -6038,10 +6043,8 @@ int id=0;
 			  // Fix for 0163 to properly use Unicode when writing preferences.txt
 			  PrintWriter writer = PApplet.createWriter(preferencesFile);
 
-			  Enumeration e = table.keys(); //properties.propertyNames();
-			  while (e.hasMoreElements()) {
-				  String key = (String) e.nextElement();
-				  writer.println(key + "=" + ((String) table.get(key)));
+			  for (Map.Entry<String,String> each : table.entrySet()) {			 
+				  writer.println(each.getKey() + "=" + each.getValue());
 			  }
 
 			  writer.flush();
@@ -6051,7 +6054,7 @@ int id=0;
 
 		  static public String get(String attribute /*, String defaultValue */) {
 			  return (String) table.get(attribute);
-		  }		  
+		  }
 
 		  static public void set(String attribute, String value) {
 			  table.put(attribute, value);
@@ -6059,14 +6062,14 @@ int id=0;
 
 		  static public boolean getBoolean(String attribute) {
 			  String value = get(attribute); //, null);
-			  return (new Boolean(value)).booleanValue();
+			  return Boolean.valueOf(value).booleanValue();
 		  }
 
 
 		  static public void setBoolean(String attribute, boolean value) {
-			  set(attribute, value ? "true" : "false");
-		  }		 
-		  
+			  set(attribute, Boolean.toString(value));
+		  }
+
 		  static public int getInteger(String attribute /*, int defaultValue*/) {
 			  return Integer.parseInt(get(attribute));
 		  }
@@ -6074,7 +6077,7 @@ int id=0;
 
 		  static public void setInteger(String key, int value) {
 			  set(key, String.valueOf(value));
-		  }		  
+		  }
 
 		  static public Double getDouble(String attribute /*, int defaultValue*/) {
 			  return Double.parseDouble(get(attribute));
@@ -6083,7 +6086,7 @@ int id=0;
 
 		  static public void setDouble(String key, Double value) {
 			  set(key, String.valueOf(value));
-		  }				  
+		  }
 	}
 	public void loadInitialValues()
 	{
@@ -6135,7 +6138,7 @@ int id=0;
 			setInteger((JSpinner)Dosing[a].getComponent(6),"DPOffset"+a);
 			setInteger((JSpinner)Delayed[a].getComponent(2),"Delayed"+a);
 			if (Preferences.get("Opposite"+a)!=null) ((JComboBox)Opposite[a].getComponent(2)).setSelectedIndex(Preferences.getInteger("Opposite"+a));
-		}		
+		}
 		setSelected(daylightpwm,"daylightpwm");
 		setTime((JSpinner)daylightpwmsettings.getComponent(2),"daylightpwmon");
 		setTime((JSpinner)daylightpwmsettings.getComponent(4),"daylightpwmoff");
@@ -6184,11 +6187,11 @@ int id=0;
 		((JTextField) wifiportal.getComponent(1)).setText(Preferences.get("wifiportal"));
 		Title.SetText("Memory Settings");
 	}
-	
+
 	public void saveInitialValues()
 	{
 		SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
-		 
+
 		Preferences.setInteger("memsettings", getSelected(memsettings));
 		Preferences.setInteger("disptemp", getSelected(disptemp));
 		Preferences.setDouble("Overheat",(Double)Overheat.getValue());
@@ -6284,17 +6287,17 @@ int id=0;
 		Preferences.set("wifiportal",((JTextField) wifiportal.getComponent(1)).getText());
 		Preferences.save();
 	}
-	
+
 	public int getSelected(JPanel j)
 	{
 		int r=-1;
 		for (int a=0;a<j.getComponentCount();a++)
 			if (j.getComponent(a) instanceof JRadioButton)
-				if (((JRadioButton)j.getComponent(a)).isSelected()) 
+				if (((JRadioButton)j.getComponent(a)).isSelected())
 					r=a;
 		return r;
 	}
-	
+
 	public void setSelected(JPanel j,String p)
 	{
 		if (Preferences.get(p)!=null)
@@ -6309,22 +6312,22 @@ int id=0;
 			}
 		}
 	}
-	
+
 	public void setDouble(JSpinner j,String p)
 	{
 		if (Preferences.get(p)!=null)
 		{
 			j.setValue( new Double(Preferences.get(p)));
 		}
-	}	
-	
+	}
+
 	public void setInteger(JSpinner j,String p)
 	{
 		if (Preferences.get(p)!=null)
 		{
 			j.setValue( new Integer(Preferences.get(p)));
 		}
-	}	
+	}
 
 	public int setChecked(Component j, String p)
 	{
@@ -6334,7 +6337,7 @@ int id=0;
 			if (r!=0) ((JCheckBox)j).setSelected(true);
 		return r;
 	}
-	
+
 	public void setTime(JSpinner j,String p)
 	{
 		if (Preferences.get(p)!=null)
@@ -6346,8 +6349,8 @@ int id=0;
 			} catch (ParseException e) {
 				Title.SetText("Memory Settings");
 				e.printStackTrace();
-			}  
-		}		
+			}
+		}
 	}
 	public void CheckNav()
 	{
@@ -6373,7 +6376,7 @@ int id=0;
 					Title.SetText(s);
 				}
 			}
-		};		
+		};
 		taskGroup.removeAll();
 		JButton jb;
 		jb=new JButton("Welcome");
@@ -6426,7 +6429,7 @@ int id=0;
 			jb=new JButton("Wifi");
 			jb.addActionListener(al);
 			taskGroup.add(jb);
-		}		
+		}
 	}
 }
 
