@@ -123,7 +123,12 @@ enum TempUnit {
   TempUnit(String symbol) {
     DEGREES = "\u00b0" + symbol;
   }
-  };
+};
+
+enum TimeFormat{
+	  US12HOUR(),
+	  ISO8601();
+	};
 
 public class Wizard  implements Tool, MessageConsumer {
 	Editor editor;
@@ -132,9 +137,10 @@ public class Wizard  implements Tool, MessageConsumer {
 	boolean connected=false;
 	Serial serial;
 	LayoutConstraintsManager layoutConstraintsManager;
-int id=0;
+    int id=0;
 	private int relay=1;
 	private int window=1;
+	private TimeFormat timeformat = TimeFormat.ISO8601;
 	private TempUnit tempunit = TempUnit.FAHRENHEIT;
 	private int settingswidth=0;
 	private int displayPWM=0;
@@ -484,6 +490,10 @@ int id=0;
 		String d="";
 		JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
 		int NumDosing=1;
+		
+		if(timeformat == TimeFormat.ISO8601) {
+			d+= "#define DATETIME24\n";
+		}
 
 		d+="#include <ReefAngel_Features.h>\n" +
 				"#include <Globals.h>\n" +
@@ -544,8 +554,9 @@ int id=0;
 				"void setup()\n" +
 				"{\n" +
 				"    // This must be the first line\n" +
-				"    ReefAngel.Init();  //Initialize controller\n";
-		if (tempunit==TempUnit.CELCIUS) d+="    ReefAngel.SetTemperatureUnit( Celsius );  // set to Celsius Temperature\n\n";
+				"    ReefAngel.Init( " + 
+				    (tempunit==TempUnit.CELCIUS ? "DEGREE_C" : "DEGREE_F") +  
+				" );  //Initialize controller\n";
 		if (wifi==0) d+="    ReefAngel.AddStandardMenu();  // Add Standard Menu\n\n";
 
 		String f="";
@@ -645,10 +656,30 @@ int id=0;
 
 		d+="\n" +
 				"\n" +
-				"    // Ports that are always on\n";
+				"    // Ports that are not used (off for safety)\n";
 
 		String sp;
 		int poffset;
+		for (int a=1;a<=16;a++)
+		{
+			if(a>8)
+			{
+				sp="Box1_Port";
+				poffset=8;
+			}
+			else
+			{
+				sp="Port";
+				poffset=0;
+			}
+			JRadioButton AOff = (JRadioButton) functions[a].getComponent(11);
+			if (AOff.isSelected()) d+= "    ReefAngel.Relay.Off( " + sp + (a-poffset) + " );\n";
+		}
+
+		d+="\n" +
+				"\n" +
+				"    // Ports that are always on\n";
+
 		for (int a=1;a<=16;a++)
 		{
 			if(a>8)
@@ -5995,7 +6026,7 @@ int id=0;
 				  if ((line.length() == 0) ||
 						  (line.charAt(0) == '#')) continue;
 
-				  // this won't properly handle = signs being in the text
+				  // this won't properly handle = signs in the key
 				  int equals = line.indexOf('=');
 				  if (equals != -1) {
 					  String key = line.substring(0, equals).trim();
@@ -6031,12 +6062,12 @@ int id=0;
 
 		  static public boolean getBoolean(String attribute) {
 			  String value = get(attribute); //, null);
-			  return (new Boolean(value)).booleanValue();
+			  return Boolean.valueOf(value).booleanValue();
 		  }
 
 
 		  static public void setBoolean(String attribute, boolean value) {
-			  set(attribute, value ? "true" : "false");
+			  set(attribute, Boolean.toString(value));
 		  }
 
 		  static public int getInteger(String attribute /*, int defaultValue*/) {
