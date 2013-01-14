@@ -8,7 +8,6 @@ import java.awt.Paint;
 
 import javax.swing.JPanel;
 
-@SuppressWarnings("serial")
 public class GradientPanel extends JPanel {
 	public void paintComponent(Graphics g) {
 		int width = getWidth();
