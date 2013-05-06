@@ -1611,15 +1611,34 @@ int id=0;
 		String s="";
 		boolean bfunction=false;
 		
-		s="#include <ReefAngel_Features.h>\r\n" + 
-				"#include <Globals.h>\r\n" + 
-				"#include <Time.h>\r\n" + 
-				"#include <OneWire.h>\r\n" + 
-				"#include <RA_NokiaLCD.h>\r\n" + 
-				"#include <avr/pgmspace.h>\r\n" + 
-				"#include <InternalEEPROM.h>\r\n" + 
-				"#include <Wire.h>\r\n" + 
-				"#include <Memory.h>\r\n" + 
+		s="#include <ReefAngel_Features.h>\n" + 
+				"#include <Globals.h>\n" + 
+				"#include <RA_Wifi.h>\n" + 
+				"#include <Wire.h>\n" + 
+				"#include <OneWire.h>\n" + 
+				"#include <Time.h>\n" + 
+				"#include <DS1307RTC.h>\n" + 
+				"#include <InternalEEPROM.h>\n" + 
+				"#include <RA_NokiaLCD.h>\n" + 
+				"#include <RA_ATO.h>\n" + 
+				"#include <RA_Joystick.h>\n" + 
+				"#include <LED.h>\n" + 
+				"#include <RA_TempSensor.h>\n" + 
+				"#include <Relay.h>\n" + 
+				"#include <RA_PWM.h>\n" + 
+				"#include <Timer.h>\n" + 
+				"#include <Memory.h>\n" + 
+				"#include <InternalEEPROM.h>\n" + 
+				"#include <RA_Colors.h>\n" + 
+				"#include <RA_CustomColors.h>\n" + 
+				"#include <Salinity.h>\n" + 
+				"#include <RF.h>\n" + 
+				"#include <IO.h>\n" + 
+				"#include <ORP.h>\n" + 
+				"#include <AI.h>\n" + 
+				"#include <PH.h>\n" + 
+				"#include <WaterLevel.h>\n" + 
+				"#include <ReefAngel.h>\n\n" +
 				"\r\n" + 
 				"RA_NokiaLCD e;\r\n" + 
 				"\r\n" + 
