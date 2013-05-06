@@ -900,9 +900,14 @@ int id=0;
 								NumDosing++;
 								d+= "    ReefAngel.DosingPumpRepeat1( " + sp + (a-poffset) + " );\n";
 							}
-							else
+							else if (NumDosing==2)
 							{
+								NumDosing++;
 								d+= "    ReefAngel.DosingPumpRepeat2( " + sp + (a-poffset) + " );\n";
+							}
+							else if (NumDosing==3)
+							{
+								d+= "    ReefAngel.DosingPumpRepeat3( " + sp + (a-poffset) + " );\n";
 							}
 						}
 						break;
@@ -1766,6 +1771,11 @@ int id=0;
 				{
 					s+="    InternalMemory.DP2RepeatInterval_write( " + ((JSpinner)Dosing[a].getComponent(2)).getValue()  + " );\r\n";
 					s+="    InternalMemory.DP2Timer_write( " + ((JSpinner)Dosing[a].getComponent(4)).getValue()  + " );\r\n";
+				}
+				if (numdosing==3)
+				{
+					s+="    InternalMemory.DP3RepeatInterval_write( " + ((JSpinner)Dosing[a].getComponent(2)).getValue()  + " );\r\n";
+					s+="    InternalMemory.DP3Timer_write( " + ((JSpinner)Dosing[a].getComponent(4)).getValue()  + " );\r\n";
 				}
 			}
 		}
@@ -4434,18 +4444,19 @@ int id=0;
 			if (!bVisible)
 			{
 				((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 0 minutes offset.");
-				if (((JRadioButton) functions[a].getComponent(7)).isSelected())
-					numdosing++;
-				
-				if (numdosing>2)
-				{
-					((JRadioButton) functions[a].getComponent(7)).setSelected(false);
-					((JRadioButton) functions[a].getComponent(11)).setSelected(true);
-					cl.show(functionsettings[a], "Not Used");
-					numdosing--;
-				}
-				if (numdosing==2)
-					((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 5 minutes offset.");
+//				if (numdosing==1)
+//					((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 5 minutes offset.");
+//				if (numdosing==2)
+//					((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 10 minutes offset.");
+//				if (numdosing>=3)
+//				{
+//					((JRadioButton) functions[a].getComponent(7)).setSelected(false);
+//					((JRadioButton) functions[a].getComponent(11)).setSelected(true);
+//					cl.show(functionsettings[a], "Not Used");
+//					numdosing--;
+//				}
+//				if (((JRadioButton) functions[a].getComponent(7)).isSelected())
+//					numdosing++;
 			}
 			else
 			{
@@ -5042,13 +5053,15 @@ int id=0;
 							JRadioButton j = (JRadioButton) memsettings.getComponent(1);
 							if (j.isSelected())
 							{
-								if (numdosing>=1)
+								if (numdosing==1)
 									((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 5 minutes offset.");
+								if (numdosing==2)
+									((JLabel) Dosing[a].getComponent(5)).setText("This dosing pump will have 10 minutes offset.");
 								if (((JRadioButton) functions[a].getComponent(7)).isSelected())
 									numdosing++;
 							}
 						}
-						if (numdosing>=2)
+						if (numdosing>=3)
 						{
 							for (int a=1;a<=16;a++)
 								((JRadioButton) functions[a].getComponent(7)).setEnabled(((JRadioButton) functions[a].getComponent(7)).isSelected());
