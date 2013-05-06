@@ -1523,7 +1523,7 @@ int id=0;
 				{
 					d+="    // Salinity\n" + 
 							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,15," + y + ", \"SAL:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,39," + y + ", ReefAngel.Params.Salinity );\n" + 
+							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.Salinity,COLOR_DARKKHAKI,39," + y + ", 10 );    \r\n" + 
 							"    pingSerial();\n\n";
 				}
 				if (orpexpansion==1)
@@ -1545,7 +1545,7 @@ int id=0;
 				{
 					d+="    // pH Expansion\n" + 
 							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,15," + y + ", \"PHE:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,39," + y + ", ReefAngel.Params.PHExp );\n" + 
+							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.PHExp,COLOR_DARKKHAKI,39," + y + ", 100 );    \r\n" + 
 							"    pingSerial();\n\n";
 				}
 				if (waterlevelexpansion==1)
