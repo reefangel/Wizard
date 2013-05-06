@@ -860,9 +860,9 @@ int id=0;
 						{
 							d+= ",";
 							JSpinner jh = null; 
-							jh = (JSpinner) CO2Control[a].getComponent(2);
-							d+= (int)((Double)jh.getValue() *100) + ",";
 							jh = (JSpinner) CO2Control[a].getComponent(4);
+							d+= (int)((Double)jh.getValue() *100) + ",";
+							jh = (JSpinner) CO2Control[a].getComponent(2);
 							d+= (int)((Double)jh.getValue() *100);
 						}
 						d+= " );\n";
@@ -873,9 +873,9 @@ int id=0;
 						{
 							d+= ",";
 							JSpinner jc = null; 
-							jc = (JSpinner) pHControl[a].getComponent(4);
-							d+= (int)((Double)jc.getValue() *100) + ",";
 							jc = (JSpinner) pHControl[a].getComponent(2);
+							d+= (int)((Double)jc.getValue() *100) + ",";
+							jc = (JSpinner) pHControl[a].getComponent(4);
 							d+= (int)((Double)jc.getValue() *100);
 						}
 						d+= " );\n";
