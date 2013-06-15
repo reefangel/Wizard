@@ -1550,7 +1550,7 @@ int id=0;
 				{
 					d+="    // pH Expansion\n" + 
 							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,15," + y + ", \"PHE:\" );\n" + 
-							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.PHExp,COLOR_DARKKHAKI,39," + y + ", 100 );    \r\n" + 
+							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.PHExp,COLOR_MEDIUMSEAGREEN,39," + y + ", 100 );    \r\n" + 
 							"    pingSerial();\n\n";
 				}
 				if (waterlevelexpansion==1)
