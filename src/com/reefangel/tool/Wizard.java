@@ -925,7 +925,7 @@ int id=0;
 					case 9:
 						d+= "    ReefAngel.Relay.Set( " + sp + (a-poffset) + ", !ReefAngel.Relay.Status( ";
 						JComboBox jco = (JComboBox) Opposite[a].getComponent(2);
-						d+= jco.getSelectedItem().toString().replace("Main Box ", "").replace("Exp. Box ", "Box1_").replace(" ", "");
+						d+= jco.getSelectedItem().toString().replace("Main Box ", "").replace("Expansion Box ", "Box1_").replace(" ", "");
 						d+= " ) );\n";
 						break;
 					}
