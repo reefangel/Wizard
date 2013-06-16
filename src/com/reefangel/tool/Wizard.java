@@ -167,6 +167,7 @@ int id=0;
 	private int phexpansion=0;
 	private int waterlevelexpansion=0;
 	private int humidityexpansion=0;
+	private int leakexpansion=0;
 	
 	private int wifi=0;
 	private int ailed=0;
@@ -235,6 +236,7 @@ int id=0;
 	public static JCheckBox waterchange[] = new JCheckBox[17];
 	public static JCheckBox overheat[] = new JCheckBox[17];
 	public static JCheckBox lightson[] = new JCheckBox[17];
+	public static JCheckBox leak[] = new JCheckBox[17];
 	public static JSpinner Overheat;
 
 	Font font;
@@ -262,7 +264,7 @@ int id=0;
 		"Please choose the settings for your Daylight and Actinic schedule. Delayed Start is useful for MH ballasts."
 	};
 
-	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity"};
+	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity", "Rope Leak Detector"};
 	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable","DC Pump (Jebao/Tunze/Speedwave)"};
 	public static String AIChannels[] = {"White","Blue","Royal Blue"};
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
@@ -570,10 +572,12 @@ int id=0;
 		String w="";
 		String l="";
 		String o="";
+		String lk="";
 		String fe="";
 		String we="";
 		String le="";
 		String oe="";
+		String lke="";
 
 		for (int a=1;a<=8;a++)
 		{
@@ -581,6 +585,7 @@ int id=0;
 			if (waterchange[a].isSelected()) w+= "Port"+a+"Bit | ";
 			if (lightson[a].isSelected()) l+= "Port"+a+"Bit | ";
 			if (overheat[a].isSelected()) o+= "Port"+a+"Bit | ";
+			if (leak[a].isSelected()) lk+= "Port"+a+"Bit | ";
 		}
 		for (int a=9;a<=16;a++)
 		{
@@ -588,6 +593,7 @@ int id=0;
 			if (waterchange[a].isSelected()) we+= "Port"+(a-8)+"Bit | ";
 			if (lightson[a].isSelected()) le+= "Port"+(a-8)+"Bit | ";
 			if (overheat[a].isSelected()) oe+= "Port"+(a-8)+"Bit | ";
+			if (leak[a].isSelected()) lke+= "Port"+(a-8)+"Bit | ";
 		}
 		if (f!="")
 			f=f.substring(0, f.length()-3);
@@ -608,6 +614,12 @@ int id=0;
 			o=o.substring(0, o.length()-3);
 		else
 			o="0";
+
+		if (lk!="")
+			lk=lk.substring(0, lk.length()-3);
+		else
+			lk="0";
+		
 		if (fe!="")
 			fe=fe.substring(0, fe.length()-3);
 		else
@@ -627,6 +639,12 @@ int id=0;
 			oe=oe.substring(0, oe.length()-3);
 		else
 			oe="0";		
+
+		if (lke!="")
+			lke=lke.substring(0, lke.length()-3);
+		else
+			lke="0";		
+
 		d+="    // Ports toggled in Feeding Mode\n" + 
 				"    ReefAngel.FeedingModePorts = " + f + ";\n";
 		if (relayexpansion==1)
@@ -643,6 +661,13 @@ int id=0;
 				"    ReefAngel.OverheatShutoffPorts = " + o + ";\n";
 		if (relayexpansion==1)
 			d+="    ReefAngel.OverheatShutoffPortsE[0] = " + oe + ";\n";
+		if (leakexpansion==1)
+		{
+			d+="    // Ports turned off when Leak is detected\n" + 
+					"    ReefAngel.LeakShutoffPorts = " + lk + ";\n";
+			if (relayexpansion==1)
+				d+="    ReefAngel.LeakShutoffPortsE[0] = " + lke + ";\n";
+		}
 		d+="    // Use T1 probe as temperature and overheat functions\n" + 
 				"    ReefAngel.TempProbe = T1_PROBE;\n" + 
 				"    ReefAngel.OverheatProbe = T1_PROBE;\n";
@@ -3561,6 +3586,7 @@ int id=0;
 			waterchange[a] = new JCheckBox ("Turn off this port on \"Water Change\" Mode");
 			lightson[a] = new JCheckBox ("Turn on this port on \"Lights On\" mode");
 			overheat[a] = new JCheckBox ("Turn off this port on \"Overheat\"");
+			leak[a] = new JCheckBox ("Turn off this port on \"Leak\"");
 			ports[a] = new JPanel(); 
 			ports[a].setLayout(new BoxLayout( ports[a], BoxLayout.PAGE_AXIS));
 			ports[a].setBorder(BorderFactory.createTitledBorder(null, "Port Mode",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
@@ -3572,6 +3598,7 @@ int id=0;
 //			if (Base.isMacOS()) ports[a].add(new JLabel(" "));
 			ports[a].add(overheat[a]);
 //			if (Base.isMacOS()) ports[a].add(new JLabel(" "));
+			ports[a].add(leak[a]);
 		}
 		expansionmods=new JPanel();
 		expansionmods.setLayout(new BoxLayout( expansionmods, BoxLayout.PAGE_AXIS));
@@ -5042,6 +5069,8 @@ int id=0;
 						if (jc.isSelected()) waterlevelexpansion=1; else waterlevelexpansion=0;
 						jc=(JCheckBox) expansionmods.getComponent(8);
 						if (jc.isSelected()) humidityexpansion=1; else humidityexpansion=0;
+						jc=(JCheckBox) expansionmods.getComponent(9);
+						if (jc.isSelected()) leakexpansion=1; else leakexpansion=0;
 						if (ioexpansion==1)
 						{
 							for (int a=0;a<9;a++)
@@ -5064,6 +5093,12 @@ int id=0;
 							for (int a=10;a<22;a++)
 								DCmods.getComponent(a).setVisible(false);
 						}
+						if (leakexpansion==1)
+							for (int a=1;a<17;a++)
+								 ((JCheckBox)ports[a].getComponent(4)).setVisible(true);
+						else
+							for (int a=1;a<17;a++)
+								 ((JCheckBox)ports[a].getComponent(4)).setVisible(false);
 					}
 
 					if (swindow.indexOf("Attachments")==0)
@@ -6326,6 +6361,7 @@ int id=0;
 		phexpansion=setChecked(expansionmods.getComponent(6),"phexpansion");
 		waterlevelexpansion=setChecked(expansionmods.getComponent(7),"waterlevelexpansion");
 		humidityexpansion=setChecked(expansionmods.getComponent(8),"humidityexpansion");
+		leakexpansion=setChecked(expansionmods.getComponent(9),"leakexpansion");
 		wifi=setChecked(attachmentmods.getComponent(0),"wifi");
 		ailed=setChecked(attachmentmods.getComponent(1),"ailed");
 		dcpump=setChecked(attachmentmods.getComponent(2),"dcpump");
@@ -6437,6 +6473,7 @@ int id=0;
 		Preferences.setInteger("phexpansion", phexpansion);
 		Preferences.setInteger("waterlevelexpansion", waterlevelexpansion);
 		Preferences.setInteger("humidityexpansion", humidityexpansion);
+		Preferences.setInteger("leakexpansion", leakexpansion);
 		Preferences.setInteger("wifi", wifi);
 		Preferences.setInteger("ailed", ailed);
 		Preferences.setInteger("dcpump", dcpump);
