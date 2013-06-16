@@ -170,6 +170,7 @@ int id=0;
 	
 	private int wifi=0;
 	private int ailed=0;
+	private int dcpump=0;
 
 	private String nextwindow="";
 	private String prevwindow="";
@@ -193,6 +194,7 @@ int id=0;
 	public static JPanel expansionmods;
 	public static JPanel attachmentmods;
 	public static JPanel RFmods;
+	public static JPanel DCmods;
 	public static JPanel Buzzermods;
 	public static JPanel daylightpwm;
 	public static JPanel actinicpwm;
@@ -261,7 +263,7 @@ int id=0;
 	};
 
 	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity"};
-	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable"};
+	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable","DC Pump (Jebao/Tunze/Speedwave)"};
 	public static String AIChannels[] = {"White","Blue","Royal Blue"};
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
 	public static String RadionChannels[] = {"White","Royal Blue","Red","Green","Blue","Intensity"};
@@ -272,7 +274,10 @@ int id=0;
 		"Dimming Expansion Channel 0", "Dimming Channel 0 Settings", "Dimming Expansion Channel 1", "Dimming Channel 1 Settings", "Dimming Expansion Channel 2", "Dimming Channel 2 Settings", "Dimming Expansion Channel 3", "Dimming Channel 3 Settings", "Dimming Expansion Channel 4", "Dimming Channel 4 Settings", "Dimming Expansion Channel 5", "Dimming Channel 5 Settings",
 		"Aqua Illumination Port", "AI - White Channel", "AI - White Settings", "AI - Blue Channel", "AI - Blue Settings", "AI - Royal Blue Channel", "AI - Royal Blue Settings",
 		"Vortech Mode", "Radion White Channel", "Radion White Settings", "Radion Royal Blue Channel", "Radion Royal Blue Settings", "Radion Red Channel", "Radion Red Settings", "Radion Green Channel", "Radion Green Settings", "Radion Blue Channel", "Radion Blue Settings", "Radion Intensity Channel", "Radion Intensity Settings",
+		"DC Pump Mode",
 		"Wifi Attachment","Buzzer"};
+	public static String DCPumpModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
+	public static String DCPumpSync[] = { "Not Used","Sync","Anti-Sync" };
 	
 
 	public String getMenuTitle() {
@@ -431,6 +436,7 @@ int id=0;
 		ShowVortech();
 		ShowRFPWM();
 		ShowRFPWMSettings();
+		ShowDC();
 		ShowWifi();
 		ShowBuzzer();
 		ShowGenerate();
@@ -653,6 +659,13 @@ int id=0;
 			jatc=(JRadioButton) aiport.getComponent(1);
 			if (jatc.isSelected()) d+="    ReefAngel.AI.SetPort( highATOPin );\n"; 
 
+		}
+		
+		if (dcpump==1)
+		{
+			d+="\n    // Feeeding and Water Change mode speed\n";
+			d+="    ReefAngel.DCPump.FeedingSpeed=0;\n" + 
+					"    ReefAngel.DCPump.WaterChangeSpeed=0;\n";
 		}
 
 		d+="\n" + 
@@ -1361,9 +1374,39 @@ int id=0;
 					d+= "    ReefAngel.RF.SetChannel( Radion_" + RadionChannels[i].replace(" ","") + ", MoonPhase() );\n";
 				}
 			}
-			if (radionset) d+="    if ( second()==0 ) ReefAngel.RF.RadionWrite();\n\n";
+//			if (radionset) d+="    if ( second()==0 ) ReefAngel.RF.RadionWrite();\n\n";
 		}
 
+		// DC Pump
+
+		if (dcpump==1)
+		{
+			JComboBox jds = (JComboBox) DCmods.getComponent(7);
+			JComboBox jas = (JComboBox) DCmods.getComponent(9);
+			if (jb1.isSelected())
+			{			
+				JComboBox jc = (JComboBox) DCmods.getComponent(1);
+				JSpinner js = (JSpinner) DCmods.getComponent(3);
+				JSpinner jd = (JSpinner) DCmods.getComponent(5);
+				d+="    ReefAngel.DCPump.UseMemory = false;\n" + 
+				   "    ReefAngel.DCPump.SetMode( " + jc.getSelectedItem().toString().replace(" ","") + "," + js.getValue() + "," + jd.getValue() + " );\n";
+			}
+			else
+			{
+				d+="    ReefAngel.DCPump.UseMemory = true;\n";
+			}
+			d+="    ReefAngel.DCPump.DaylightChannel = " + jds.getSelectedItem().toString().replace("-","").replace("Not Used","None") + ";\n" +
+			   "    ReefAngel.DCPump.ActinicChannel = " + jas.getSelectedItem().toString().replace("-","").replace("Not Used","None") + ";\n";
+			if (dimmingexpansion==1)
+			{
+				for (int a=0;a<6;a++)
+				{
+					JComboBox jde = (JComboBox) DCmods.getComponent(11+(a*2));
+					d+="    ReefAngel.DCPump.ExpansionChannel[" + a + "] = " + jde.getSelectedItem().toString().replace("-","").replace("Not Used","None") + ";\n";
+				}
+			}
+		}
+		
 		if (buzzer)
 		{
 			String b="buzzer = ";
@@ -1866,7 +1909,7 @@ int id=0;
 			}
 		}
 
-		// RF
+		// RF Radion
 		String RFc[] = {"W","RB","R","G","B","I"};
 		for (int a=0;a<6;a++)
 		{
@@ -1882,6 +1925,22 @@ int id=0;
 				s+="    InternalMemory.RadionSlopeEnd" + RFc[a] + "_write( " + ((JSpinner)rfpwmsettings[a].getComponent(10)).getValue()  + " );\r\n";
 			}
 		}
+		
+		// RF Vortech
+		if (rfexpansion==1)
+		{
+			s+="    InternalMemory.RFMode_write( " + ((JComboBox) RFmods.getComponent(1)).getSelectedIndex()  + " );\r\n";
+			s+="    InternalMemory.RFSpeed_write( " + ((JSpinner) RFmods.getComponent(3)).getValue()  + " );\r\n";
+			s+="    InternalMemory.RFDuration_write( " + ((JSpinner) RFmods.getComponent(5)).getValue()  + " );\r\n";
+		}			
+		
+		// DC Pump
+		if (dcpump==1)
+		{
+			s+="    InternalMemory.DCPumpMode_write( " + ((JComboBox) DCmods.getComponent(1)).getSelectedIndex()  + " );\r\n";
+			s+="    InternalMemory.DCPumpSpeed_write( " + ((JSpinner) DCmods.getComponent(3)).getValue()  + " );\r\n";
+			s+="    InternalMemory.DCPumpDuration_write( " + ((JSpinner) DCmods.getComponent(5)).getValue()  + " );\r\n";
+		}	
 		
 		s+="    InternalMemory.IMCheck_write(0xCF06A31E);\r\n" + 
 				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+20, MENU_START_ROW*3, \"Memory Updated\");\r\n" + 
@@ -2244,7 +2303,19 @@ int id=0;
 			insidePanel.add(rfsettingspanel[a],Titles[48+(a*2)]);
 		}		
 	}		
-
+	
+	private void ShowDC()
+	{
+		JPanel j = new JPanel();
+		j.setOpaque(false);
+		j.setLayout(layoutConstraintsManager.createLayout("relaypanel", j));
+		Inside i = new Inside("<HTML>Please choose the default DC Pump mode:<br><br></HTML>");
+		j.add(i,"i");
+		DCmods.setOpaque(false);
+		j.add(DCmods,"icon");
+		insidePanel.add(j,Titles[59]);	
+	}	
+	
 	private void ShowWifi()
 	{
 		JPanel j = new JPanel();
@@ -2255,7 +2326,7 @@ int id=0;
 		wifiportal.setOpaque(false);
 		j.add(wifiportal,"icon");
 
-		insidePanel.add(j,Titles[59]);	
+		insidePanel.add(j,Titles[60]);	
 	}	
 	
 	private void ShowBuzzer()
@@ -2268,7 +2339,7 @@ int id=0;
 		Buzzermods.setOpaque(false);
 		j.add(Buzzermods,"icon");
 
-		insidePanel.add(j,Titles[60]);	
+		insidePanel.add(j,Titles[61]);	
 	}	
 	private void ShowGenerate()
 	{
@@ -4059,6 +4130,76 @@ int id=0;
 			rfpwmsettings[i].add(new JLabel(""));		
 		}	   		
 
+		// DC Pump Expansion
+
+		ActionListener DCListener = new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				JComboBox cb = (JComboBox)actionEvent.getSource();
+				String vm = (String)cb.getSelectedItem();
+
+				if (vm=="Constant" || vm=="Lagoon" || vm=="ReefCrest" || vm=="Tidal Swell")
+				{
+					DCmods.getComponent(4).setVisible(false);
+					DCmods.getComponent(5).setVisible(false);
+				}
+				else
+				{
+					DCmods.getComponent(4).setVisible(true);
+					DCmods.getComponent(5).setVisible(true);
+				}
+				if (vm=="Short Pulse" || vm=="Nutrient Transport")
+				{
+					JLabel j=(JLabel) DCmods.getComponent(4);
+					j.setText("DC Pump Duration (ms):");
+					JSpinner jS=(JSpinner)DCmods.getComponent(5);
+					jS.setModel(new SpinnerNumberModel(10,10,10000,1));
+				}
+				if (vm=="Long Pulse")
+				{
+					JLabel j=(JLabel) DCmods.getComponent(4);
+					j.setText("DC Pump Duration (s):");
+					JSpinner jS=(JSpinner)DCmods.getComponent(5);
+					jS.setModel(new SpinnerNumberModel(10,1,10000,1));
+				}
+			}
+		};		
+
+		DCmods= new JPanel(new GridLayout(11,2));
+		DCmods.add(new JLabel("DC Pump Mode:"));
+		JComboBox dcm=new JComboBox(DCPumpModes);
+		dcm.addActionListener(DCListener);
+		DCmods.add(dcm);
+
+
+		DCmods.add(new JLabel("DC Pump Speed (%):"));
+		DCmods.add(new JSpinner( new SpinnerNumberModel(50,0,100,1)));
+
+		durationp = new JSpinner( new SpinnerNumberModel(10,0,255,1) );
+		durationp.setVisible(false);
+		durationpLabel=new JLabel ("DC Pump Duration:");
+		durationpLabel.setVisible(false);
+		DCmods.add(durationpLabel);
+		DCmods.add(durationp);		
+
+		DCmods.add(new JLabel("Daylight Channel:"));
+		JComboBox dcds=new JComboBox(DCPumpSync);
+		DCmods.add(dcds);
+		DCmods.add(new JLabel("Actinic Channel:"));
+		JComboBox dcas=new JComboBox(DCPumpSync);
+		DCmods.add(dcas);
+		
+		for (int a=0;a<6;a++)
+		{
+			DCmods.add(new JLabel("Dimming Exp. Channel " + a + ":" ));
+			JComboBox dcdes=new JComboBox(DCPumpSync);
+			DCmods.add(dcdes);
+		}
+		
+		if (dimmingexpansion==0)
+			for (int a=10;a<22;a++)
+				DCmods.getComponent(a).setVisible(false);
+		
+
 		Buzzermods= new JPanel();
 		Buzzermods.setLayout(new BoxLayout( Buzzermods, BoxLayout.PAGE_AXIS));
 		Buzzermods.add(new JCheckBox ("Overheat"));
@@ -4913,6 +5054,16 @@ int id=0;
 							for (int a=3;a<9;a++)
 								Buzzermods.getComponent(a).setVisible(false);
 						}	
+						if (dimmingexpansion==1)
+						{
+							for (int a=10;a<22;a++)
+								DCmods.getComponent(a).setVisible(true);
+						}
+						else
+						{
+							for (int a=10;a<22;a++)
+								DCmods.getComponent(a).setVisible(false);
+						}
 					}
 
 					if (swindow.indexOf("Attachments")==0)
@@ -4924,6 +5075,8 @@ int id=0;
 						if (jc.isSelected()) wifi=1; else wifi=0;
 						jc=(JCheckBox) attachmentmods.getComponent(1);
 						if (jc.isSelected()) ailed=1; else ailed=0;		
+						jc=(JCheckBox) attachmentmods.getComponent(2);
+						if (jc.isSelected()) dcpump=1; else dcpump=0;		
 					}
 
 					if (swindow.indexOf("Main Relay Box")==0)
@@ -5637,12 +5790,18 @@ int id=0;
 					if (swindow.indexOf("Radion Intensity Settings")==0)
 					{
 						prevwindow="Radion Intensity Channel";
+						CheckNextDC();
+					}
+					
+					if (swindow.indexOf("DC Pump Mode")==0)
+					{
+						CheckPrevRF();
 						CheckNextWifi();
 					}
 					
 					if (swindow.indexOf("Wifi Attachment")==0)
 					{
-						CheckPrevRF();
+						CheckPrevDC();
 						CheckNextBuzzer();
 					}					
 					
@@ -5905,7 +6064,7 @@ int id=0;
 	{
 		nextwindow="Vortech Mode";
 		if (rfexpansion==0)
-			CheckNextWifi();
+			CheckNextDC();
 	}
 	
 	public void CheckPrevRF()
@@ -5927,6 +6086,25 @@ int id=0;
 			}							
 		}		
 	}
+
+	public void CheckNextDC()
+	{
+		nextwindow="DC Pump Mode";
+		if (dcpump==0)
+			CheckNextWifi();
+	}
+	
+	public void CheckPrevDC()
+	{
+		if (dcpump==0)
+		{
+			CheckPrevRF();
+		}
+		else
+		{
+			prevwindow="DC Pump Mode";
+		}		
+	}
 	
 	public void CheckNextWifi()
 	{
@@ -5939,7 +6117,7 @@ int id=0;
 	{
 		if (wifi==0)
 		{
-			CheckPrevRF();
+			CheckPrevDC();
 		}		
 		else
 		{
@@ -6150,6 +6328,7 @@ int id=0;
 		humidityexpansion=setChecked(expansionmods.getComponent(8),"humidityexpansion");
 		wifi=setChecked(attachmentmods.getComponent(0),"wifi");
 		ailed=setChecked(attachmentmods.getComponent(1),"ailed");
+		dcpump=setChecked(attachmentmods.getComponent(2),"dcpump");
 		for (int a=1;a<16;a++)
 		{
 			if (a<=8) Title.SetText ("Main Relay Box - Port "+a);
@@ -6231,6 +6410,13 @@ int id=0;
 			setInteger((JSpinner)rfpwmsettings[a].getComponent(10),"rfpwm"+a+"end");
 			setInteger((JSpinner)rfpwmsettings[a].getComponent(14),"rfpwm"+a+"duration");
 		}
+		if (Preferences.get("DCmodsMode")!=null) ((JComboBox)DCmods.getComponent(1)).setSelectedIndex(Preferences.getInteger("DCmodsMode"));
+		setInteger((JSpinner)DCmods.getComponent(3),"DCmodsSpeed");
+		setInteger((JSpinner)DCmods.getComponent(5),"DCmodsDuration");
+		if (Preferences.get("DCmodsDaylightSync")!=null) ((JComboBox)DCmods.getComponent(7)).setSelectedIndex(Preferences.getInteger("DCmodsDaylightSync"));
+		if (Preferences.get("DCmodsActinicSync")!=null) ((JComboBox)DCmods.getComponent(9)).setSelectedIndex(Preferences.getInteger("DCmodsActinicSync"));
+		for (int a=0;a<6;a++)
+			if (Preferences.get("DCmodsDimming" + a + "Sync")!=null) ((JComboBox)DCmods.getComponent(11+(a*2))).setSelectedIndex(Preferences.getInteger("DCmodsDimming" + a + "Sync"));
 		((JTextField) wifiportal.getComponent(1)).setText(Preferences.get("wifiportal"));
 		Title.SetText("Memory Settings");
 	}
@@ -6253,6 +6439,7 @@ int id=0;
 		Preferences.setInteger("humidityexpansion", humidityexpansion);
 		Preferences.setInteger("wifi", wifi);
 		Preferences.setInteger("ailed", ailed);
+		Preferences.setInteger("dcpump", dcpump);
 		for (int a=1;a<16;a++)
 		{
 			Preferences.setInteger("functions"+a, getSelected(functions[a]));
@@ -6332,6 +6519,14 @@ int id=0;
 			Preferences.set("rfpwm"+a+"end", ((JSpinner)rfpwmsettings[a].getComponent(10)).getValue().toString());
 			Preferences.set("rfpwm"+a+"duration", ((JSpinner)rfpwmsettings[a].getComponent(14)).getValue().toString());
 		}
+		Preferences.setInteger("DCmodsMode", ((JComboBox)DCmods.getComponent(1)).getSelectedIndex());
+		Preferences.set("DCmodsSpeed", ((JSpinner)DCmods.getComponent(3)).getValue().toString());
+		Preferences.set("DCmodsDuration", ((JSpinner)DCmods.getComponent(5)).getValue().toString());
+		Preferences.setInteger("DCmodsDaylightSync", ((JComboBox)DCmods.getComponent(7)).getSelectedIndex());
+		Preferences.setInteger("DCmodsActinicSync", ((JComboBox)DCmods.getComponent(9)).getSelectedIndex());
+		for (int a=0;a<6;a++)
+			Preferences.setInteger("DCmodsDimming" + a + "Sync", ((JComboBox)DCmods.getComponent(11+(a*2))).getSelectedIndex());
+		
 		Preferences.set("wifiportal",((JTextField) wifiportal.getComponent(1)).getText());
 		Preferences.save();
 	}
@@ -6417,6 +6612,7 @@ int id=0;
 				if (aButton.getText() == "Dimming Expansion") s = "Dimming Expansion Channel 0";
 				if (aButton.getText() == "Aqua Illumination") s = "Aqua Illumination Port";
 				if (aButton.getText() == "RF Expansion") s = "Vortech Mode";
+				if (aButton.getText() == "DC Pump") s = "DC Pump Mode";
 				if (aButton.getText() == "Wifi") s = "Wifi Attachment";
 				if (s!="")
 				{
@@ -6469,6 +6665,12 @@ int id=0;
 		if (rfexpansion==1)
 		{
 			jb=new JButton("RF Expansion");
+			jb.addActionListener(al);
+			taskGroup.add(jb);
+		}
+		if (dcpump==1)
+		{
+			jb=new JButton("DC Pump");
 			jb.addActionListener(al);
 			taskGroup.add(jb);
 		}
