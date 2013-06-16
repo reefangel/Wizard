@@ -1548,8 +1548,8 @@ int id=0;
 				if (humidityexpansion==1)
 				{
 					d+="    // Humidity\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + x1 + "," + y + ", \"HUM:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Humidity.GetLevel() );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_PLUM,DefaultBGColor," + x1 + "," + y + ", \"HUM:\" );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_PLUM,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Humidity.GetLevel() );\n" + 
 							"    pingSerial();\n\n";
 				}
 				y+=9;
