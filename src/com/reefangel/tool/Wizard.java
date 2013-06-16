@@ -166,6 +166,7 @@ int id=0;
 	private int orpexpansion=0;
 	private int phexpansion=0;
 	private int waterlevelexpansion=0;
+	private int humidityexpansion=0;
 	
 	private int wifi=0;
 	private int ailed=0;
@@ -259,7 +260,7 @@ int id=0;
 		"Please choose the settings for your Daylight and Actinic schedule. Delayed Start is useful for MH ballasts."
 	};
 
-	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level"};
+	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity"};
 	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable"};
 	public static String AIChannels[] = {"White","Blue","Royal Blue"};
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
@@ -521,6 +522,8 @@ int id=0;
 				"#include <AI.h>\n" + 
 				"#include <PH.h>\n" + 
 				"#include <WaterLevel.h>\n" + 
+				"#include <Humidity.h>\n" + 
+				"#include <DCPump.h>\n" + 
 				"#include <ReefAngel.h>\n\n"; 
 
 		if (buzzer)
@@ -1430,7 +1433,7 @@ int id=0;
 		d+="    ReefAngel.ShowInterface();\n" + 
 				"}\n\n";
 
-		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1 || phexpansion==1 || waterlevelexpansion==1) 
+		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1 || phexpansion==1 || waterlevelexpansion==1 || humidityexpansion==1) 
 		{
 			int h=83;
 			int y=2;
@@ -1438,12 +1441,12 @@ int id=0;
 			h-=dimmingexpansion*28;
 			h-=ailed*10;
 			h-=ioexpansion*6;
-			if (salinityexpansion==1 || orpexpansion==1)
+			if (salinityexpansion==1 || orpexpansion==1 || humidityexpansion==1)
 				h-=10;
 			if (phexpansion==1 || waterlevelexpansion==1)
 				h-=10;
 
-			h/=(relayexpansion+dimmingexpansion+ailed+ioexpansion+(salinityexpansion|orpexpansion)+(phexpansion|waterlevelexpansion)+3);
+			h/=(relayexpansion+dimmingexpansion+ailed+ioexpansion+(salinityexpansion|orpexpansion|humidityexpansion)+(phexpansion|waterlevelexpansion)+3);
 //			System.out.println(h);
 
 
@@ -1504,7 +1507,7 @@ int id=0;
 			}
 
 			y+=h;
-			if (salinityexpansion==0 && orpexpansion==0 && phexpansion==0 && waterlevelexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
+			if (salinityexpansion==0 && orpexpansion==0 && humidityexpansion==0 && phexpansion==0 && waterlevelexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
 			{
 				y=62;
 				h=3;
@@ -1520,25 +1523,35 @@ int id=0;
 			y+=28;
 
 
-			if (salinityexpansion==1 || orpexpansion==1)
+			if (salinityexpansion==1 || orpexpansion==1 || humidityexpansion==1)
 			{
+				int xw=132/(salinityexpansion+orpexpansion+humidityexpansion);
+				int x1=(xw/2)-17;
 				y+=h;
 
 				if (salinityexpansion==1)
 				{
 					d+="    // Salinity\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor,15," + y + ", \"SAL:\" );\n" + 
-							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.Salinity,COLOR_DARKKHAKI,39," + y + ", 10 );    \r\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor," + x1 + "," + y + ", \"SAL:\" );\n" + 
+							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.Salinity,COLOR_DARKKHAKI," + (x1+24) + "," + y + ", 10 );    \r\n" + 
 							"    pingSerial();\n\n";
+					x1+=xw;
 				}
 				if (orpexpansion==1)
 				{
 					d+="    // ORP\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor,75," + y + ", \"ORP:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor,99," + y + ", ReefAngel.Params.ORP );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + x1 + "," + y + ", \"ORP:\" );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Params.ORP );\n" + 
+							"    pingSerial();\n\n";
+					x1+=xw;
+				}
+				if (humidityexpansion==1)
+				{
+					d+="    // ORP\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + x1 + "," + y + ", \"HUM:\" );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Humidity.GetLevel() );\n" + 
 							"    pingSerial();\n\n";
 				}
-
 				y+=9;
 			}
 
@@ -1596,7 +1609,7 @@ int id=0;
 					"\n" + 
 					"void DrawCustomGraph()\n" + 
 					"{\n";  
-			if (salinityexpansion==0 && orpexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
+			if (humidityexpansion==0 && salinityexpansion==0 && orpexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
 				d+="    ReefAngel.LCD.DrawGraph( 5, 5 );\n";
 			d+="}\n";
 		}
@@ -1643,6 +1656,8 @@ int id=0;
 				"#include <AI.h>\n" + 
 				"#include <PH.h>\n" + 
 				"#include <WaterLevel.h>\n" + 
+				"#include <Humidity.h>\n" + 
+				"#include <DCPump.h>\n" + 
 				"#include <ReefAngel.h>\n\n" +
 				"\r\n" + 
 				"RA_NokiaLCD e;\r\n" + 
@@ -4884,6 +4899,8 @@ int id=0;
 						if (jc.isSelected()) phexpansion=1; else phexpansion=0;
 						jc=(JCheckBox) expansionmods.getComponent(7);
 						if (jc.isSelected()) waterlevelexpansion=1; else waterlevelexpansion=0;
+						jc=(JCheckBox) expansionmods.getComponent(8);
+						if (jc.isSelected()) humidityexpansion=1; else humidityexpansion=0;
 						if (ioexpansion==1)
 						{
 							for (int a=0;a<9;a++)
@@ -6130,6 +6147,7 @@ int id=0;
 		orpexpansion=setChecked(expansionmods.getComponent(5),"orpexpansion");
 		phexpansion=setChecked(expansionmods.getComponent(6),"phexpansion");
 		waterlevelexpansion=setChecked(expansionmods.getComponent(7),"waterlevelexpansion");
+		humidityexpansion=setChecked(expansionmods.getComponent(8),"humidityexpansion");
 		wifi=setChecked(attachmentmods.getComponent(0),"wifi");
 		ailed=setChecked(attachmentmods.getComponent(1),"ailed");
 		for (int a=1;a<16;a++)
@@ -6232,6 +6250,7 @@ int id=0;
 		Preferences.setInteger("orpexpansion", orpexpansion);
 		Preferences.setInteger("phexpansion", phexpansion);
 		Preferences.setInteger("waterlevelexpansion", waterlevelexpansion);
+		Preferences.setInteger("humidityexpansion", humidityexpansion);
 		Preferences.setInteger("wifi", wifi);
 		Preferences.setInteger("ailed", ailed);
 		for (int a=1;a<16;a++)
