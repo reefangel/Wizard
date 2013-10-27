@@ -1728,13 +1728,9 @@ int id=0;
 				"#include <DCPump.h>\n" + 
 				"#include <ReefAngel.h>\n\n" +
 				"\r\n" + 
-				"RA_NokiaLCD e;\r\n" + 
-				"\r\n" + 
 				"void setup()\r\n" + 
 				"{\r\n" + 
-				"    e.Init();\r\n" + 
-				"    e.Clear(COLOR_WHITE,0,0,132,132);\r\n" + 
-				"    e.BacklightOn();\r\n" + 
+				"    ReefAngel.Init();\r\n" + 
 				"\r\n";
 		s+="    InternalMemory.OverheatTemp_write( " + (int)((Double)Overheat.getValue() *10) + " );\r\n";
 		
@@ -1968,14 +1964,15 @@ int id=0;
 		}	
 		
 		s+="    InternalMemory.IMCheck_write(0xCF06A31E);\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+20, MENU_START_ROW*3, \"Memory Updated\");\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*6, \"You can now\");\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*7, \"upload your\");\r\n" + 
-				"    e.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+33, MENU_START_ROW*8, \"INO code\");\r\n" + 
+				"    ReefAngel.LCD.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+20, MENU_START_ROW*3, \"Memory Updated\");\r\n" + 
+				"    ReefAngel.LCD.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*6, \"You can now\");\r\n" + 
+				"    ReefAngel.LCD.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+25, MENU_START_ROW*7, \"upload your\");\r\n" + 
+				"    ReefAngel.LCD.DrawText(COLOR_BLACK, COLOR_WHITE, MENU_START_COL+33, MENU_START_ROW*8, \"INO code\");\r\n" + 
 				"}\r\n" + 
 				"\r\n" + 
 				"void loop()\r\n" + 
 				"{\r\n" + 
+				"  wdt_reset();\r\n" +
 				"}\r\n";
 		
 		editor.getBase().handleNewReplace();
@@ -6374,6 +6371,7 @@ int id=0;
 			if (Preferences.getBoolean("portwaterchange"+a)) ((JCheckBox)ports[a].getComponent(1)).setSelected(true);
 			if (Preferences.getBoolean("portlights"+a)) ((JCheckBox)ports[a].getComponent(2)).setSelected(true);
 			if (Preferences.getBoolean("portoverheat"+a)) ((JCheckBox)ports[a].getComponent(3)).setSelected(true);
+			if (Preferences.getBoolean("portleak"+a)) ((JCheckBox)ports[a].getComponent(4)).setSelected(true);
 			setTime((JSpinner)Timed[a].getComponent(2),"TimedOn"+a);
 			setTime((JSpinner)Timed[a].getComponent(4),"TimedOff"+a);
 			setInteger((JSpinner)Timed[a].getComponent(6),"TimedDelayed"+a);
@@ -6484,6 +6482,7 @@ int id=0;
 			Preferences.setBoolean("portwaterchange"+a, ((JCheckBox)ports[a].getComponent(1)).isSelected());
 			Preferences.setBoolean("portlights"+a, ((JCheckBox)ports[a].getComponent(2)).isSelected());
 			Preferences.setBoolean("portoverheat"+a, ((JCheckBox)ports[a].getComponent(3)).isSelected());
+			Preferences.setBoolean("portleak"+a, ((JCheckBox)ports[a].getComponent(4)).isSelected());
 			Preferences.set("TimedOn"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(2)).getValue()));
 			Preferences.set("TimedOff"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(4)).getValue()));
 			Preferences.set("TimedDelayed"+a, ((JSpinner)Timed[a].getComponent(6)).getValue().toString());
