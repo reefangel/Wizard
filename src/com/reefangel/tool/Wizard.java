@@ -574,7 +574,16 @@ public class Wizard  implements Tool, MessageConsumer {
 				"    ReefAngel.Init();  //Initialize controller\n";
 		if (tempunit==1) d+="    ReefAngel.SetTemperatureUnit( Celsius );  // set to Celsius Temperature\n\n";
 		if (wifi==0) d+="    ReefAngel.AddStandardMenu();  // Add Standard Menu\n\n";
-
+		if (Preferences.get("board").indexOf("RAPlus")==0)
+		{
+			d+="    ReefAngel.Use2014Screen();  // Let's use 2014 Screen \n";
+			if (salinityexpansion==1) d+="    ReefAngel.AddSalinityExpansion();  // Salinity Expansion Module\n";
+			if (orpexpansion==1) d+="    ReefAngel.AddORPExpansion();  // ORP Expansion Module\n";
+			if (phexpansion==1) d+="    ReefAngel.AddPHExpansion();  // pH Expansion Module\n";
+			if (waterlevelexpansion==1) d+="    ReefAngel.AddWaterLevelExpansion();  // Water Level Expansion Module\n";
+			if (humidityexpansion==1) d+="    ReefAngel.AddHumidityExpansion();  // Humidity Expanion Module\n";
+		}
+		
 		String f="";
 		String w="";
 		String l="";
@@ -1529,183 +1538,186 @@ public class Wizard  implements Tool, MessageConsumer {
 
 		if (relayexpansion==1 || dimmingexpansion==1 || ailed==1 || ioexpansion==1 || salinityexpansion==1 || orpexpansion==1 || phexpansion==1 || waterlevelexpansion==1 || humidityexpansion==1) 
 		{
-			int h=83;
-			int y=2;
-			h-=relayexpansion*10;
-			h-=dimmingexpansion*28;
-			h-=ailed*10;
-			h-=ioexpansion*6;
-			if (salinityexpansion==1 || orpexpansion==1 || humidityexpansion==1)
-				h-=10;
-			if (phexpansion==1 || waterlevelexpansion==1)
-				h-=10;
-
-			h/=(relayexpansion+dimmingexpansion+ailed+ioexpansion+(salinityexpansion|orpexpansion|humidityexpansion)+(phexpansion|waterlevelexpansion)+3);
-//			System.out.println(h);
-
-
-			d+="void DrawCustomMain()\n" + 
-					"{\n" + 
-					"    int x,y;\n" + 
-					"    char text[10];\n";
-
-			if (dimmingexpansion==1 && displayPWM==1)
-			{	
-				d+="    // Dimming Expansion\n" + 
-						"    x = 15;\n" + 
-						"    y = " + y + ";\n" + 
-						"    for ( int a=0;a<6;a++ )\n" + 
-						"    {\n" + 
-						"      if ( a>2 ) x = 75;\n" + 
-						"      if ( a==3 ) y = " + y + ";\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x,y,\"Ch :\" );\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+12,y,a );\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+24,y,ReefAngel.PWM.GetChannelValue(a) );\n" + 
-						"      y += 10;\n" + 
-						"    }\n" + 
+			if (Preferences.get("board")=="RA")
+			{
+				int h=83;
+				int y=2;
+				h-=relayexpansion*10;
+				h-=dimmingexpansion*28;
+				h-=ailed*10;
+				h-=ioexpansion*6;
+				if (salinityexpansion==1 || orpexpansion==1 || humidityexpansion==1)
+					h-=10;
+				if (phexpansion==1 || waterlevelexpansion==1)
+					h-=10;
+	
+				h/=(relayexpansion+dimmingexpansion+ailed+ioexpansion+(salinityexpansion|orpexpansion|humidityexpansion)+(phexpansion|waterlevelexpansion)+3);
+	//			System.out.println(h);
+	
+	
+				d+="void DrawCustomMain()\n" + 
+						"{\n" + 
+						"    int x,y;\n" + 
+						"    char text[10];\n";
+	
+				if (dimmingexpansion==1 && displayPWM==1)
+				{	
+					d+="    // Dimming Expansion\n" + 
+							"    x = 15;\n" + 
+							"    y = " + y + ";\n" + 
+							"    for ( int a=0;a<6;a++ )\n" + 
+							"    {\n" + 
+							"      if ( a>2 ) x = 75;\n" + 
+							"      if ( a==3 ) y = " + y + ";\n" + 
+							"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x,y,\"Ch :\" );\n" + 
+							"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+12,y,a );\n" + 
+							"      ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,x+24,y,ReefAngel.PWM.GetChannelValue(a) );\n" + 
+							"      y += 10;\n" + 
+							"    }\n" + 
+							"    pingSerial();\n\n";
+					y+=28;
+				}
+				if ( ailed==1 )
+				{
+					y+=h;
+					d+="    // Aqua Illumination\n" + 
+							"    x = 10;\n" + 
+							"    y = " + y + ";\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x,y,\"WH:\" );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+38,y,\"BL:\" );\n" + 
+							"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+76,y,\"RB:\" );\n" + 
+							"    for ( int a=0;a<3;a++ )\n" + 
+							"    {\n" + 
+							"      ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+18,y,ReefAngel.AI.GetChannel(a) );\n" + 
+							"      x += 38;\n" + 
+							"    }\n" + 
+							"    pingSerial();\n\n";
+					y+=10;
+				}
+				if (ioexpansion==1)
+				{
+					y+=h;
+					d+="    // I/O Expansion\n" + 
+							"    byte bkcolor;\n" + 
+							"    x = 14;\n" + 
+							"    y = " + y + ";\n" + 
+							"    for ( int a=0;a<6;a++ )\n" + 
+							"    {\n" + 
+							"      ReefAngel.LCD.DrawCircleOutline( x+(a*20),y,4,COLOR_MEDIUMORCHID );\n" + 
+							"      if ( ReefAngel.IO.GetChannel(a) ) bkcolor=COLOR_WHITE; else bkcolor=COLOR_GRAY;\n" + 
+							"      ReefAngel.LCD.FillCircle( x+(a*20),y,2,bkcolor );\n" + 
+							"    }\n" + 
+							"    pingSerial();\n\n";
+					y+=5;
+				}
+	
+				y+=h;
+				if (salinityexpansion==0 && orpexpansion==0 && humidityexpansion==0 && phexpansion==0 && waterlevelexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
+				{
+					y=62;
+					h=3;
+				}
+				d+="    // Parameters\n" + 
+						"#if defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
+						"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params,\n" + 
+						"    ReefAngel.PWM.GetDaylightValue(), ReefAngel.PWM.GetActinicValue() );\n" + 
+						"#else // defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
+						"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params );\n" + 
+						"#endif // defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
 						"    pingSerial();\n\n";
 				y+=28;
-			}
-			if ( ailed==1 )
-			{
+	
+	
+				if (salinityexpansion==1 || orpexpansion==1 || humidityexpansion==1)
+				{
+					int xw=132/(salinityexpansion+orpexpansion+humidityexpansion);
+					int x1=(xw/2)-17;
+					y+=h;
+	
+					if (salinityexpansion==1)
+					{
+						d+="    // Salinity\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor," + x1 + "," + y + ", \"SAL:\" );\n" + 
+								"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.Salinity,COLOR_DARKKHAKI," + (x1+24) + "," + y + ", 10 );    \r\n" + 
+								"    pingSerial();\n\n";
+						x1+=xw;
+					}
+					if (orpexpansion==1)
+					{
+						d+="    // ORP\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + x1 + "," + y + ", \"ORP:\" );\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Params.ORP );\n" + 
+								"    pingSerial();\n\n";
+						x1+=xw;
+					}
+					if (humidityexpansion==1)
+					{
+						d+="    // Humidity\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_PLUM,DefaultBGColor," + x1 + "," + y + ", \"HUM:\" );\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_PLUM,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Humidity.GetLevel() );\n" + 
+								"    pingSerial();\n\n";
+					}
+					y+=9;
+				}
+	
+				if (phexpansion==1 || waterlevelexpansion==1)
+				{
+					y+=h;
+	
+					if (phexpansion==1)
+					{
+						d+="    // pH Expansion\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,15," + y + ", \"PHE:\" );\n" + 
+								"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.PHExp,COLOR_MEDIUMSEAGREEN,39," + y + ", 100 );    \r\n" + 
+								"    pingSerial();\n\n";
+					}
+					if (waterlevelexpansion==1)
+					{
+						d+="    // Water Level\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,75," + y + ", \"WL:\" );\n" + 
+								"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,99," + y + ", ReefAngel.WaterLevel.GetLevel() );\n" + 
+								"    pingSerial();\n\n";
+					}
+	
+					y+=8;
+				}
+	
 				y+=h;
-				d+="    // Aqua Illumination\n" + 
-						"    x = 10;\n" + 
-						"    y = " + y + ";\n" + 
-						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x,y,\"WH:\" );\n" + 
-						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+38,y,\"BL:\" );\n" + 
-						"    ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+76,y,\"RB:\" );\n" + 
-						"    for ( int a=0;a<3;a++ )\n" + 
-						"    {\n" + 
-						"      ReefAngel.LCD.DrawText( COLOR_DODGERBLUE,DefaultBGColor,x+18,y,ReefAngel.AI.GetChannel(a) );\n" + 
-						"      x += 38;\n" + 
-						"    }\n" + 
+	
+				d+="    // Main Relay Box\n" + 
+						"    byte TempRelay = ReefAngel.Relay.RelayData;\n" + 
+						"    TempRelay &= ReefAngel.Relay.RelayMaskOff;\n" + 
+						"    TempRelay |= ReefAngel.Relay.RelayMaskOn;\n" + 
+						"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" + 
 						"    pingSerial();\n\n";
-				y+=10;
-			}
-			if (ioexpansion==1)
-			{
+				y+=11;
+				if (relayexpansion==1)
+				{
+					y+=h;
+					d+="    // Relay Expansion\n" + 
+							"    TempRelay = ReefAngel.Relay.RelayDataE[0];\n" + 
+							"    TempRelay &= ReefAngel.Relay.RelayMaskOffE[0];\n" + 
+							"    TempRelay |= ReefAngel.Relay.RelayMaskOnE[0];\n" + 
+							"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" +
+							"    pingSerial();\n\n";
+					y+=10;
+	
+				}
+	
 				y+=h;
-				d+="    // I/O Expansion\n" + 
-						"    byte bkcolor;\n" + 
-						"    x = 14;\n" + 
-						"    y = " + y + ";\n" + 
-						"    for ( int a=0;a<6;a++ )\n" + 
-						"    {\n" + 
-						"      ReefAngel.LCD.DrawCircleOutline( x+(a*20),y,4,COLOR_MEDIUMORCHID );\n" + 
-						"      if ( ReefAngel.IO.GetChannel(a) ) bkcolor=COLOR_WHITE; else bkcolor=COLOR_GRAY;\n" + 
-						"      ReefAngel.LCD.FillCircle( x+(a*20),y,2,bkcolor );\n" + 
-						"    }\n" + 
-						"    pingSerial();\n\n";
-				y+=5;
+	
+				d+="    // Date and Time\n" + 
+						"    ReefAngel.LCD.DrawDate( 6, 122 );\n" + 
+						"    pingSerial();\n";
+	
+				d+="}\n" + 
+						"\n" + 
+						"void DrawCustomGraph()\n" + 
+						"{\n";  
+				if (humidityexpansion==0 && salinityexpansion==0 && orpexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
+					d+="    ReefAngel.LCD.DrawGraph( 5, 5 );\n";
+				d+="}\n";
 			}
-
-			y+=h;
-			if (salinityexpansion==0 && orpexpansion==0 && humidityexpansion==0 && phexpansion==0 && waterlevelexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
-			{
-				y=62;
-				h=3;
-			}
-			d+="    // Parameters\n" + 
-					"#if defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
-					"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params,\n" + 
-					"    ReefAngel.PWM.GetDaylightValue(), ReefAngel.PWM.GetActinicValue() );\n" + 
-					"#else // defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
-					"    ReefAngel.LCD.DrawMonitor( 15, " + y + ", ReefAngel.Params );\n" + 
-					"#endif // defined DisplayLEDPWM && ! defined RemoveAllLights\n" + 
-					"    pingSerial();\n\n";
-			y+=28;
-
-
-			if (salinityexpansion==1 || orpexpansion==1 || humidityexpansion==1)
-			{
-				int xw=132/(salinityexpansion+orpexpansion+humidityexpansion);
-				int x1=(xw/2)-17;
-				y+=h;
-
-				if (salinityexpansion==1)
-				{
-					d+="    // Salinity\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKKHAKI,DefaultBGColor," + x1 + "," + y + ", \"SAL:\" );\n" + 
-							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.Salinity,COLOR_DARKKHAKI," + (x1+24) + "," + y + ", 10 );    \r\n" + 
-							"    pingSerial();\n\n";
-					x1+=xw;
-				}
-				if (orpexpansion==1)
-				{
-					d+="    // ORP\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + x1 + "," + y + ", \"ORP:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PALEVIOLETRED,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Params.ORP );\n" + 
-							"    pingSerial();\n\n";
-					x1+=xw;
-				}
-				if (humidityexpansion==1)
-				{
-					d+="    // Humidity\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PLUM,DefaultBGColor," + x1 + "," + y + ", \"HUM:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_PLUM,DefaultBGColor," + (x1+24) + "," + y + ", ReefAngel.Humidity.GetLevel() );\n" + 
-							"    pingSerial();\n\n";
-				}
-				y+=9;
-			}
-
-			if (phexpansion==1 || waterlevelexpansion==1)
-			{
-				y+=h;
-
-				if (phexpansion==1)
-				{
-					d+="    // pH Expansion\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_MEDIUMSEAGREEN,DefaultBGColor,15," + y + ", \"PHE:\" );\n" + 
-							"    ReefAngel.LCD.DrawSingleMonitor( ReefAngel.Params.PHExp,COLOR_MEDIUMSEAGREEN,39," + y + ", 100 );    \r\n" + 
-							"    pingSerial();\n\n";
-				}
-				if (waterlevelexpansion==1)
-				{
-					d+="    // Water Level\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,75," + y + ", \"WL:\" );\n" + 
-							"    ReefAngel.LCD.DrawText( COLOR_DARKGOLDENROD,DefaultBGColor,99," + y + ", ReefAngel.WaterLevel.GetLevel() );\n" + 
-							"    pingSerial();\n\n";
-				}
-
-				y+=8;
-			}
-
-			y+=h;
-
-			d+="    // Main Relay Box\n" + 
-					"    byte TempRelay = ReefAngel.Relay.RelayData;\n" + 
-					"    TempRelay &= ReefAngel.Relay.RelayMaskOff;\n" + 
-					"    TempRelay |= ReefAngel.Relay.RelayMaskOn;\n" + 
-					"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" + 
-					"    pingSerial();\n\n";
-			y+=11;
-			if (relayexpansion==1)
-			{
-				y+=h;
-				d+="    // Relay Expansion\n" + 
-						"    TempRelay = ReefAngel.Relay.RelayDataE[0];\n" + 
-						"    TempRelay &= ReefAngel.Relay.RelayMaskOffE[0];\n" + 
-						"    TempRelay |= ReefAngel.Relay.RelayMaskOnE[0];\n" + 
-						"    ReefAngel.LCD.DrawOutletBox( 12, " + y + ", TempRelay );\n" +
-						"    pingSerial();\n\n";
-				y+=10;
-
-			}
-
-			y+=h;
-
-			d+="    // Date and Time\n" + 
-					"    ReefAngel.LCD.DrawDate( 6, 122 );\n" + 
-					"    pingSerial();\n";
-
-			d+="}\n" + 
-					"\n" + 
-					"void DrawCustomGraph()\n" + 
-					"{\n";  
-			if (humidityexpansion==0 && salinityexpansion==0 && orpexpansion==0 && ioexpansion==0 && ailed==0 && dimmingexpansion==0 && relayexpansion==1 )
-				d+="    ReefAngel.LCD.DrawGraph( 5, 5 );\n";
-			d+="}\n";
 		}
 //		editor.getBase().handleNewReplace();
 		editor.handleSelectAll();
@@ -2963,11 +2975,12 @@ public class Wizard  implements Tool, MessageConsumer {
 
 		BoardSelection = new JRadioButton("Reef Angel");
 		BoardSelection.addActionListener(BoardListener);
+		if (Preferences.get("board").indexOf("RAPlus")<0) BoardSelection.setSelected(true);
 		bgroup.add(BoardSelection);
 		board.add(BoardSelection);
 		BoardSelection = new JRadioButton("Reef Angel Plus");
 		BoardSelection.addActionListener(BoardListener);
-		BoardSelection.setSelected(true);
+		if (Preferences.get("board").indexOf("RAPlus")==0) BoardSelection.setSelected(true);
 		bgroup.add(BoardSelection);
 		board.add(BoardSelection);
 		
