@@ -127,6 +127,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -134,6 +135,10 @@ import java.io.PrintWriter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -143,6 +148,7 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Wizard  implements Tool, MessageConsumer {
 	Editor editor;
@@ -151,7 +157,7 @@ public class Wizard  implements Tool, MessageConsumer {
 	boolean connected=false;
 	Serial serial;
 	LayoutConstraintsManager layoutConstraintsManager;
-int id=0;
+	int id=0;
 	private int relay=1;
 	private int window=1;
 	private int tempunit=0;
@@ -190,6 +196,7 @@ int id=0;
 	JDialog dialog;
 	JTaskPaneGroup taskGroup;
 
+	public static JPanel board;
 	public static JPanel disptemp;
 	public static JPanel memsettings;
 	public static JPanel expansionmods;
@@ -245,6 +252,7 @@ int id=0;
 
 	public static String RegButtons[] = {"Time Schedule","Heater","Chiller/Fan","Auto Top Off","Wavemaker","CO2 Control","PH Control","Dosing Pump","Delayed Start","Opposite","Always On","Not Used"};
 
+	public static JRadioButton BoardSelection = new JRadioButton();
 	public static JRadioButton DisplayTemp = new JRadioButton();
 	public static JPanel OverheatSettings =  new JPanel();
 
@@ -269,7 +277,7 @@ int id=0;
 	public static String AIChannels[] = {"White","Blue","Royal Blue"};
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
 	public static String RadionChannels[] = {"White","Royal Blue","Red","Green","Blue","Intensity"};
-	public static String Titles[] = {"Welcome","Memory Settings","Temperature Settings","Expansion Modules","Attachments",
+	public static String Titles[] = {"Welcome","Controller","Memory Settings","Temperature Settings","Expansion Modules","Attachments",
 		"Main Relay Box", "Main Relay Box - Port 1", "Main Relay Box - Port 2", "Main Relay Box - Port 3", "Main Relay Box - Port 4", "Main Relay Box - Port 5", "Main Relay Box - Port 6", "Main Relay Box - Port 7", "Main Relay Box - Port 8",  
 		"Expansion Relay Box", "Expansion Relay Box - Port 1", "Expansion Relay Box - Port 2", "Expansion Relay Box - Port 3", "Expansion Relay Box - Port 4", "Expansion Relay Box - Port 5", "Expansion Relay Box - Port 6", "Expansion Relay Box - Port 7", "Expansion Relay Box - Port 8",
 		"Daylight Dimming Channel","Daylight Dimming Settings","Actinic Dimming Channel","Actinic Dimming Settings",
@@ -328,7 +336,6 @@ int id=0;
 	}
 	
 	public void run() {
-
 		if (editor.getSketch().getCode(0).isModified())
 		{
 			JOptionPane.showMessageDialog(editor,
@@ -336,7 +343,7 @@ int id=0;
 					"Error",JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		Preferences.init(null);
+		WizardPreferences.init(null);
 		UIManager.put("control", new Color(219,227,249));
 		UIManager.put("SimpleInternalFrame.activeTitleBackground",new Color(58,95,205));
 		InputStream is = null;
@@ -418,10 +425,10 @@ int id=0;
 		insidePanel.setPreferredSize(new Dimension(600,485));
 
 		prevwindow="Welcome";
-		nextwindow="Memory Settings";
+		nextwindow="Controller";
 
-//		MessageBox(Titles[59]);
 		ShowWelcome();
+		ShowBoard();
 		ShowMemorySettings();
 		ShowTemperature();
 		ShowExpansion();
@@ -824,7 +831,7 @@ int id=0;
 							if (jb1.isSelected())
 							{
 								d+= ",";
-								jats = (JSpinner) ATO[a].getComponent(5);
+								jats = (JSpinner) ATO[a].getComponent(6);
 								d+= jats.getValue();
 							}
 							d+= " );\n";
@@ -836,7 +843,7 @@ int id=0;
 							{
 								d+= "    ReefAngel.SingleATO( true," + sp + (a-poffset);
 								d+= ",";
-								jats = (JSpinner) ATO[a].getComponent(5);
+								jats = (JSpinner) ATO[a].getComponent(6);
 								d+= jats.getValue() + ",0";
 							}
 							else
@@ -852,7 +859,7 @@ int id=0;
 							{
 								d+= "    ReefAngel.SingleATO( false," + sp + (a-poffset);
 								d+= ",";
-								jats = (JSpinner) ATO[a].getComponent(5);
+								jats = (JSpinner) ATO[a].getComponent(6);
 								d+= jats.getValue() + ",0";
 							}
 							else
@@ -861,6 +868,25 @@ int id=0;
 							}
 							d+=" );\n";
 						}
+						jat=(JRadioButton) ATO[a].getComponent(4);
+						if (jat.isSelected())
+						{
+							d+= "    ReefAngel.WaterLevelATO( " + sp + (a-poffset);
+							if (jb1.isSelected())
+							{
+								d+= ",";
+								jats = (JSpinner) ATO[a].getComponent(6);
+								d+= jats.getValue();
+								d+= ",";
+								jats = (JSpinner) ATO[a].getComponent(8);
+								d+= jats.getValue();
+								d+= ",";
+								jats = (JSpinner) ATO[a].getComponent(10);
+								d+= jats.getValue();
+							}
+							d+= " );\n";
+						}
+						
 						break;
 					case 4:
 						JRadioButton jwt = null;
@@ -1791,8 +1817,10 @@ int id=0;
 		}
 		if (bfunction)
 		{
-			s+="    InternalMemory.ATOExtendedTimeout_write( " + ((JSpinner)ATO[1].getComponent(5)).getValue()  + " );\r\n";
+			s+="    InternalMemory.ATOExtendedTimeout_write( " + ((JSpinner)ATO[1].getComponent(6)).getValue()  + " );\r\n";
 			s+="    InternalMemory.ATOHourInterval_write( 0 );\r\n";
+			s+="    InternalMemory.WaterLevelLow_write( " + ((JSpinner)ATO[1].getComponent(8)).getValue()  + " );\r\n";
+			s+="    InternalMemory.WaterLevelHigh_write( " + ((JSpinner)ATO[1].getComponent(10)).getValue()  + " );\r\n";
 		}
 		
 		//WM
@@ -1985,11 +2013,27 @@ int id=0;
 		insidePanel.add(new Inside("<HTML>Welcome to the Reef Angel Wizard.<br><br>I'm going to walk you through the whole process of generating a code for your Reef Angel Controller.<br><br>Version: ##tool.version##<br><br></HTML>"), Titles[0]);	
 	}
 
+	private void ShowBoard()
+	{
+		JPanel j = new JPanel();
+		j.setLayout(new BorderLayout());
+		j.setOpaque(false);
+		Inside i = new Inside("<HTML>Which Reef Angel controller do you have?<br><br></HTML>");
+		j.add(i, BorderLayout.NORTH);
+		JPanel j1 = new JPanel();
+		j1.setOpaque(false);
+		board.setOpaque(false);
+		j1.add(board);
+		j.add(j1);
+
+		insidePanel.add(j,Titles[1]);
+	}
+	
 	private void ShowMemorySettings()
 	{
 		JPanel j = new JPanel();
 //		j.setLayout(new BoxLayout( j, BoxLayout.PAGE_AXIS));
-		j.setLayout(new GridLayout(2,1));
+		j.setLayout(new BorderLayout());
 		j.setOpaque(false);
 		Inside i = new Inside("<HTML>User settings can be stored within the code itself or inside the intenal memory of the controller.<br>Example of these settings are light schedule, heater/chiller temperature and many other settings.<br>Settings stored within the code itself is the easiest way to program your controller because it will not require you to use any other application. This is the recommended method for new users.<br>The code generated by the Reef Angel Wizard will contain all the information needed and the<br>controller will be ready to be used.<br>Settings that are stored inside the intenal memory will require you to use another application after you upload the code generated by the Reef Angel Wizard.<br>The benefit of using another application is that you will be able to change it at any time without having to generate a new code.<br>One good example is changing your light schedule using one of the smart phone apps.<br><br>Where would you like to store your settings?</HTML>");
 //		i.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -2001,9 +2045,9 @@ int id=0;
 		j1.setOpaque(false);
 //		j1.add(new JLabel("Test"));
 		
-		j.add(i);
+		j.add(i, BorderLayout.NORTH);
 		j.add(j1);
-		insidePanel.add(j, Titles[1]);	
+		insidePanel.add(j, Titles[2]);	
 	}
 
 	private void ShowTemperature()
@@ -2028,7 +2072,7 @@ int id=0;
 		j2.add(OverheatSettings);
 		j.add(j2,"OverheatSettings");
 
-		insidePanel.add(j,Titles[2]);
+		insidePanel.add(j,Titles[3]);
 	}
 	
 	private void ShowExpansion()
@@ -2041,7 +2085,7 @@ int id=0;
 		expansionmods.setOpaque(false);
 		j.add(expansionmods,"expansionmods");
 
-		insidePanel.add(j,Titles[3]);		
+		insidePanel.add(j,Titles[4]);		
 	}	
 	
 	private void ShowAttachment()
@@ -2054,7 +2098,7 @@ int id=0;
 		attachmentmods.setOpaque(false);
 		j.add(attachmentmods,"attachmentmods");
 
-		insidePanel.add(j,Titles[4]);		
+		insidePanel.add(j,Titles[5]);		
 	}	
 
 	private void ShowRelays()
@@ -2069,7 +2113,7 @@ int id=0;
 		JLabel c = new JLabel(iconnection);
 		j.add(c,"icon");
 
-		insidePanel.add(j,Titles[5]);	
+		insidePanel.add(j,Titles[6]);	
 
 		j = new JPanel();
 		j.setOpaque(false);
@@ -2081,7 +2125,7 @@ int id=0;
 		c = new JLabel(iconnection);
 		j.add(c,"icon");
 
-		insidePanel.add(j,Titles[14]);	
+		insidePanel.add(j,Titles[15]);	
 	}
 
 	private void ShowRelaySetup()
@@ -2100,7 +2144,7 @@ int id=0;
 			ports[a].setOpaque(false);
 			j.add(ports[a],"ports");
 
-			insidePanel.add(j,Titles[a+5]);	
+			insidePanel.add(j,Titles[a+6]);	
 		}		
 
 		for (int a=1;a<=8;a++)
@@ -2117,7 +2161,7 @@ int id=0;
 			ports[a+8].setOpaque(false);
 			j.add(ports[a+8],"ports");
 
-			insidePanel.add(j,Titles[a+14]);	
+			insidePanel.add(j,Titles[a+15]);	
 		}			
 	}
 	
@@ -2135,7 +2179,7 @@ int id=0;
 		j.add(daylightpwm,"pwm");
 //		j.add(daylightpwm1,"pwm1");
 		
-		insidePanel.add(j,Titles[23]);
+		insidePanel.add(j,Titles[24]);
 		
 		j = new JPanel();
 		j.setOpaque(false);
@@ -2149,7 +2193,7 @@ int id=0;
 		j.add(actinicpwm,"pwm");
 //		j.add(actinicpwm1,"pwm1");
 		
-		insidePanel.add(j,Titles[25]);
+		insidePanel.add(j,Titles[26]);
 	}	
 
 	private void ShowPWMSettings()
@@ -2164,7 +2208,7 @@ int id=0;
 		daylightpwmsettingspanel.add(cd,"icond");
 		daylightpwmsettingspanel.add(daylightpwmsettings,"pwmd");
 		daylightpwmsettingspanel.add(new JLabel(""),"memlabel");
-		insidePanel.add(daylightpwmsettingspanel,Titles[24]);
+		insidePanel.add(daylightpwmsettingspanel,Titles[25]);
 		
 		actinicpwmsettingspanel = new JPanel();
 		actinicpwmsettingspanel.setOpaque(false);
@@ -2176,7 +2220,7 @@ int id=0;
 		actinicpwmsettingspanel.add(ca,"icona");
 		actinicpwmsettingspanel.add(actinicpwmsettings,"pwma");
 		actinicpwmsettingspanel.add(new JLabel(""),"memlabel");
-		insidePanel.add(actinicpwmsettingspanel,Titles[26]);
+		insidePanel.add(actinicpwmsettingspanel,Titles[27]);
 	}
 	
 
@@ -2196,7 +2240,7 @@ int id=0;
 			j.add(exppwm[a],"pwm");
 	//		j.add(daylightpwm1,"pwm1");
 			
-			insidePanel.add(j,Titles[27+(a*2)]);
+			insidePanel.add(j,Titles[28+(a*2)]);
 		}
 	}		
 	
@@ -2214,7 +2258,7 @@ int id=0;
 			exppwmsettingspanel[a].add(cd,"icond");
 			exppwmsettingspanel[a].add(exppwmsettings[a],"pwmd");
 			exppwmsettingspanel[a].add(new JLabel(""),"memlabel");			
-			insidePanel.add(exppwmsettingspanel[a],Titles[28+(a*2)]);
+			insidePanel.add(exppwmsettingspanel[a],Titles[29+(a*2)]);
 		}		
 	}	
 	
@@ -2232,7 +2276,7 @@ int id=0;
 		aiport.setOpaque(false);
 		j.add(aiport,"aiport");
 
-		insidePanel.add(j,Titles[39]);			
+		insidePanel.add(j,Titles[40]);			
 	}		
 	
 	private void ShowAIPWM()
@@ -2251,7 +2295,7 @@ int id=0;
 			j.add(aipwm[a],"pwm");
 	//		j.add(daylightpwm1,"pwm1");
 			
-			insidePanel.add(j,Titles[40+(a*2)]);
+			insidePanel.add(j,Titles[41+(a*2)]);
 		}		
 	}		
 
@@ -2269,7 +2313,7 @@ int id=0;
 			aisettingspanel[a].add(cd,"icond");
 			aisettingspanel[a].add(aipwmsettings[a],"pwmd");
 			aisettingspanel[a].add(new JLabel(""),"memlabel");			
-			insidePanel.add(aisettingspanel[a],Titles[41+(a*2)]);
+			insidePanel.add(aisettingspanel[a],Titles[42+(a*2)]);
 		}		
 	}		
 	
@@ -2284,7 +2328,7 @@ int id=0;
 		RFmods.setOpaque(false);
 		j.add(RFmods,"icon");
 
-		insidePanel.add(j,Titles[46]);	
+		insidePanel.add(j,Titles[47]);	
 	}		
 	
 
@@ -2303,7 +2347,7 @@ int id=0;
 			j.add(c,"icon");
 			j.add(rfpwm[a],"pwm");
 			
-			insidePanel.add(j,Titles[47+(a*2)]);
+			insidePanel.add(j,Titles[48+(a*2)]);
 		}		
 	}		
 
@@ -2322,7 +2366,7 @@ int id=0;
 			rfsettingspanel[a].add(cd,"icond");
 			rfsettingspanel[a].add(rfpwmsettings[a],"pwmd");
 			rfsettingspanel[a].add(new JLabel(""),"memlabel");			
-			insidePanel.add(rfsettingspanel[a],Titles[48+(a*2)]);
+			insidePanel.add(rfsettingspanel[a],Titles[49+(a*2)]);
 		}		
 	}		
 	
@@ -2335,7 +2379,7 @@ int id=0;
 		j.add(i,"i");
 		DCmods.setOpaque(false);
 		j.add(DCmods,"icon");
-		insidePanel.add(j,Titles[59]);	
+		insidePanel.add(j,Titles[60]);	
 	}	
 	
 	private void ShowWifi()
@@ -2348,7 +2392,7 @@ int id=0;
 		wifiportal.setOpaque(false);
 		j.add(wifiportal,"icon");
 
-		insidePanel.add(j,Titles[60]);	
+		insidePanel.add(j,Titles[61]);	
 	}	
 	
 	private void ShowBuzzer()
@@ -2361,7 +2405,7 @@ int id=0;
 		Buzzermods.setOpaque(false);
 		j.add(Buzzermods,"icon");
 
-		insidePanel.add(j,Titles[61]);	
+		insidePanel.add(j,Titles[62]);	
 	}	
 	private void ShowGenerate()
 	{
@@ -2502,7 +2546,7 @@ int id=0;
 			byte[] buffer = new byte[4096];
 			int bytesRead;
 
-			while ((bytesRead = from.read(buffer)) != -1)
+			while ((bytesRead = from.read( buffer)) != -1)
 				to.write(buffer, 0, bytesRead); // write
 		} finally {
 			if (from != null)
@@ -2864,7 +2908,9 @@ int id=0;
 						((JSpinner)Heater[a].getComponent(4)).setValue(((JSpinner)Heater[r].getComponent(4)).getValue());
 						((JSpinner)Chiller[a].getComponent(2)).setValue(((JSpinner)Chiller[r].getComponent(2)).getValue());
 						((JSpinner)Chiller[a].getComponent(4)).setValue(((JSpinner)Chiller[r].getComponent(4)).getValue());
-						((JSpinner)ATO[a].getComponent(5)).setValue(((JSpinner)ATO[r].getComponent(5)).getValue());
+						((JSpinner)ATO[a].getComponent(6)).setValue(((JSpinner)ATO[r].getComponent(6)).getValue());
+						((JSpinner)ATO[a].getComponent(8)).setValue(((JSpinner)ATO[r].getComponent(8)).getValue());
+						((JSpinner)ATO[a].getComponent(10)).setValue(((JSpinner)ATO[r].getComponent(10)).getValue());
 						((JSpinner)WM[a].getComponent(4)).setValue(((JSpinner)WM[r].getComponent(4)).getValue());
 						((JSpinner)CO2Control[a].getComponent(2)).setValue(((JSpinner)CO2Control[r].getComponent(2)).getValue());
 						((JSpinner)CO2Control[a].getComponent(4)).setValue(((JSpinner)CO2Control[r].getComponent(4)).getValue());
@@ -2894,10 +2940,42 @@ int id=0;
 			}
 		};		  
 
+		// Board selection
+		ActionListener BoardListener = new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+				
+				if (aButton.getText()=="Reef Angel")
+				{
+					Preferences.set("board","RA");
+				}
+				if (aButton.getText()=="Reef Angel Plus")
+				{
+					Preferences.set("board","RAPlus");
+				}
+				editor.getBase().onBoardOrPortChange();
+			}
+		};	
+		
+		board = new JPanel(new GridLayout(2,1,0,10));
+		ButtonGroup bgroup = new ButtonGroup();
+		board.setBorder(BorderFactory.createTitledBorder(null, "Controller",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
+
+		BoardSelection = new JRadioButton("Reef Angel");
+		BoardSelection.addActionListener(BoardListener);
+		bgroup.add(BoardSelection);
+		board.add(BoardSelection);
+		BoardSelection = new JRadioButton("Reef Angel Plus");
+		BoardSelection.addActionListener(BoardListener);
+		BoardSelection.setSelected(true);
+		bgroup.add(BoardSelection);
+		board.add(BoardSelection);
+		
+		
 		// Temperature unit  
-		disptemp = new JPanel(new GridLayout(1,2));
+		disptemp = new JPanel(new GridLayout(2,1,0,10));
 		ButtonGroup group = new ButtonGroup();
-		disptemp.setBorder(BorderFactory.createTitledBorder(null, "Temperature Unit",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
+		disptemp.setBorder(BorderFactory.createTitledBorder(null, "Unit",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));
 
 		DisplayTemp = new JRadioButton("Celsius");
 		DisplayTemp.addActionListener(DisplayTempListener);
@@ -2941,7 +3019,7 @@ int id=0;
 		};		  
 
 		// Settings Storage  
-		memsettings = new JPanel(new GridLayout(1,2));
+		memsettings = new JPanel(new GridLayout(2,1,0,10));
 		ButtonGroup group1 = new ButtonGroup();
 		memsettings.setBorder(BorderFactory.createTitledBorder(null, "Settings Storage",TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, font.deriveFont(font.getStyle() ^ Font.BOLD)));		
 		JRadioButton DisplayMem = new JRadioButton();
@@ -3282,24 +3360,62 @@ int id=0;
 			i = new JCustomEditorPane("<HTML>" + DescButtons[3] + "</HTML>");
 			ATO[a].add(i,"i");
 
+			ActionListener ATOListener = new ActionListener() {
+				public void actionPerformed(ActionEvent actionEvent) {
+					AbstractButton aButton = (AbstractButton) actionEvent.getSource();
+					boolean v=false;
+					if (aButton.getText()=="Water Level ATO")
+						v=true;
+					else
+						v=false;
+					for (int a=1;a<=16;a++)
+					{
+						ATO[a].getComponent(7).setVisible(v);
+						ATO[a].getComponent(8).setVisible(v);
+						ATO[a].getComponent(9).setVisible(v);
+						ATO[a].getComponent(10).setVisible(v);
+					}						
+					
+				}
+			};	
+
 			ButtonGroup ATOgroup = new ButtonGroup();
 			JRadioButton ATOOption;
 			ATOOption = new JRadioButton("Standard ATO");		
 			ATOgroup.add(ATOOption);
 			ATOOption.setSelected(true);
 			ATO[a].add(ATOOption);
+			ATOOption.addActionListener(ATOListener);
 			ATOOption = new JRadioButton("Single ATO (Low Port)");		
 			ATOgroup.add(ATOOption);
 			ATO[a].add(ATOOption);
+			ATOOption.addActionListener(ATOListener);
 			ATOOption = new JRadioButton("Single ATO (High Port)");		
 			ATOgroup.add(ATOOption);
 			ATO[a].add(ATOOption);
-
+			ATOOption.addActionListener(ATOListener);
+			ATOOption = new JRadioButton("Water Level ATO");		
+			ATOgroup.add(ATOOption);
+			ATO[a].add(ATOOption);
+			ATOOption.addActionListener(ATOListener);
+			
 			JLabel ATOTimeoutLabel=new JLabel ("Timeout (s): ",JLabel.TRAILING);
 			JSpinner ATOTimeout=new JSpinner( new SpinnerNumberModel(60,0,32000,1) );
+			JLabel WLATOLowLabel=new JLabel ("Low Level (%): ",JLabel.TRAILING);
+			JSpinner WLATOLow=new JSpinner( new SpinnerNumberModel(10,0,100,1) );
+			JLabel WLATOHighLabel=new JLabel ("High Level (%): ",JLabel.TRAILING);
+			JSpinner WLATOHigh=new JSpinner( new SpinnerNumberModel(15,0,100,1) );
 			ATOTimeout.addChangeListener(MemSettingsListener);
 			ATO[a].add(ATOTimeoutLabel);
 			ATO[a].add(ATOTimeout);
+			ATO[a].add(WLATOLowLabel);
+			ATO[a].add(WLATOLow);
+			ATO[a].add(WLATOHighLabel);
+			ATO[a].add(WLATOHigh);
+			WLATOLowLabel.setVisible(false);
+			WLATOLow.setVisible(false);
+			WLATOHighLabel.setVisible(false);
+			WLATOHigh.setVisible(false);
 			i.addHyperlinkListener(new HyperlinkListener() {   
 				public void hyperlinkUpdate(HyperlinkEvent hle)
 				{   
@@ -4450,7 +4566,7 @@ int id=0;
 		y=Spring.sum(y, layout.getConstraints(panel.getComponent(0)).getHeight());
 		y=Spring.sum(y, Spring.constant(5));
 
-		for (int c=1;c<4;c++)
+		for (int c=1;c<5;c++)
 			width=Spring.max(width, layout.getConstraints(panel.getComponent(c)).getWidth());
 
 		layout.getConstraints(panel.getComponent(1)).setX(Spring.constant(5));
@@ -4465,13 +4581,17 @@ int id=0;
 		layout.getConstraints(panel.getComponent(3)).setY(y);
 		y=Spring.sum(y, layout.getConstraints(panel.getComponent(3)).getHeight());
 		y=Spring.sum(y, Spring.constant(5));
+		layout.getConstraints(panel.getComponent(4)).setX(Spring.constant(5));
+		layout.getConstraints(panel.getComponent(4)).setY(y);
+		y=Spring.sum(y, layout.getConstraints(panel.getComponent(4)).getHeight());
+		y=Spring.sum(y, Spring.constant(5));
 
 		width = Spring.constant(0);
-		for (int c=4;c<panel.getComponentCount();c+=2)
+		for (int c=5;c<panel.getComponentCount();c+=2)
 			width=Spring.max(width, layout.getConstraints(panel.getComponent(c)).getWidth());
 		x=Spring.sum(x, width);
 		x=Spring.sum(x, Spring.constant(5));
-		for (int c=4;c<panel.getComponentCount();c+=2)
+		for (int c=5;c<panel.getComponentCount();c+=2)
 		{
 			layout.getConstraints(panel.getComponent(c)).setX(Spring.constant(5));
 			layout.getConstraints(panel.getComponent(c)).setY(y);
@@ -4963,14 +5083,19 @@ int id=0;
 					if (swindow.indexOf("Welcome")==0)
 					{
 						prevwindow="Welcome";
-						nextwindow="Memory Settings";
+						nextwindow="Controller";
 						loadInitialValues();
 						CheckNav();
+					}
+					if (swindow.indexOf("Controller")==0)
+					{
+						prevwindow="Welcome";
+						nextwindow="Memory Settings";
 					}
 					
 					if (swindow.indexOf("Memory Settings")==0)
 					{
-						prevwindow="Welcome";
+						prevwindow="Controller";
 						nextwindow="Temperature Settings";
 						JRadioButton j = (JRadioButton) memsettings.getComponent(0);
 						if (j.isSelected())
@@ -5063,7 +5188,28 @@ int id=0;
 						jc=(JCheckBox) expansionmods.getComponent(6);
 						if (jc.isSelected()) phexpansion=1; else phexpansion=0;
 						jc=(JCheckBox) expansionmods.getComponent(7);
-						if (jc.isSelected()) waterlevelexpansion=1; else waterlevelexpansion=0;
+						if (jc.isSelected())
+						{
+							waterlevelexpansion=1;
+							for (int a=1;a<=16;a++)
+							{
+								JRadioButton jr = (JRadioButton) ATO[a].getComponent(4);
+								jr.setEnabled(true);
+								if (jr.isSelected())
+								{
+									ATO[a].getComponent(7).setVisible(true);
+									ATO[a].getComponent(8).setVisible(true);
+									ATO[a].getComponent(9).setVisible(true);
+									ATO[a].getComponent(10).setVisible(true);
+								}
+							}
+						}
+						else
+						{
+							waterlevelexpansion=0;
+							for (int a=1;a<=16;a++)
+								ATO[a].getComponent(4).setEnabled(false);
+						}
 						jc=(JCheckBox) expansionmods.getComponent(8);
 						if (jc.isSelected()) humidityexpansion=1; else humidityexpansion=0;
 						jc=(JCheckBox) expansionmods.getComponent(9);
@@ -6242,8 +6388,36 @@ int id=0;
 			super.repaint();
 		}
 	}
+	
+	private String readFile(File file) throws IOException {
 
-	public static class Preferences {
+	    StringBuilder fileContents = new StringBuilder((int)file.length());
+	    Scanner scanner = new Scanner(file);
+	    String lineSeparator = System.getProperty("line.separator");
+
+	    try {
+	        while(scanner.hasNextLine()) {        
+	            fileContents.append(scanner.nextLine() + lineSeparator);
+	        }
+	        return fileContents.toString();
+	    } finally {
+	        scanner.close();
+	    }
+	}
+	
+	private void saveFile(File file, String str) throws IOException {
+        try {
+            FileWriter fw = new FileWriter(file);
+            fw.write(str);
+            fw.close();
+
+        } catch (IOException iox) {
+            //do stuff with exception
+            iox.printStackTrace();
+        }
+		
+	}
+	public static class WizardPreferences {
 
 		  static Hashtable table = new Hashtable();
 		  static File preferencesFile=new File (Base.getSketchbookFolder().getPath() +"/tools/Wizard/data/wizard.ini");
@@ -6346,6 +6520,7 @@ int id=0;
 	}
 	public void loadInitialValues()
 	{
+		setSelected(board,"board");
 		setSelected(memsettings,"memsettings");
 		setSelected(disptemp,"disptemp");
 		setDouble(Overheat,"Overheat");
@@ -6367,11 +6542,11 @@ int id=0;
 			if (a<=8) Title.SetText ("Main Relay Box - Port "+a);
 			if (a>8) Title.SetText ("Expansion Relay Box - Port "+(a-8));
 			setSelected(functions[a],"functions"+a);
-			if (Preferences.getBoolean("portfeeding"+a)) ((JCheckBox)ports[a].getComponent(0)).setSelected(true);
-			if (Preferences.getBoolean("portwaterchange"+a)) ((JCheckBox)ports[a].getComponent(1)).setSelected(true);
-			if (Preferences.getBoolean("portlights"+a)) ((JCheckBox)ports[a].getComponent(2)).setSelected(true);
-			if (Preferences.getBoolean("portoverheat"+a)) ((JCheckBox)ports[a].getComponent(3)).setSelected(true);
-			if (Preferences.getBoolean("portleak"+a)) ((JCheckBox)ports[a].getComponent(4)).setSelected(true);
+			if (WizardPreferences.getBoolean("portfeeding"+a)) ((JCheckBox)ports[a].getComponent(0)).setSelected(true);
+			if (WizardPreferences.getBoolean("portwaterchange"+a)) ((JCheckBox)ports[a].getComponent(1)).setSelected(true);
+			if (WizardPreferences.getBoolean("portlights"+a)) ((JCheckBox)ports[a].getComponent(2)).setSelected(true);
+			if (WizardPreferences.getBoolean("portoverheat"+a)) ((JCheckBox)ports[a].getComponent(3)).setSelected(true);
+			if (WizardPreferences.getBoolean("portleak"+a)) ((JCheckBox)ports[a].getComponent(4)).setSelected(true);
 			setTime((JSpinner)Timed[a].getComponent(2),"TimedOn"+a);
 			setTime((JSpinner)Timed[a].getComponent(4),"TimedOff"+a);
 			setInteger((JSpinner)Timed[a].getComponent(6),"TimedDelayed"+a);
@@ -6385,7 +6560,9 @@ int id=0;
 			setDouble((JSpinner)Chiller[a].getComponent(2),"ChillerOn"+a);
 			setDouble((JSpinner)Chiller[a].getComponent(4),"ChillerOff"+a);
 			setSelected(ATO[a],"ATO"+a);
-			setInteger((JSpinner)ATO[a].getComponent(5),"ATOTimeout"+a);
+			setInteger((JSpinner)ATO[a].getComponent(6),"ATOTimeout"+a);
+			setInteger((JSpinner)ATO[a].getComponent(8),"WLATOLow"+a);
+			setInteger((JSpinner)ATO[a].getComponent(10),"WLATOHigh"+a);
 			setSelected(WM[a],"WM"+a);
 			setInteger((JSpinner)WM[a].getComponent(4),"WMTimer"+a);
 			setInteger((JSpinner)WM[a].getComponent(6),"WMTimerR"+a);
@@ -6397,7 +6574,7 @@ int id=0;
 			setInteger((JSpinner)Dosing[a].getComponent(4),"DPTimer"+a);
 			setInteger((JSpinner)Dosing[a].getComponent(6),"DPOffset"+a);
 			setInteger((JSpinner)Delayed[a].getComponent(2),"Delayed"+a);
-			if (Preferences.get("Opposite"+a)!=null) ((JComboBox)Opposite[a].getComponent(2)).setSelectedIndex(Preferences.getInteger("Opposite"+a));
+			if (WizardPreferences.get("Opposite"+a)!=null) ((JComboBox)Opposite[a].getComponent(2)).setSelectedIndex(WizardPreferences.getInteger("Opposite"+a));
 		}		
 		setSelected(daylightpwm,"daylightpwm");
 		setTime((JSpinner)daylightpwmsettings.getComponent(2),"daylightpwmon");
@@ -6412,7 +6589,7 @@ int id=0;
 		setInteger((JSpinner)actinicpwmsettings.getComponent(10),"actinicpwmend");
 		setInteger((JSpinner)actinicpwmsettings.getComponent(14),"actinicpwmduration");
 		for (int a=0;a<9;a++)
-			if (Preferences.getBoolean("buzzermod"+a)) ((JCheckBox)Buzzermods.getComponent(a)).setSelected(true);
+			if (WizardPreferences.getBoolean("buzzermod"+a)) ((JCheckBox)Buzzermods.getComponent(a)).setSelected(true);
 		for (int a=0;a<6;a++)
 		{
 			setSelected(exppwm[a],"exppwm"+a);
@@ -6432,7 +6609,7 @@ int id=0;
 			setInteger((JSpinner)aipwmsettings[a].getComponent(10),"aipwm"+a+"end");
 			setInteger((JSpinner)aipwmsettings[a].getComponent(14),"aipwm"+a+"duration");
 		}
-		if (Preferences.get("RFmodsMode")!=null) ((JComboBox)RFmods.getComponent(1)).setSelectedIndex(Preferences.getInteger("RFmodsMode"));
+		if (WizardPreferences.get("RFmodsMode")!=null) ((JComboBox)RFmods.getComponent(1)).setSelectedIndex(WizardPreferences.getInteger("RFmodsMode"));
 		setInteger((JSpinner)RFmods.getComponent(3),"RFmodsSpeed");
 		setInteger((JSpinner)RFmods.getComponent(5),"RFmodsDuration");
 		for (int a=0;a<6;a++)
@@ -6444,14 +6621,14 @@ int id=0;
 			setInteger((JSpinner)rfpwmsettings[a].getComponent(10),"rfpwm"+a+"end");
 			setInteger((JSpinner)rfpwmsettings[a].getComponent(14),"rfpwm"+a+"duration");
 		}
-		if (Preferences.get("DCmodsMode")!=null) ((JComboBox)DCmods.getComponent(1)).setSelectedIndex(Preferences.getInteger("DCmodsMode"));
+		if (WizardPreferences.get("DCmodsMode")!=null) ((JComboBox)DCmods.getComponent(1)).setSelectedIndex(WizardPreferences.getInteger("DCmodsMode"));
 		setInteger((JSpinner)DCmods.getComponent(3),"DCmodsSpeed");
 		setInteger((JSpinner)DCmods.getComponent(5),"DCmodsDuration");
-		if (Preferences.get("DCmodsDaylightSync")!=null) ((JComboBox)DCmods.getComponent(7)).setSelectedIndex(Preferences.getInteger("DCmodsDaylightSync"));
-		if (Preferences.get("DCmodsActinicSync")!=null) ((JComboBox)DCmods.getComponent(9)).setSelectedIndex(Preferences.getInteger("DCmodsActinicSync"));
+		if (WizardPreferences.get("DCmodsDaylightSync")!=null) ((JComboBox)DCmods.getComponent(7)).setSelectedIndex(WizardPreferences.getInteger("DCmodsDaylightSync"));
+		if (WizardPreferences.get("DCmodsActinicSync")!=null) ((JComboBox)DCmods.getComponent(9)).setSelectedIndex(WizardPreferences.getInteger("DCmodsActinicSync"));
 		for (int a=0;a<6;a++)
-			if (Preferences.get("DCmodsDimming" + a + "Sync")!=null) ((JComboBox)DCmods.getComponent(11+(a*2))).setSelectedIndex(Preferences.getInteger("DCmodsDimming" + a + "Sync"));
-		((JTextField) wifiportal.getComponent(1)).setText(Preferences.get("wifiportal"));
+			if (WizardPreferences.get("DCmodsDimming" + a + "Sync")!=null) ((JComboBox)DCmods.getComponent(11+(a*2))).setSelectedIndex(WizardPreferences.getInteger("DCmodsDimming" + a + "Sync"));
+		((JTextField) wifiportal.getComponent(1)).setText(WizardPreferences.get("wifiportal"));
 		Title.SetText("Memory Settings");
 	}
 	
@@ -6459,112 +6636,115 @@ int id=0;
 	{
 		SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
 		 
-		Preferences.setInteger("memsettings", getSelected(memsettings));
-		Preferences.setInteger("disptemp", getSelected(disptemp));
-		Preferences.setDouble("Overheat",(Double)Overheat.getValue());
-		Preferences.setInteger("relayexpansion", relayexpansion);
-		Preferences.setInteger("dimmingexpansion", dimmingexpansion);
-		Preferences.setInteger("rfexpansion", rfexpansion);
-		Preferences.setInteger("salinityexpansion", salinityexpansion);
-		Preferences.setInteger("ioexpansion", ioexpansion);
-		Preferences.setInteger("orpexpansion", orpexpansion);
-		Preferences.setInteger("phexpansion", phexpansion);
-		Preferences.setInteger("waterlevelexpansion", waterlevelexpansion);
-		Preferences.setInteger("humidityexpansion", humidityexpansion);
-		Preferences.setInteger("leakexpansion", leakexpansion);
-		Preferences.setInteger("wifi", wifi);
-		Preferences.setInteger("ailed", ailed);
-		Preferences.setInteger("dcpump", dcpump);
+		WizardPreferences.setInteger("board", getSelected(board));
+		WizardPreferences.setInteger("memsettings", getSelected(memsettings));
+		WizardPreferences.setInteger("disptemp", getSelected(disptemp));
+		WizardPreferences.setDouble("Overheat",(Double)Overheat.getValue());
+		WizardPreferences.setInteger("relayexpansion", relayexpansion);
+		WizardPreferences.setInteger("dimmingexpansion", dimmingexpansion);
+		WizardPreferences.setInteger("rfexpansion", rfexpansion);
+		WizardPreferences.setInteger("salinityexpansion", salinityexpansion);
+		WizardPreferences.setInteger("ioexpansion", ioexpansion);
+		WizardPreferences.setInteger("orpexpansion", orpexpansion);
+		WizardPreferences.setInteger("phexpansion", phexpansion);
+		WizardPreferences.setInteger("waterlevelexpansion", waterlevelexpansion);
+		WizardPreferences.setInteger("humidityexpansion", humidityexpansion);
+		WizardPreferences.setInteger("leakexpansion", leakexpansion);
+		WizardPreferences.setInteger("wifi", wifi);
+		WizardPreferences.setInteger("ailed", ailed);
+		WizardPreferences.setInteger("dcpump", dcpump);
 		for (int a=1;a<16;a++)
 		{
-			Preferences.setInteger("functions"+a, getSelected(functions[a]));
-			Preferences.setBoolean("portfeeding"+a, ((JCheckBox)ports[a].getComponent(0)).isSelected());
-			Preferences.setBoolean("portwaterchange"+a, ((JCheckBox)ports[a].getComponent(1)).isSelected());
-			Preferences.setBoolean("portlights"+a, ((JCheckBox)ports[a].getComponent(2)).isSelected());
-			Preferences.setBoolean("portoverheat"+a, ((JCheckBox)ports[a].getComponent(3)).isSelected());
-			Preferences.setBoolean("portleak"+a, ((JCheckBox)ports[a].getComponent(4)).isSelected());
-			Preferences.set("TimedOn"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(2)).getValue()));
-			Preferences.set("TimedOff"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(4)).getValue()));
-			Preferences.set("TimedDelayed"+a, ((JSpinner)Timed[a].getComponent(6)).getValue().toString());
-			Preferences.setInteger("TimedMemory"+a, getSelected(TimedMemory[a]));
-			Preferences.set("TimedMemorySettingsOn"+a, formatter.format((Date)((JSpinner)TimedMemorySettings[a].getComponent(2)).getValue()));
-			Preferences.set("TimedMemorySettingsOff"+a, formatter.format((Date)((JSpinner)TimedMemorySettings[a].getComponent(4)).getValue()));
-			Preferences.set("TimedMemorySettingsDelayed"+a, ((JSpinner)TimedMemorySettings[a].getComponent(6)).getValue().toString());
-			Preferences.set("TimedMemorySettingsActinicOffset"+a, ((JSpinner)TimedMemorySettings[a].getComponent(8)).getValue().toString());
-			Preferences.set("HeaterOn"+a, ((JSpinner)Heater[a].getComponent(2)).getValue().toString());
-			Preferences.set("HeaterOff"+a, ((JSpinner)Heater[a].getComponent(4)).getValue().toString());
-			Preferences.set("ChillerOn"+a, ((JSpinner)Chiller[a].getComponent(2)).getValue().toString());
-			Preferences.set("ChillerOff"+a, ((JSpinner)Chiller[a].getComponent(4)).getValue().toString());
-			Preferences.setInteger("ATO"+a, getSelected(ATO[a]));
-			Preferences.set("ATOTimeout"+a, ((JSpinner)ATO[a].getComponent(5)).getValue().toString());
-			Preferences.setInteger("WM"+a, getSelected(WM[a]));
-			Preferences.set("WMTimer"+a, ((JSpinner)WM[a].getComponent(4)).getValue().toString());
-			Preferences.set("WMTimerR"+a, ((JSpinner)WM[a].getComponent(6)).getValue().toString());
-			Preferences.set("CO2ControlOn"+a, ((JSpinner)CO2Control[a].getComponent(2)).getValue().toString());
-			Preferences.set("CO2ControlOff"+a, ((JSpinner)CO2Control[a].getComponent(4)).getValue().toString());
-			Preferences.set("pHControlOn"+a, ((JSpinner)pHControl[a].getComponent(2)).getValue().toString());
-			Preferences.set("pHControlOff"+a, ((JSpinner)pHControl[a].getComponent(4)).getValue().toString());
-			Preferences.set("DPInterval"+a, ((JSpinner)Dosing[a].getComponent(2)).getValue().toString());
-			Preferences.set("DPTimer"+a, ((JSpinner)Dosing[a].getComponent(4)).getValue().toString());
-			Preferences.set("DPOffset"+a, ((JSpinner)Dosing[a].getComponent(6)).getValue().toString());
-			Preferences.set("Delayed"+a, ((JSpinner)Delayed[a].getComponent(2)).getValue().toString());
-			Preferences.setInteger("Opposite"+a, ((JComboBox)Opposite[a].getComponent(2)).getSelectedIndex());
+			WizardPreferences.setInteger("functions"+a, getSelected(functions[a]));
+			WizardPreferences.setBoolean("portfeeding"+a, ((JCheckBox)ports[a].getComponent(0)).isSelected());
+			WizardPreferences.setBoolean("portwaterchange"+a, ((JCheckBox)ports[a].getComponent(1)).isSelected());
+			WizardPreferences.setBoolean("portlights"+a, ((JCheckBox)ports[a].getComponent(2)).isSelected());
+			WizardPreferences.setBoolean("portoverheat"+a, ((JCheckBox)ports[a].getComponent(3)).isSelected());
+			WizardPreferences.setBoolean("portleak"+a, ((JCheckBox)ports[a].getComponent(4)).isSelected());
+			WizardPreferences.set("TimedOn"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(2)).getValue()));
+			WizardPreferences.set("TimedOff"+a, formatter.format((Date)((JSpinner)Timed[a].getComponent(4)).getValue()));
+			WizardPreferences.set("TimedDelayed"+a, ((JSpinner)Timed[a].getComponent(6)).getValue().toString());
+			WizardPreferences.setInteger("TimedMemory"+a, getSelected(TimedMemory[a]));
+			WizardPreferences.set("TimedMemorySettingsOn"+a, formatter.format((Date)((JSpinner)TimedMemorySettings[a].getComponent(2)).getValue()));
+			WizardPreferences.set("TimedMemorySettingsOff"+a, formatter.format((Date)((JSpinner)TimedMemorySettings[a].getComponent(4)).getValue()));
+			WizardPreferences.set("TimedMemorySettingsDelayed"+a, ((JSpinner)TimedMemorySettings[a].getComponent(6)).getValue().toString());
+			WizardPreferences.set("TimedMemorySettingsActinicOffset"+a, ((JSpinner)TimedMemorySettings[a].getComponent(8)).getValue().toString());
+			WizardPreferences.set("HeaterOn"+a, ((JSpinner)Heater[a].getComponent(2)).getValue().toString());
+			WizardPreferences.set("HeaterOff"+a, ((JSpinner)Heater[a].getComponent(4)).getValue().toString());
+			WizardPreferences.set("ChillerOn"+a, ((JSpinner)Chiller[a].getComponent(2)).getValue().toString());
+			WizardPreferences.set("ChillerOff"+a, ((JSpinner)Chiller[a].getComponent(4)).getValue().toString());
+			WizardPreferences.setInteger("ATO"+a, getSelected(ATO[a]));
+			WizardPreferences.set("ATOTimeout"+a, ((JSpinner)ATO[a].getComponent(6)).getValue().toString());
+			WizardPreferences.set("WLATOLow"+a, ((JSpinner)ATO[a].getComponent(8)).getValue().toString());
+			WizardPreferences.set("WLATOHigh"+a, ((JSpinner)ATO[a].getComponent(10)).getValue().toString());
+			WizardPreferences.setInteger("WM"+a, getSelected(WM[a]));
+			WizardPreferences.set("WMTimer"+a, ((JSpinner)WM[a].getComponent(4)).getValue().toString());
+			WizardPreferences.set("WMTimerR"+a, ((JSpinner)WM[a].getComponent(6)).getValue().toString());
+			WizardPreferences.set("CO2ControlOn"+a, ((JSpinner)CO2Control[a].getComponent(2)).getValue().toString());
+			WizardPreferences.set("CO2ControlOff"+a, ((JSpinner)CO2Control[a].getComponent(4)).getValue().toString());
+			WizardPreferences.set("pHControlOn"+a, ((JSpinner)pHControl[a].getComponent(2)).getValue().toString());
+			WizardPreferences.set("pHControlOff"+a, ((JSpinner)pHControl[a].getComponent(4)).getValue().toString());
+			WizardPreferences.set("DPInterval"+a, ((JSpinner)Dosing[a].getComponent(2)).getValue().toString());
+			WizardPreferences.set("DPTimer"+a, ((JSpinner)Dosing[a].getComponent(4)).getValue().toString());
+			WizardPreferences.set("DPOffset"+a, ((JSpinner)Dosing[a].getComponent(6)).getValue().toString());
+			WizardPreferences.set("Delayed"+a, ((JSpinner)Delayed[a].getComponent(2)).getValue().toString());
+			WizardPreferences.setInteger("Opposite"+a, ((JComboBox)Opposite[a].getComponent(2)).getSelectedIndex());
 		}
-		Preferences.setInteger("daylightpwm", getSelected(daylightpwm));
-		Preferences.set("daylightpwmon", formatter.format((Date)((JSpinner)daylightpwmsettings.getComponent(2)).getValue()));
-		Preferences.set("daylightpwmoff", formatter.format((Date)((JSpinner)daylightpwmsettings.getComponent(4)).getValue()));
-		Preferences.set("daylightpwmstart", ((JSpinner)daylightpwmsettings.getComponent(8)).getValue().toString());
-		Preferences.set("daylightpwmend", ((JSpinner)daylightpwmsettings.getComponent(10)).getValue().toString());
-		Preferences.set("daylightpwmduration", ((JSpinner)daylightpwmsettings.getComponent(14)).getValue().toString());
-		Preferences.setInteger("actinicpwm", getSelected(actinicpwm));
-		Preferences.set("actinicpwmon", formatter.format((Date)((JSpinner)actinicpwmsettings.getComponent(2)).getValue()));
-		Preferences.set("actinicpwmoff", formatter.format((Date)((JSpinner)actinicpwmsettings.getComponent(4)).getValue()));
-		Preferences.set("actinicpwmstart", ((JSpinner)actinicpwmsettings.getComponent(8)).getValue().toString());
-		Preferences.set("actinicpwmend", ((JSpinner)actinicpwmsettings.getComponent(10)).getValue().toString());
-		Preferences.set("actinicpwmduration", ((JSpinner)actinicpwmsettings.getComponent(14)).getValue().toString());
+		WizardPreferences.setInteger("daylightpwm", getSelected(daylightpwm));
+		WizardPreferences.set("daylightpwmon", formatter.format((Date)((JSpinner)daylightpwmsettings.getComponent(2)).getValue()));
+		WizardPreferences.set("daylightpwmoff", formatter.format((Date)((JSpinner)daylightpwmsettings.getComponent(4)).getValue()));
+		WizardPreferences.set("daylightpwmstart", ((JSpinner)daylightpwmsettings.getComponent(8)).getValue().toString());
+		WizardPreferences.set("daylightpwmend", ((JSpinner)daylightpwmsettings.getComponent(10)).getValue().toString());
+		WizardPreferences.set("daylightpwmduration", ((JSpinner)daylightpwmsettings.getComponent(14)).getValue().toString());
+		WizardPreferences.setInteger("actinicpwm", getSelected(actinicpwm));
+		WizardPreferences.set("actinicpwmon", formatter.format((Date)((JSpinner)actinicpwmsettings.getComponent(2)).getValue()));
+		WizardPreferences.set("actinicpwmoff", formatter.format((Date)((JSpinner)actinicpwmsettings.getComponent(4)).getValue()));
+		WizardPreferences.set("actinicpwmstart", ((JSpinner)actinicpwmsettings.getComponent(8)).getValue().toString());
+		WizardPreferences.set("actinicpwmend", ((JSpinner)actinicpwmsettings.getComponent(10)).getValue().toString());
+		WizardPreferences.set("actinicpwmduration", ((JSpinner)actinicpwmsettings.getComponent(14)).getValue().toString());
 		for (int a=0;a<9;a++)
-			Preferences.setBoolean("buzzermod"+a,((JCheckBox)Buzzermods.getComponent(a)).isSelected());
+			WizardPreferences.setBoolean("buzzermod"+a,((JCheckBox)Buzzermods.getComponent(a)).isSelected());
 		for (int a=0;a<6;a++)
 		{
-			Preferences.setInteger("exppwm"+a, getSelected(exppwm[a]));
-			Preferences.set("exppwm"+a+"on", formatter.format((Date)((JSpinner)exppwmsettings[a].getComponent(2)).getValue()));
-			Preferences.set("exppwm"+a+"off", formatter.format((Date)((JSpinner)exppwmsettings[a].getComponent(4)).getValue()));
-			Preferences.set("exppwm"+a+"start", ((JSpinner)exppwmsettings[a].getComponent(8)).getValue().toString());
-			Preferences.set("exppwm"+a+"end", ((JSpinner)exppwmsettings[a].getComponent(10)).getValue().toString());
-			Preferences.set("exppwm"+a+"duration", ((JSpinner)exppwmsettings[a].getComponent(14)).getValue().toString());
+			WizardPreferences.setInteger("exppwm"+a, getSelected(exppwm[a]));
+			WizardPreferences.set("exppwm"+a+"on", formatter.format((Date)((JSpinner)exppwmsettings[a].getComponent(2)).getValue()));
+			WizardPreferences.set("exppwm"+a+"off", formatter.format((Date)((JSpinner)exppwmsettings[a].getComponent(4)).getValue()));
+			WizardPreferences.set("exppwm"+a+"start", ((JSpinner)exppwmsettings[a].getComponent(8)).getValue().toString());
+			WizardPreferences.set("exppwm"+a+"end", ((JSpinner)exppwmsettings[a].getComponent(10)).getValue().toString());
+			WizardPreferences.set("exppwm"+a+"duration", ((JSpinner)exppwmsettings[a].getComponent(14)).getValue().toString());
 		}
-		Preferences.setInteger("aiport", getSelected(aiport));
+		WizardPreferences.setInteger("aiport", getSelected(aiport));
 		for (int a=0;a<3;a++)
 		{
-			Preferences.setInteger("aipwm"+a, getSelected(aipwm[a]));
-			Preferences.set("aipwm"+a+"on", formatter.format((Date)((JSpinner)aipwmsettings[a].getComponent(2)).getValue()));
-			Preferences.set("aipwm"+a+"off", formatter.format((Date)((JSpinner)aipwmsettings[a].getComponent(4)).getValue()));
-			Preferences.set("aipwm"+a+"start", ((JSpinner)aipwmsettings[a].getComponent(8)).getValue().toString());
-			Preferences.set("aipwm"+a+"end", ((JSpinner)aipwmsettings[a].getComponent(10)).getValue().toString());
-			Preferences.set("aipwm"+a+"duration", ((JSpinner)aipwmsettings[a].getComponent(14)).getValue().toString());
+			WizardPreferences.setInteger("aipwm"+a, getSelected(aipwm[a]));
+			WizardPreferences.set("aipwm"+a+"on", formatter.format((Date)((JSpinner)aipwmsettings[a].getComponent(2)).getValue()));
+			WizardPreferences.set("aipwm"+a+"off", formatter.format((Date)((JSpinner)aipwmsettings[a].getComponent(4)).getValue()));
+			WizardPreferences.set("aipwm"+a+"start", ((JSpinner)aipwmsettings[a].getComponent(8)).getValue().toString());
+			WizardPreferences.set("aipwm"+a+"end", ((JSpinner)aipwmsettings[a].getComponent(10)).getValue().toString());
+			WizardPreferences.set("aipwm"+a+"duration", ((JSpinner)aipwmsettings[a].getComponent(14)).getValue().toString());
 		}
-		Preferences.setInteger("RFmodsMode", ((JComboBox)RFmods.getComponent(1)).getSelectedIndex());
-		Preferences.set("RFmodsSpeed", ((JSpinner)RFmods.getComponent(3)).getValue().toString());
-		Preferences.set("RFmodsDuration", ((JSpinner)RFmods.getComponent(5)).getValue().toString());
+		WizardPreferences.setInteger("RFmodsMode", ((JComboBox)RFmods.getComponent(1)).getSelectedIndex());
+		WizardPreferences.set("RFmodsSpeed", ((JSpinner)RFmods.getComponent(3)).getValue().toString());
+		WizardPreferences.set("RFmodsDuration", ((JSpinner)RFmods.getComponent(5)).getValue().toString());
 		for (int a=0;a<6;a++)
 		{
-			Preferences.setInteger("rfpwm"+a, getSelected(rfpwm[a]));
-			Preferences.set("rfpwm"+a+"on", formatter.format((Date)((JSpinner)rfpwmsettings[a].getComponent(2)).getValue()));
-			Preferences.set("rfpwm"+a+"off", formatter.format((Date)((JSpinner)rfpwmsettings[a].getComponent(4)).getValue()));
-			Preferences.set("rfpwm"+a+"start", ((JSpinner)rfpwmsettings[a].getComponent(8)).getValue().toString());
-			Preferences.set("rfpwm"+a+"end", ((JSpinner)rfpwmsettings[a].getComponent(10)).getValue().toString());
-			Preferences.set("rfpwm"+a+"duration", ((JSpinner)rfpwmsettings[a].getComponent(14)).getValue().toString());
+			WizardPreferences.setInteger("rfpwm"+a, getSelected(rfpwm[a]));
+			WizardPreferences.set("rfpwm"+a+"on", formatter.format((Date)((JSpinner)rfpwmsettings[a].getComponent(2)).getValue()));
+			WizardPreferences.set("rfpwm"+a+"off", formatter.format((Date)((JSpinner)rfpwmsettings[a].getComponent(4)).getValue()));
+			WizardPreferences.set("rfpwm"+a+"start", ((JSpinner)rfpwmsettings[a].getComponent(8)).getValue().toString());
+			WizardPreferences.set("rfpwm"+a+"end", ((JSpinner)rfpwmsettings[a].getComponent(10)).getValue().toString());
+			WizardPreferences.set("rfpwm"+a+"duration", ((JSpinner)rfpwmsettings[a].getComponent(14)).getValue().toString());
 		}
-		Preferences.setInteger("DCmodsMode", ((JComboBox)DCmods.getComponent(1)).getSelectedIndex());
-		Preferences.set("DCmodsSpeed", ((JSpinner)DCmods.getComponent(3)).getValue().toString());
-		Preferences.set("DCmodsDuration", ((JSpinner)DCmods.getComponent(5)).getValue().toString());
-		Preferences.setInteger("DCmodsDaylightSync", ((JComboBox)DCmods.getComponent(7)).getSelectedIndex());
-		Preferences.setInteger("DCmodsActinicSync", ((JComboBox)DCmods.getComponent(9)).getSelectedIndex());
+		WizardPreferences.setInteger("DCmodsMode", ((JComboBox)DCmods.getComponent(1)).getSelectedIndex());
+		WizardPreferences.set("DCmodsSpeed", ((JSpinner)DCmods.getComponent(3)).getValue().toString());
+		WizardPreferences.set("DCmodsDuration", ((JSpinner)DCmods.getComponent(5)).getValue().toString());
+		WizardPreferences.setInteger("DCmodsDaylightSync", ((JComboBox)DCmods.getComponent(7)).getSelectedIndex());
+		WizardPreferences.setInteger("DCmodsActinicSync", ((JComboBox)DCmods.getComponent(9)).getSelectedIndex());
 		for (int a=0;a<6;a++)
-			Preferences.setInteger("DCmodsDimming" + a + "Sync", ((JComboBox)DCmods.getComponent(11+(a*2))).getSelectedIndex());
+			WizardPreferences.setInteger("DCmodsDimming" + a + "Sync", ((JComboBox)DCmods.getComponent(11+(a*2))).getSelectedIndex());
 		
-		Preferences.set("wifiportal",((JTextField) wifiportal.getComponent(1)).getText());
-		Preferences.save();
+		WizardPreferences.set("wifiportal",((JTextField) wifiportal.getComponent(1)).getText());
+		WizardPreferences.save();
 	}
 	
 	public int getSelected(JPanel j)
@@ -6579,13 +6759,13 @@ int id=0;
 	
 	public void setSelected(JPanel j,String p)
 	{
-		if (Preferences.get(p)!=null)
+		if (WizardPreferences.get(p)!=null)
 		{
-			if (Integer.parseInt(Preferences.get(p))>=0)
+			if (Integer.parseInt(WizardPreferences.get(p))>=0)
 			{
-				((JRadioButton)j.getComponent(Integer.parseInt(Preferences.get(p)))).setSelected(true);
-				ActionEvent e = new ActionEvent(j.getComponent(Integer.parseInt(Preferences.get(p))),0,"Test");
-				for(ActionListener al: ((JRadioButton) j.getComponent(Integer.parseInt(Preferences.get(p)))).getActionListeners()){
+				((JRadioButton)j.getComponent(Integer.parseInt(WizardPreferences.get(p)))).setSelected(true);
+				ActionEvent e = new ActionEvent(j.getComponent(Integer.parseInt(WizardPreferences.get(p))),0,"Test");
+				for(ActionListener al: ((JRadioButton) j.getComponent(Integer.parseInt(WizardPreferences.get(p)))).getActionListeners()){
 					al.actionPerformed(e);
 				}
 			}
@@ -6594,36 +6774,36 @@ int id=0;
 	
 	public void setDouble(JSpinner j,String p)
 	{
-		if (Preferences.get(p)!=null)
+		if (WizardPreferences.get(p)!=null)
 		{
-			j.setValue( new Double(Preferences.get(p)));
+			j.setValue( new Double(WizardPreferences.get(p)));
 		}
 	}	
 	
 	public void setInteger(JSpinner j,String p)
 	{
-		if (Preferences.get(p)!=null)
+		if (WizardPreferences.get(p)!=null)
 		{
-			j.setValue( new Integer(Preferences.get(p)));
+			j.setValue( new Integer(WizardPreferences.get(p)));
 		}
 	}	
 
 	public int setChecked(Component j, String p)
 	{
 		int r=0;
-		if (Preferences.get(p)!=null)
-			r=Preferences.getInteger(p);
+		if (WizardPreferences.get(p)!=null)
+			r=WizardPreferences.getInteger(p);
 			if (r!=0) ((JCheckBox)j).setSelected(true);
 		return r;
 	}
 	
 	public void setTime(JSpinner j,String p)
 	{
-		if (Preferences.get(p)!=null)
+		if (WizardPreferences.get(p)!=null)
 		{
 			SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
 			try {
-				Date date = (Date)formatter.parse(Preferences.get(p));
+				Date date = (Date)formatter.parse(WizardPreferences.get(p));
 				j.setValue(date);
 			} catch (ParseException e) {
 				Title.SetText("Memory Settings");
@@ -6638,6 +6818,7 @@ int id=0;
 				AbstractButton aButton = (AbstractButton) actionEvent.getSource();
 				String s ="";
 				if (aButton.getText() == "Welcome") s = "Welcome";
+				if (aButton.getText() == "Controller") s = "Controller";
 				if (aButton.getText() == "Memory") s = "Memory Settings";
 				if (aButton.getText() == "Temperature") s = "Temperature Settings";
 				if (aButton.getText() == "Expansion") s = "Expansion Modules";
@@ -6660,6 +6841,9 @@ int id=0;
 		taskGroup.removeAll();
 		JButton jb;
 		jb=new JButton("Welcome");
+		jb.addActionListener(al);
+		taskGroup.add(jb);
+		jb=new JButton("Controller");
 		jb.addActionListener(al);
 		taskGroup.add(jb);
 		jb=new JButton("Memory");
