@@ -257,7 +257,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		"Vortech Mode", "Radion White Channel", "Radion White Settings", "Radion Royal Blue Channel", "Radion Royal Blue Settings", "Radion Red Channel", "Radion Red Settings", "Radion Green Channel", "Radion Green Settings", "Radion Blue Channel", "Radion Blue Settings", "Radion Intensity Channel", "Radion Intensity Settings",
 		"DC Pump Mode",
 		"Wifi Attachment","Buzzer"};
-	public static String DCPumpModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
+	public static String DCPumpModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell","Else","Sine","Gyre" };
 	public static String DCPumpSync[] = { "Not Used","Sync","Anti-Sync" };
 	
 
