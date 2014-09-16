@@ -68,6 +68,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
@@ -1507,6 +1509,10 @@ public class Wizard  implements Tool, MessageConsumer {
 				d+="    ReefAngel.Portal( \"" + jtt + "\" );\n";
 			else
 				d+="    ReefAngel.AddWifi();\n";
+			jt = (JTextField) wifiportal.getComponent(3);
+			String jtt1=jt.getText();
+			if (jtt1.length()>0)
+				d+="    ReefAngel.DDNS( \"" + jtt + "\" ); \\ Your DDNS is " + jtt + "-" + jtt1 + ".myreefangel.com\n";
 		}
 		d+="    ReefAngel.ShowInterface();\n" + 
 				"}\n\n";
@@ -2374,7 +2380,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		JPanel j = new JPanel();
 		j.setOpaque(false);
 		j.setLayout(layoutConstraintsManager.createLayout("relaypanel", j));
-		Inside i = new Inside("<HTML>Please enter your forum username to send data to the Portal :<br><br></HTML>");
+		Inside i = new Inside("<HTML>Please enter your forum username to send data to the Portal and a Dynamic DNS subdomain name.<br>Please ensure that your router is setup with port forwarding correctly.<br><br></HTML>");
 		j.add(i,"i");
 		wifiportal.setOpaque(false);
 		j.add(wifiportal,"icon");
@@ -4145,9 +4151,34 @@ public class Wizard  implements Tool, MessageConsumer {
 
 		// Wifi
 
-		wifiportal= new JPanel(new GridLayout(1,2));
+		wifiportal= new JPanel(new GridLayout(3,2));
 		wifiportal.add(new JLabel("Forum username:"));
-		wifiportal.add(new JTextField(20));
+		final JTextField jf = new JTextField(20);
+		wifiportal.add(jf);
+		wifiportal.add(new JLabel("Dynamic DNS:"));
+		final JLabel jdd = new JLabel("");
+		
+		final JTextField jd = (JTextField) wifiportal.add(new JTextField(20));
+		jd.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				warn();
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				warn();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				warn();
+			}
+
+			public void warn() {
+				jdd.setText("http://" + jf.getText() + "-" + jd.getText() + ".myreefangel.com");
+			}
+			});		
+		wifiportal.add(new JLabel("You can access your controller by browsing to:"));
+		wifiportal.add(jdd);
 
 		// RF Expansion
 
@@ -6623,6 +6654,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		for (int a=0;a<6;a++)
 			if (WizardPreferences.get("DCmodsDimming" + a + "Sync")!=null) ((JComboBox)DCmods.getComponent(11+(a*2))).setSelectedIndex(WizardPreferences.getInteger("DCmodsDimming" + a + "Sync"));
 		((JTextField) wifiportal.getComponent(1)).setText(WizardPreferences.get("wifiportal"));
+		((JTextField) wifiportal.getComponent(3)).setText(WizardPreferences.get("wifiddns"));
 		Title.SetText("Memory Settings");
 	}
 	
@@ -6740,6 +6772,7 @@ public class Wizard  implements Tool, MessageConsumer {
 			WizardPreferences.setInteger("DCmodsDimming" + a + "Sync", ((JComboBox)DCmods.getComponent(11+(a*2))).getSelectedIndex());
 		
 		WizardPreferences.set("wifiportal",((JTextField) wifiportal.getComponent(1)).getText());
+		WizardPreferences.set("wifiddns",((JTextField) wifiportal.getComponent(3)).getText());
 		WizardPreferences.save();
 	}
 	
