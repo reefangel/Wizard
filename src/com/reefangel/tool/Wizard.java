@@ -143,6 +143,8 @@ public class Wizard  implements Tool, MessageConsumer {
 	private int waterlevelexpansion=0;
 	private int humidityexpansion=0;
 	private int leakexpansion=0;
+	private int parexpansion=0;
+	private int multiwaterlevelexpansion=0;
 	
 	private int wifi=0;
 	private int ailed=0;
@@ -241,7 +243,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		"Please choose the settings for your Daylight and Actinic schedule. Delayed Start is useful for MH ballasts."
 	};
 
-	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity", "Rope Leak Detector"};
+	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity", "Rope Leak Detector","PAR","Multi-Channel Water Level"};
 	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable","DC Pump (Jebao/Tunze/Speedwave)"};
 	public static String AIChannels[] = {"White","Blue","Royal Blue"};
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
@@ -479,7 +481,8 @@ public class Wizard  implements Tool, MessageConsumer {
 		JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
 		int NumDosing=1;
 
-		d+="#include <ReefAngel_Features.h>\n" + 
+		d+="#include <SoftwareSerial.h>\n" +
+				"#include <ReefAngel_Features.h>\n" + 
 				"#include <Globals.h>\n" + 
 				"#include <RA_Wifi.h>\n" + 
 				"#include <Wire.h>\n" + 
@@ -508,6 +511,7 @@ public class Wizard  implements Tool, MessageConsumer {
 				"#include <WaterLevel.h>\n" + 
 				"#include <Humidity.h>\n" + 
 				"#include <DCPump.h>\n" + 
+				"#include <PAR.h>\n" + 
 				"#include <ReefAngel.h>\n\n"; 
 
 		if (buzzer)
@@ -551,6 +555,8 @@ public class Wizard  implements Tool, MessageConsumer {
 			if (phexpansion==1) d+="    ReefAngel.AddPHExpansion();  // pH Expansion Module\n";
 			if (waterlevelexpansion==1) d+="    ReefAngel.AddWaterLevelExpansion();  // Water Level Expansion Module\n";
 			if (humidityexpansion==1) d+="    ReefAngel.AddHumidityExpansion();  // Humidity Expanion Module\n";
+			if (parexpansion==1) d+="    ReefAngel.AddPARExpansion();  // PAR Expanion Module\n";
+			if (multiwaterlevelexpansion==1) d+="    ReefAngel.AddMultiChannelWaterLevelExpansion();  // Multi-Channel Water Level Expanion Module\n";
 		}
 		
 		String f="";
@@ -5196,6 +5202,10 @@ public class Wizard  implements Tool, MessageConsumer {
 						if (jc.isSelected()) humidityexpansion=1; else humidityexpansion=0;
 						jc=(JCheckBox) expansionmods.getComponent(9);
 						if (jc.isSelected()) leakexpansion=1; else leakexpansion=0;
+						jc=(JCheckBox) expansionmods.getComponent(10);
+						if (jc.isSelected()) parexpansion=1; else parexpansion=0;
+						jc=(JCheckBox) expansionmods.getComponent(11);
+						if (jc.isSelected()) multiwaterlevelexpansion=1; else multiwaterlevelexpansion=0;
 						if (ioexpansion==1)
 						{
 							for (int a=0;a<9;a++)
@@ -6516,6 +6526,8 @@ public class Wizard  implements Tool, MessageConsumer {
 		waterlevelexpansion=setChecked(expansionmods.getComponent(7),"waterlevelexpansion");
 		humidityexpansion=setChecked(expansionmods.getComponent(8),"humidityexpansion");
 		leakexpansion=setChecked(expansionmods.getComponent(9),"leakexpansion");
+		parexpansion=setChecked(expansionmods.getComponent(10),"parexpansion");
+		multiwaterlevelexpansion=setChecked(expansionmods.getComponent(11),"multiwaterlevelexpansion");
 		wifi=setChecked(attachmentmods.getComponent(0),"wifi");
 		ailed=setChecked(attachmentmods.getComponent(1),"ailed");
 		dcpump=setChecked(attachmentmods.getComponent(2),"dcpump");
@@ -6632,6 +6644,8 @@ public class Wizard  implements Tool, MessageConsumer {
 		WizardPreferences.setInteger("waterlevelexpansion", waterlevelexpansion);
 		WizardPreferences.setInteger("humidityexpansion", humidityexpansion);
 		WizardPreferences.setInteger("leakexpansion", leakexpansion);
+		WizardPreferences.setInteger("parexpansion", parexpansion);
+		WizardPreferences.setInteger("multiwaterlevelexpansion", multiwaterlevelexpansion);
 		WizardPreferences.setInteger("wifi", wifi);
 		WizardPreferences.setInteger("ailed", ailed);
 		WizardPreferences.setInteger("dcpump", dcpump);
