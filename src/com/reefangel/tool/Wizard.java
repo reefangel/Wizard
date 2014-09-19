@@ -151,6 +151,7 @@ public class Wizard  implements Tool, MessageConsumer {
 	private int wifi=0;
 	private int ailed=0;
 	private int dcpump=0;
+	private int ranet=0;
 
 	private String nextwindow="";
 	private String prevwindow="";
@@ -246,7 +247,7 @@ public class Wizard  implements Tool, MessageConsumer {
 	};
 
 	public static String ExpModules[] = {"Relay","Dimming","RF","Salinity","I/O","ORP","pH","Water Level","Humidity", "Rope Leak Detector","PAR","Multi-Channel Water Level"};
-	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable","DC Pump (Jebao/Tunze/Speedwave)"};
+	public static String AttachModules[] = {"Wifi","Aqua Illuminaton Cable","DC Pump (Jebao/Tunze/Speedwave)","RANet Add-On"};
 	public static String AIChannels[] = {"White","Blue","Royal Blue"};
 	public static String VortechModes[] = { "Constant","Lagoon","ReefCrest","Short Pulse","Long Pulse","Nutrient Transport","Tidal Swell" };
 	public static String RadionChannels[] = {"White","Royal Blue","Red","Green","Blue","Intensity"};
@@ -559,6 +560,7 @@ public class Wizard  implements Tool, MessageConsumer {
 			if (humidityexpansion==1) d+="    ReefAngel.AddHumidityExpansion();  // Humidity Expanion Module\n";
 			if (parexpansion==1) d+="    ReefAngel.AddPARExpansion();  // PAR Expanion Module\n";
 			if (multiwaterlevelexpansion==1) d+="    ReefAngel.AddMultiChannelWaterLevelExpansion();  // Multi-Channel Water Level Expanion Module\n";
+			if (ranet==1) d+="    ReefAngel.AddRANet();  // RANet Add-On Module\n";
 		}
 		
 		String f="";
@@ -5278,6 +5280,8 @@ public class Wizard  implements Tool, MessageConsumer {
 						if (jc.isSelected()) ailed=1; else ailed=0;		
 						jc=(JCheckBox) attachmentmods.getComponent(2);
 						if (jc.isSelected()) dcpump=1; else dcpump=0;		
+						jc=(JCheckBox) attachmentmods.getComponent(3);
+						if (jc.isSelected()) ranet=1; else ranet=0;		
 					}
 
 					if (swindow.indexOf("Main Relay Box")==0)
@@ -6562,6 +6566,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		wifi=setChecked(attachmentmods.getComponent(0),"wifi");
 		ailed=setChecked(attachmentmods.getComponent(1),"ailed");
 		dcpump=setChecked(attachmentmods.getComponent(2),"dcpump");
+		ranet=setChecked(attachmentmods.getComponent(3),"ranet");
 		for (int a=1;a<16;a++)
 		{
 			if (a<=8) Title.SetText ("Main Relay Box - Port "+a);
@@ -6681,6 +6686,7 @@ public class Wizard  implements Tool, MessageConsumer {
 		WizardPreferences.setInteger("wifi", wifi);
 		WizardPreferences.setInteger("ailed", ailed);
 		WizardPreferences.setInteger("dcpump", dcpump);
+		WizardPreferences.setInteger("ranet", ranet);
 		for (int a=1;a<16;a++)
 		{
 			WizardPreferences.setInteger("functions"+a, getSelected(functions[a]));
