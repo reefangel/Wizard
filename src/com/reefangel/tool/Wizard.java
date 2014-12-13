@@ -484,8 +484,8 @@ public class Wizard  implements Tool, MessageConsumer {
 		JRadioButton jb1 = (JRadioButton) memsettings.getComponent(0);
 		int NumDosing=1;
 
-		d+="#include <SoftwareSerial.h>\n" +
-				"#include <ReefAngel_Features.h>\n" + 
+		if (ranet==1) d+="#include <SoftwareSerial.h>\n";
+		d+="#include <ReefAngel_Features.h>\n" + 
 				"#include <Globals.h>\n" + 
 				"#include <RA_Wifi.h>\n" + 
 				"#include <Wire.h>\n" + 
