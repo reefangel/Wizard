@@ -1514,7 +1514,7 @@ public class Wizard  implements Tool, MessageConsumer {
 			jt = (JTextField) wifiportal.getComponent(3);
 			String jtt1=jt.getText();
 			if (jtt1.length()>0)
-				d+="    ReefAngel.DDNS( \"" + jtt + "\" ); \\ Your DDNS is " + jtt + "-" + jtt1 + ".myreefangel.com\n";
+				d+="    ReefAngel.DDNS( \"" + jtt + "\" ); // Your DDNS is " + jtt + "-" + jtt1 + ".myreefangel.com\n";
 		}
 		d+="    ReefAngel.ShowInterface();\n" + 
 				"}\n\n";
